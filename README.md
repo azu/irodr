@@ -10,7 +10,11 @@ Install with [npm](https://www.npmjs.com/):
 
 ## Usage
 
-- [ ] Write usage instructions
+## Notes
+
+- Inoreader doesn't support CORS
+- [Inoreader Developers - User authentication via OAuth 2.0](http://www.inoreader.com/developers/oauth "Inoreader Developers - User authentication via OAuth 2.0")
+- Currently, We need CORS proxy in `package.json`
 
 ## Changelog
 

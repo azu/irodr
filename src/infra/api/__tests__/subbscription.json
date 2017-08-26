@@ -1,0 +1,49 @@
+{
+  "subscriptions": [
+    {
+      "id": "feed\/http:\/\/feeds.feedburner.com\/GoogleOperatingSystem",
+      "title": "Google Operating System",
+      "categories": [
+        {
+          "id": "user\/1005631930\/label\/★★★☆☆",
+          "label": "★★★☆☆"
+        }
+      ],
+      "sortid": "02EFB95D",
+      "firstitemmsec": 1503706746993556,
+      "url": "http:\/\/feeds.feedburner.com\/GoogleOperatingSystem",
+      "htmlUrl": "http:\/\/googlesystem.blogspot.com\/",
+      "iconUrl": "https:\/\/d1ys61kka3jf1i.cloudfront.net\/googlesystem.blogspot.com?w=16\u0026cs=3107002493"
+    },
+    {
+      "id": "feed\/http:\/\/googleblog.blogspot.com\/atom.xml",
+      "title": "Official Google Blog",
+      "categories": [
+        {
+          "id": "user\/1005631930\/label\/★★☆☆☆",
+          "label": "★★☆☆☆"
+        }
+      ],
+      "sortid": "02E2AAC5",
+      "firstitemmsec": 1503706746993556,
+      "url": "http:\/\/googleblog.blogspot.com\/atom.xml",
+      "htmlUrl": "http:\/\/googleblog.blogspot.com\/",
+      "iconUrl": "https:\/\/d1ys61kka3jf1i.cloudfront.net\/googleblog.blogspot.com?w=16\u0026cs=1815048119"
+    },
+    {
+      "id": "feed\/http:\/\/www.drdobbs.com\/articles\/rss",
+      "title": "Dr. Dobb\u0027s Articles",
+      "categories": [
+        {
+          "id": "user\/1005631930\/label\/★★★☆☆",
+          "label": "★★★☆☆"
+        }
+      ],
+      "sortid": "02EFB942",
+      "firstitemmsec": 1503706746993556,
+      "url": "http:\/\/www.drdobbs.com\/articles\/rss",
+      "htmlUrl": "http:\/\/www.drdobbs.com\/",
+      "iconUrl": "https:\/\/d1ys61kka3jf1i.cloudfront.net\/www.drdobbs.com?w=16\u0026cs=1064488804"
+    }
+  ]
+}

@@ -1,21 +1,21 @@
 // MIT © 2017 azu
 
-import * as ClientOAuth2 from 'client-oauth2';
+import * as ClientOAuth2 from "client-oauth2";
 import { Token } from "client-oauth2";
 
 const inoreaderAuth = new ClientOAuth2({
-    clientId: '1000000590',
-    clientSecret: 'yzy8mHQPeDPoT_kQhMQ6x04xrMhQWR09',
-    accessTokenUri: 'https://www.inoreader.com/oauth2/token',
-    authorizationUri: 'https://www.inoreader.com/oauth2/auth',
-    redirectUri: 'http://localhost:3000/',
-    scopes: ['read', 'write'],
+    clientId: "1000000590",
+    clientSecret: "yzy8mHQPeDPoT_kQhMQ6x04xrMhQWR09",
+    accessTokenUri: "/cors/oauth2/token",
+    authorizationUri: "https://www.inoreader.com/oauth2/auth",
+    redirectUri: "http://localhost:3000/",
+    scopes: ["read", "write"],
     state: "inoreader"
 });
 
 export interface TokenJSON {
-    accessToken: string
-    refreshToken: string
+    accessToken: string;
+    refreshToken: string;
     tokenType: string;
     expires: Date;
 }
@@ -27,10 +27,10 @@ export const saveToken = (token: Token) => {
         tokenType: token.tokenType,
         expires: (token as any).expires
     };
-    localStorage.setItem("irodr-token", JSON.stringify(tokenJSOn));
+    localStorage.setItem("inoreader-token", JSON.stringify(tokenJSOn));
 };
 export const loadToken = (): TokenJSON | undefined => {
-    const savedTokenString = localStorage.getItem("irodr-token");
+    const savedTokenString = localStorage.getItem("inoreader-token");
     if (!savedTokenString) {
         return;
     }
@@ -39,11 +39,11 @@ export const loadToken = (): TokenJSON | undefined => {
         accessToken: parsed.accessToken,
         refreshToken: parsed.refreshToken,
         tokenType: parsed.tokenType,
-        expires: new Date(parsed)
+        expires: new Date(parsed.expires)
     };
 };
 export const saveTokenFromCallbackURL = (url: string) => {
-    return inoreaderAuth.code.getToken(url).then((token) => {
+    return inoreaderAuth.code.getToken(url).then(token => {
         saveToken(token);
         return token;
     });
@@ -62,7 +62,7 @@ export const getToken = () => {
     token.expiresIn(savedTokenJSON.expires);
     // Refresh the current users access token.
     if (token.expired()) {
-        return token.refresh().then(function (updatedToken) {
+        return token.refresh().then(function(updatedToken) {
             saveToken(updatedToken);
             return updatedToken;
         });

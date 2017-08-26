@@ -1,0 +1,774 @@
+{
+  "direction": "ltr",
+  "id": "feed\/http:\/\/feeds.feedburner.com\/GoogleOperatingSystem",
+  "title": "Google Operating System",
+  "description": "",
+  "self": {
+    "href": "https:\/\/jp.inoreader.com\/reader\/api\/0\/stream\/contents\/feed%2Fhttp%3A%2F%2Ffeeds.feedburner.com%2FGoogleOperatingSystem"
+  },
+  "updated": 1503747569,
+  "updatedUsec": "1503747569046105",
+  "items": [
+    {
+      "crawlTimeMsec": "1491032371031",
+      "timestampUsec": "1491032371031002",
+      "id": "tag:google.com,2005:reader\/item\/00000002a8807fa1",
+      "categories": [
+        "user\/1005631930\/state\/com.google\/reading-list",
+        "user\/1005631930\/state\/com.google\/read",
+        "user\/1005631930\/label\/★★★☆☆"
+      ],
+      "title": "Google April Fools\u0027 Day 2017",
+      "published": 1491031500,
+      "updated": 1491050555,
+      "canonical": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2017\/04\/google-april-fools-day-2017.html"
+        }
+      ],
+      "alternate": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2017\/04\/google-april-fools-day-2017.html",
+          "type": "text\/html"
+        }
+      ],
+      "summary": {
+        "direction": "ltr",
+        "content": "\n                \u003Ccenter\u003E\n                    \u003Cdiv style=\u0022text-align:center;color:#424242;font-size:0.8em;margin-bottom:30px;\u0022\u003E\n                        \u003Cdiv\u003E\n                            Ads from Inoreader \u0026bull; \u003Ca target=\u0022_blank\u0022 style=\u0022text-decoration:underline;color:#424242;\u0022 href=\u0022https:\/\/www.inoreader.com\/about_ads\u0022\u003ERemove\u003C\/a\u003E\n                        \u003C\/div\u003E\n                        \u003Cdiv style=\u0022margin-top:10px;\u0022\u003E\n                            \u003Ca href=\u0022http:\/\/www.inoreader.com\/adv\/www\/delivery\/ck.php?n=a49f975d\u0026cb=59a15df10ba97\u0022 target=\u0022_blank\u0022\u003E\u003Cimg src=\u0022http:\/\/www.inoreader.com\/adv\/www\/delivery\/avw.php?zoneid=23\u0026from_api=1\u0026cb=59a15df10ba97\u0026n=a49f975d\u0026sens=0\u0026pd=2\u0022 style=\u0022border:0;width:320px;height:50px;margin:0; auto 0 auto !important;float:none !important;\u0022\u003E\u003C\/a\u003E\n                        \u003C\/div\u003E\n                    \u003C\/div\u003E\n                    \u003Cdiv style=\u0022clear:both;\u0022\u003E\n                    \u003C\/div\u003E\n                \u003C\/center\u003EApril Fools\u0027 Day should probably be called Google Fools\u0027 Day, since there are so many Google hoaxes.\u003Cbr\u003E\u003Cbr\u003EGoogle Japan developed \u003Ca href=\u0022https:\/\/japan.googleblog.com\/2017\/04\/ooooo.html\u0022\u003Ea \u0022bubble wrap\u0022 version\u003C\/a\u003E of the Japanese keyboard. \u0022The Google Japanese input bubble wrap version is a keyboard that realizes \u0027I want to press in my mind, I want to keep pressing\u0027,\u0022 according to Google Translate.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/2.bp.blogspot.com\/-7ceFpTj_QJY\/WN9RI_LUCEI\/AAAAAAACOpI\/U_b1y8ehL0YVeAXlnZDwPB1ik-0VF7MrgCLcB\/s1600\/google-bubble-wrap-keyboard.jpg\u0022 alt=\u0022google-bubble-wrap-keyboard.jpg\u0022\u003E\u003C\/div\u003E\u003Cbr\u003E\u003Cdiv style=\u0022text-align:center;\u0022\u003E\u003Ciframe frameborder=\u00220\u0022 height=\u0022320\u0022 src=\u0022https:\/\/www.youtube.com\/embed\/RkJZDvHMyTA\u0022 width=\u0022580\u0022\u003E\u003C\/iframe\u003E\u003C\/div\u003E\u003Cbr\u003EAnother product for your smart home? Meet \u003Ca href=\u0022https:\/\/blog.google\/products\/home\/smart-yard-finally-here-meet-google-gnome\/\u0022\u003EGoogle Gnome\u003C\/a\u003E, \u0022a voice-activated, hands-free tool designed to make backyard living effortless. Need to know what animal is squeaking in your bushes? Stay still and ask Gnome what sound an opossum makes. Running low on birdseed? That’s where Gnome comes in. You can even use Gnome\u0027s proprietary high-intensity lasers to trim your hedges into whatever shape your heart desires.\u0022\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/1.bp.blogspot.com\/-lU5iUovgr_c\/WN9St7R32_I\/AAAAAAACOpM\/Xjt2JkQSYVAsOzYzpsXeLNpYdqstjMXLACLcB\/s1600\/google-gnome.png\u0022 alt=\u0022google-gnome.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003E\u003Cdiv style=\u0022text-align:center;\u0022\u003E\u003Ciframe frameborder=\u00220\u0022 height=\u0022320\u0022 src=\u0022https:\/\/www.youtube.com\/embed\/vNOllWX-2aE\u0022 width=\u0022580\u0022\u003E\u003C\/iframe\u003E\u003C\/div\u003E\u003Cbr\u003EThe Chrome OS team brings the \u003Ca href=\u0022https:\/\/blog.google\/products\/chromebooks\/all-best-mobile-accessories-now-your-chromebook\/\u0022\u003Emost popular mobile accessories\u003C\/a\u003E to the Chromebook, which already blurs the line between mobile and desktop. Chromebook Groupie Stick, Chromebook Cardboard, Chromebook Workout Armband will soon be available in the Google Store. \u0022To take advantage of beautiful, high-resolution displays, as well as great photo editing apps, we\u0027ve carefully engineered the first Chromebook-sized selfie stick. Never again will you miss the perfect groupie.\u0022\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/3.bp.blogspot.com\/-TcXfhAAyVCk\/WN9Uhh1r_lI\/AAAAAAACOpQ\/-eEkqwiIicEuy4gOODOpWh9oCGlrEFxwgCLcB\/s1600\/chromebook-selfie-stick.png\u0022 alt=\u0022chromebook-selfie-stick.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003E\u003Ca href=\u0022https:\/\/blog.google\/products\/google-vr\/haptic-helpers-bringing-you-your-senses\/\u0022\u003EHaptic Helpers\u003C\/a\u003E make VR even more immersive. \u0022We\u0027re taking VR to the next level with Haptic Helpers. Using a modest set of everyday tools, these VR virtuosos can simulate more than 10,000 unique experiences, all from the comfort of your own home. Smell the roses. Listen to the ocean. Feel a fluffy dog!\u0022\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022text-align:center;\u0022\u003E\u003Ciframe frameborder=\u00220\u0022 height=\u0022320\u0022 src=\u0022https:\/\/www.youtube.com\/embed\/3MA6_21nka8\u0022 width=\u0022580\u0022\u003E\u003C\/iframe\u003E\u003C\/div\u003E\u003Cbr\u003EYou can now play the classic arcade game MS. PAC-MAN in \u003Ca href=\u0022https:\/\/maps.google.com\/\u0022\u003EGoogle Maps\u003C\/a\u003E. \u0022Avoid Blinky, Pinky, Inky, and Sue as you swerve the streets of real places around the world. But eat the pac-dots fast, because this game will only be around for a little while.\u0022 Just go to the Google Maps site or open the Google Maps app for Android or iOS and click or tap MS. PAC-MAN at the bottom.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/1.bp.blogspot.com\/-Ue-3IOfcJxk\/WN9Xt3qceSI\/AAAAAAACOpc\/FUGHrf4J310kIcPX-O832WbLxpacBM7JACLcB\/s1600\/ms-pac-man-maps.png\u0022 alt=\u0022ms-pac-man-maps.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003E\u003Ca href=\u0022https:\/\/cloudplatform.googleblog.com\/2017\/03\/Google-Cloud-Platform-expands-to-Mars.html\u0022\u003EGoogle Cloud Platform expands to Mars\u003C\/a\u003E. \u0022By opening a dedicated extraterrestrial cloud region, we\u0027re bringing the power of Google’s compute, network, and storage to the rest of the solar system, unlocking a plethora of possibilities for astronomy research, exploration of Martian natural resources and interplanetary life sciences. This region will also serve as an important node in an extensive network throughout the solar system. Our first interplanetary data center — affectionately nicknamed \u0027Ziggy Stardust\u0027 — will open in 2018,\u0022 mentions Google.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/2.bp.blogspot.com\/-teJzG11rxog\/WN9ZxwLY1UI\/AAAAAAACOpo\/mzkIOjDzfv46zOdRlfJj9kBLEZeu-qa3gCLcB\/s1600\/mars-datacenter.png\u0022 alt=\u0022mars-datacenter.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003EGoogle Netherlands came up with \u003Ca href=\u0022https:\/\/nederland.googleblog.com\/2017\/03\/google-introduceert-google-wind-machine.html\u0022\u003EGoogle Wind\u003C\/a\u003E, a machine learning technology that controls the weather. \u0022The Netherlands has many windmills, some no longer in use, we can connect to Google Cloud Platform. So we use the existing Dutch infrastructure, machine learning, weather patterns to control the network of windmills when rain is approaching. The first test results are very promising: we seem to be able to provide sun and clear skies for everyone in the Netherlands,\u0022 mentions Google Netherlands blog.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/1.bp.blogspot.com\/-SB6YxFvXQ6E\/WN-erZG386I\/AAAAAAACOp4\/vjDlkm4G4fAueo61HF37VchdXz2kyU22wCLcB\/s1600\/google-wind.png\u0022 alt=\u0022google-wind.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003E\u003Cdiv style=\u0022text-align:center;\u0022\u003E\u003Ciframe frameborder=\u00220\u0022 height=\u0022320\u0022 src=\u0022https:\/\/www.youtube.com\/embed\/QAwL0O5nXe0\u0022 width=\u0022580\u0022\u003E\u003C\/iframe\u003E\u003C\/div\u003E\u003Cbr\u003E\u003Cbr\u003E... To be continued ...\u003Cimg src=\u0022http:\/\/feeds.feedburner.com\/~r\/GoogleOperatingSystem\/~4\/acML18hhVhE\u0022 height=\u00221\u0022 width=\u00221\u0022 alt=\u0022\u0022\u003E"
+      },
+      "author": "Alex Chitu",
+      "likingUsers": [],
+      "comments": [],
+      "commentsNum": -1,
+      "annotations": [],
+      "origin": {
+        "streamId": "feed\/http:\/\/feeds.feedburner.com\/GoogleOperatingSystem",
+        "title": "Google Operating System",
+        "htmlUrl": "http:\/\/googlesystem.blogspot.com\/"
+      }
+    },
+    {
+      "crawlTimeMsec": "1489562422143",
+      "timestampUsec": "1489562422142749",
+      "id": "tag:google.com,2005:reader\/item\/000000029e364090",
+      "categories": [
+        "user\/1005631930\/state\/com.google\/reading-list",
+        "user\/1005631930\/state\/com.google\/read",
+        "user\/1005631930\/label\/★★★☆☆"
+      ],
+      "title": "Gmail Blocks JavaScript Attachments",
+      "published": 1487500740,
+      "updated": 1499844712,
+      "canonical": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2017\/02\/gmail-blocks-javascript-attachments.html"
+        }
+      ],
+      "alternate": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2017\/02\/gmail-blocks-javascript-attachments.html",
+          "type": "text\/html"
+        }
+      ],
+      "summary": {
+        "direction": "ltr",
+        "content": "If you try to send a JavaScript attachment using Gmail or if you want to download a .js attachment, you\u0027ll get a new anti-virus warning: \u0022Blocked for security reasons\u0022, \u00221 attachment contains a virus or blocked file. Downloading this attachment is disabled\u0022.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/2.bp.blogspot.com\/-v3kvN4Mm11Q\/WKl2OXJUOOI\/AAAAAAACOcA\/NGDrvW6juI8trLyU8kGkwW2tlGRQV6_0ACLcB\/s1600\/gmail-js-attachment-2.png\u0022 alt=\u0022gmail-js-attachment-2.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/2.bp.blogspot.com\/-VHNEYQljSIA\/WKlyVW4wdAI\/AAAAAAACObw\/vF-BGrz_4TMnvVwaPUeROJY3k3uHsHoOgCLcB\/s1600\/gmail-js-attachment.png\u0022 alt=\u0022gmail-js-attachment.png\u0022\u003E\u003C\/div\u003E.JS has been added to the long list of file types that are blocked by Gmail for security reasons. \u003Ca href=\u0022https:\/\/support.google.com\/mail\/answer\/6590?hl=en\u0022\u003EThe full list\u003C\/a\u003E: .ADE, .ADP, .BAT, .CHM, .CMD, .COM, .CPL, .EXE, .HTA, .INS, .ISP, .JAR, .JS (NEW), .JSE, .LIB, .LNK, .MDE, .MSC, .MSI, .MSP, .MST, .NSH .PIF, .SCR, .SCT, .SHB, .SYS, .VB, .VBE, .VBS, .VXD, .WSC, .WSF, .WSH. \u0022To prevent against potential viruses, Gmail doesn\u0027t allow you to attach certain types of files, including: certain file types (listed above), including their compressed form (like .gz or .bz2 files) or when found within archives (like .zip or .tgz files), documents with malicious macros, archives whose listed file content is password protected, archives whose content includes a password protected archive.\u0022\u003Cbr\u003E\u003Cbr\u003E\u003Ca href=\u0022https:\/\/gsuiteupdates.googleblog.com\/2017\/01\/gmail-will-restrict-js-file-attachments.html\u0022\u003EThe GSuite Blog\u003C\/a\u003E informs that \u0022for inbound mail, senders will get a bounce message explaining why the email was blocked. If you still need to send .js files for legitimate reasons, you can use Google Drive, Google Cloud Storage, or other storage solutions to share or send your files.\u0022\u003Cbr\u003E\u003Cbr\u003EYou can still send JavaScript files using Gmail if you change the extension. What about downloading old .js attachments? Try the workarounds from \u003Ca href=\u0022http:\/\/googlesystem.blogspot.com\/2015\/02\/download-blocked-gmail-attachments.html\u0022\u003Ethis post\u003C\/a\u003E.\u003Cimg src=\u0022http:\/\/feeds.feedburner.com\/~r\/GoogleOperatingSystem\/~4\/C3V9wOK7qk4\u0022 height=\u00221\u0022 width=\u00221\u0022 alt=\u0022\u0022\u003E"
+      },
+      "author": "Alex Chitu",
+      "likingUsers": [],
+      "comments": [],
+      "commentsNum": -1,
+      "annotations": [],
+      "origin": {
+        "streamId": "feed\/http:\/\/feeds.feedburner.com\/GoogleOperatingSystem",
+        "title": "Google Operating System",
+        "htmlUrl": "http:\/\/googlesystem.blogspot.com\/"
+      }
+    },
+    {
+      "crawlTimeMsec": "1489562422143",
+      "timestampUsec": "1489562422142748",
+      "id": "tag:google.com,2005:reader\/item\/000000029e364097",
+      "categories": [
+        "user\/1005631930\/state\/com.google\/reading-list",
+        "user\/1005631930\/state\/com.google\/read",
+        "user\/1005631930\/label\/★★★☆☆"
+      ],
+      "title": "Google Image Search Shows Colorful Suggestions",
+      "published": 1485380340,
+      "updated": 1499844712,
+      "canonical": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2017\/01\/google-image-search-shows-colorful.html"
+        }
+      ],
+      "alternate": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2017\/01\/google-image-search-shows-colorful.html",
+          "type": "text\/html"
+        }
+      ],
+      "summary": {
+        "direction": "ltr",
+        "content": "Google Image Search has a different way to display suggestions: it now shows a long list of colorful boxes with related searches. You can click one or more boxes to dynamically refine search results.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/1.bp.blogspot.com\/-85YFypFYDkM\/WIkYdHL9xLI\/AAAAAAACOUE\/sym5I05WfdwPluNTJaJVY177ENbjPNVPwCLcB\/s1600\/colorful-suggestions-image-search-1.png\u0022 alt=\u0022colorful-suggestions-image-search-1.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003EFor example, when searching for [sportswear], Google shows suggestions like: [women basketball], [tennis], [badminton], [golf], [volleyball], [nike woman], [alexander wang], [adidas], [fashion], [performance], [vintage], [trendy], [urban], [school], [gym], [90\u0027s], [70\u0027s], [vogue], [luxe], [avant garde], [korean], [italian], [french] and more. It\u0027s interesting to notice that each category of suggestions has a different color.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/1.bp.blogspot.com\/-hvLjXy-1dqA\/WIkYdKaeiuI\/AAAAAAACOUI\/MTrb05VA-845CcWqPuDem0vZlR3tn3i6QCLcB\/s1600\/colorful-suggestions-image-search-2.png\u0022 alt=\u0022colorful-suggestions-image-search-2.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/2.bp.blogspot.com\/-gYt2rK_Kv1w\/WIkcGZnY50I\/AAAAAAACOUU\/8I6jrmhOYVMOMTosKoi8RiIXjOi0irjLgCLcB\/s1600\/colorful-suggestions-image-search-3.png\u0022 alt=\u0022colorful-suggestions-image-search-3.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/2.bp.blogspot.com\/-7_ISXL1jDk8\/WIkdmz-Z5yI\/AAAAAAACOUg\/3WGAxFE1BGgzjCczhMiLlatrZ2vVey6fACLcB\/s1600\/colorful-suggestions-image-search-4.png\u0022 alt=\u0022colorful-suggestions-image-search-4.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003EHere\u0027s the old interface, which had fewer suggestions and displayed thumbnails next to suggestions:\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/3.bp.blogspot.com\/-uouguZsiD7k\/WIkeVJ97NII\/AAAAAAACOUo\/YMkFOSaPeMsRzvwUPQYSlr7XjxGnlCLHQCLcB\/s1600\/google-image-search-old-suggestions.png\u0022 alt=\u0022google-image-search-old-suggestions.png\u0022\u003E\u003C\/div\u003E\u003Cimg src=\u0022http:\/\/feeds.feedburner.com\/~r\/GoogleOperatingSystem\/~4\/-xsuV6TpciM\u0022 height=\u00221\u0022 width=\u00221\u0022 alt=\u0022\u0022\u003E"
+      },
+      "author": "Alex Chitu",
+      "likingUsers": [],
+      "comments": [],
+      "commentsNum": -1,
+      "annotations": [],
+      "origin": {
+        "streamId": "feed\/http:\/\/feeds.feedburner.com\/GoogleOperatingSystem",
+        "title": "Google Operating System",
+        "htmlUrl": "http:\/\/googlesystem.blogspot.com\/"
+      }
+    },
+    {
+      "crawlTimeMsec": "1489562422143",
+      "timestampUsec": "1489562422142747",
+      "id": "tag:google.com,2005:reader\/item\/000000029e36409c",
+      "categories": [
+        "user\/1005631930\/state\/com.google\/reading-list",
+        "user\/1005631930\/state\/com.google\/read",
+        "user\/1005631930\/label\/★★★☆☆"
+      ],
+      "title": "Google Image Search Starts Playing YouTube Videos",
+      "published": 1484563740,
+      "updated": 1499844712,
+      "canonical": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2017\/01\/google-image-search-starts-playing.html"
+        }
+      ],
+      "alternate": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2017\/01\/google-image-search-starts-playing.html",
+          "type": "text\/html"
+        }
+      ],
+      "summary": {
+        "direction": "ltr",
+        "content": "Google Image Search\u0027s mobile interface tests a new feature that starts playing snippets from a YouTube video at the top of the search results page. It\u0027s not disclosed as an ad, there\u0027s no sound and you can\u0027t stop or hide the video, which continues to play on repeat.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/1.bp.blogspot.com\/-aPBeFhnkM74\/WHydXb26uNI\/AAAAAAACOO8\/zI23IqbQfBIfsp1tc53ZWSVdJUOdvYX2ACLcB\/s1600\/youtube-autoplay-in-google-image-search.png\u0022 alt=\u0022youtube-autoplay-in-google-image-search.\u0022\u003E\u003C\/div\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/4.bp.blogspot.com\/-i7zCN1AuKbU\/WHykuVe13oI\/AAAAAAACOPM\/JY4glL28yXg6G48tc2-nwp0oEffBhmMTACLcB\/s1600\/youtube-autoplay-in-google-image-search-2.png\u0022 alt=\u0022youtube-autoplay-in-google-image-search-\u0022\u003E\u003C\/div\u003E\u003Cbr\u003ERight now, the experiment seems to be limited to fashion-related queries like [men jackets], [lookbook], [winter outfit], which match videos from YouTube channels like \u003Ca href=\u0022https:\/\/www.youtube.com\/user\/NewLookTV\/videos\u0022\u003ENew Look\u003C\/a\u003E and \u003Ca href=\u0022https:\/\/www.youtube.com\/user\/RiverIslandTV\u0022\u003ERiver Island\u003C\/a\u003E. \u0022New Look is a South African-owned British global fashion retailer with a chain of high street shops. (...) The chain sells womenswear, menswear, and clothing for teens,\u0022 according to \u003Ca href=\u0022https:\/\/en.wikipedia.org\/wiki\/New_Look_(company)\u0022\u003EWikipedia\u003C\/a\u003E.\u003Cbr\u003E\u003Cbr\u003EGoogle only shows labels like: \u0022New Look on YouTube\u0022, even though this looks like an experimental ad format. I hope it will never become a regular feature, as it\u0027s pretty annoying and it wastes Internet bandwidth.\u003Cimg src=\u0022http:\/\/feeds.feedburner.com\/~r\/GoogleOperatingSystem\/~4\/5O219GSXdc4\u0022 height=\u00221\u0022 width=\u00221\u0022 alt=\u0022\u0022\u003E"
+      },
+      "author": "Alex Chitu",
+      "likingUsers": [],
+      "comments": [],
+      "commentsNum": -1,
+      "annotations": [],
+      "origin": {
+        "streamId": "feed\/http:\/\/feeds.feedburner.com\/GoogleOperatingSystem",
+        "title": "Google Operating System",
+        "htmlUrl": "http:\/\/googlesystem.blogspot.com\/"
+      }
+    },
+    {
+      "crawlTimeMsec": "1489562422143",
+      "timestampUsec": "1489562422142746",
+      "id": "tag:google.com,2005:reader\/item\/000000029e3640a1",
+      "categories": [
+        "user\/1005631930\/state\/com.google\/reading-list",
+        "user\/1005631930\/state\/com.google\/read",
+        "user\/1005631930\/label\/★★★☆☆"
+      ],
+      "title": "YouTube Desktop Notifications, Now For Everyone",
+      "published": 1484316480,
+      "updated": 1499844712,
+      "canonical": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2017\/01\/youtube-desktop-notifications-now-for.html"
+        }
+      ],
+      "alternate": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2017\/01\/youtube-desktop-notifications-now-for.html",
+          "type": "text\/html"
+        }
+      ],
+      "summary": {
+        "direction": "ltr",
+        "content": "It looks like \u003Ca href=\u0022http:\/\/googlesystem.blogspot.com\/2016\/12\/youtube-notifications-in-navigation-bar.html\u0022\u003EYouTube\u0027s notification experiment\u003C\/a\u003E is now a regular feature and you can no longer disable it by clearing cookies. When sign in to your Google account, YouTube\u0027s desktop site no longer shows Google+ notifications in the navigation bar: it replaces them with YouTube notifications.\u003Cbr\u003E\u003Cbr\u003E\u0022Your notifications live here. Subscribe to your favorite channels to get notified about their latest videos,\u0022 informs the new notification box.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/1.bp.blogspot.com\/-2H74Vlre44o\/WHjdcijgzrI\/AAAAAAACOMs\/ikOoLdGUzwsldvx_TqPx4DKnAMWge0abgCLcB\/s1600\/youtube-notifications-2017.png\u0022 alt=\u0022youtube-notifications-2017.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/4.bp.blogspot.com\/-sG-bA9bvWVg\/WHjfUCZ3yoI\/AAAAAAACOM4\/FYOhE0C0o8IRuQTP-_czMjZApa4Dc7YUgCLcB\/s1600\/youtube-notifications.png\u0022 alt=\u0022youtube-notifications.png\u0022\u003E\u003C\/div\u003E\u003Cimg src=\u0022http:\/\/feeds.feedburner.com\/~r\/GoogleOperatingSystem\/~4\/Y_Asdc_vV_E\u0022 height=\u00221\u0022 width=\u00221\u0022 alt=\u0022\u0022\u003E"
+      },
+      "author": "Alex Chitu",
+      "likingUsers": [],
+      "comments": [],
+      "commentsNum": -1,
+      "annotations": [],
+      "origin": {
+        "streamId": "feed\/http:\/\/feeds.feedburner.com\/GoogleOperatingSystem",
+        "title": "Google Operating System",
+        "htmlUrl": "http:\/\/googlesystem.blogspot.com\/"
+      }
+    },
+    {
+      "crawlTimeMsec": "1489562422143",
+      "timestampUsec": "1489562422142745",
+      "id": "tag:google.com,2005:reader\/item\/000000029e3640ac",
+      "categories": [
+        "user\/1005631930\/state\/com.google\/reading-list",
+        "user\/1005631930\/state\/com.google\/read",
+        "user\/1005631930\/label\/★★★☆☆"
+      ],
+      "title": "YouTube Notifications in the Navigation Bar",
+      "published": 1483014240,
+      "updated": 1499844712,
+      "canonical": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2016\/12\/youtube-notifications-in-navigation-bar.html"
+        }
+      ],
+      "alternate": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2016\/12\/youtube-notifications-in-navigation-bar.html",
+          "type": "text\/html"
+        }
+      ],
+      "summary": {
+        "direction": "ltr",
+        "content": "YouTube has recently started to experiment with replacing Google+ notifications in the navigation bar with YouTube notifications. You get notifications for recently uploaded videos from your subscribed channels, but only if you\u0027ve enabled notifications for those channels. For example, you can go to \u003Ca href=\u0022https:\/\/www.youtube.com\/subscription_manager\/\u0022\u003Ethe subscription manager\u003C\/a\u003E and click the bell icon next to a channel to enable or disable notifications.\u003Cbr\u003E\u003Cbr\u003EThe settings button sends you to the \u003Ca href=\u0022https:\/\/www.youtube.com\/account_notifications\u0022\u003ENotifications section from YouTube\u0027s Settings page\u003C\/a\u003E and the 3-dot icon next to each notification lets you turn off notifications from the corresponding channel.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/4.bp.blogspot.com\/-qZJEMkb9tS8\/WGT94rdPQqI\/AAAAAAACOG8\/omIao-Ttxvcyme2WwBRzwQ-uLOjPBDWXwCLcB\/s1600\/youtube-notifications.png\u0022 alt=\u0022youtube-notifications.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003EIf you don\u0027t like this experiment, you can always clear cookies for youtube.com in your browser\u0027s settings and opt out.\u003Cimg src=\u0022http:\/\/feeds.feedburner.com\/~r\/GoogleOperatingSystem\/~4\/S8Jr8FPlK7M\u0022 height=\u00221\u0022 width=\u00221\u0022 alt=\u0022\u0022\u003E"
+      },
+      "author": "Alex Chitu",
+      "likingUsers": [],
+      "comments": [],
+      "commentsNum": -1,
+      "annotations": [],
+      "origin": {
+        "streamId": "feed\/http:\/\/feeds.feedburner.com\/GoogleOperatingSystem",
+        "title": "Google Operating System",
+        "htmlUrl": "http:\/\/googlesystem.blogspot.com\/"
+      }
+    },
+    {
+      "crawlTimeMsec": "1489562422143",
+      "timestampUsec": "1489562422142744",
+      "id": "tag:google.com,2005:reader\/item\/000000029e3640b6",
+      "categories": [
+        "user\/1005631930\/state\/com.google\/reading-list",
+        "user\/1005631930\/state\/com.google\/read",
+        "user\/1005631930\/label\/★★★☆☆"
+      ],
+      "title": "Google\u0027s New Mobile UI for Recipe Search",
+      "published": 1483009740,
+      "updated": 1499844712,
+      "canonical": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2016\/12\/googles-new-mobile-ui-for-recipe-search.html"
+        }
+      ],
+      "alternate": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2016\/12\/googles-new-mobile-ui-for-recipe-search.html",
+          "type": "text\/html"
+        }
+      ],
+      "summary": {
+        "direction": "ltr",
+        "content": "Just in time for New Year\u0027s dinner, Google has a new mobile interface for recipe search. I searched for [avocado mayo] and noticed a long list of keywords below the search box and ads: salad, chicken, shrimp, vegan, bacon and more. You can select more than one keyword and this helps you refine the results.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/1.bp.blogspot.com\/-RxkEwNMZ_ks\/WGTsoj29RCI\/AAAAAAACOGo\/ZOVD7OvYoz0Yo7DSh67ghpnK8fZ_IG0rgCLcB\/s1600\/google-tests-new-mobile-recipe-search-1.png\u0022 alt=\u0022google-tests-new-mobile-recipe-search-1.\u0022\u003E\u003C\/div\u003E\u003Cbr\u003EWhen selecting a related search, you get a completely different interface that only shows recipes: bigger expandable cards, bigger thumbnails, infinite scrolling.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/2.bp.blogspot.com\/-Oye55Zy2pTQ\/WGTsot4a69I\/AAAAAAACOGk\/QxYiUWgDIA4wBIc2p0lmGaobEHDnUy2IQCLcB\/s1600\/google-tests-new-mobile-recipe-search-2.png\u0022 alt=\u0022google-tests-new-mobile-recipe-search-2.\u0022\u003E\u003C\/div\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/3.bp.blogspot.com\/-WyStF2mgA2k\/WGTsop4N6gI\/AAAAAAACOGs\/meviy4OpPso5Oc5CZi2TOOsTbjDQPFv3wCLcB\/s1600\/google-tests-new-mobile-recipe-search-3.png\u0022 alt=\u0022google-tests-new-mobile-recipe-search-3.\u0022\u003E\u003C\/div\u003E\u003Cbr\u003E\u003Cimg src=\u0022http:\/\/feeds.feedburner.com\/~r\/GoogleOperatingSystem\/~4\/0-mquyzMciE\u0022 height=\u00221\u0022 width=\u00221\u0022 alt=\u0022\u0022\u003E"
+      },
+      "author": "Alex Chitu",
+      "likingUsers": [],
+      "comments": [],
+      "commentsNum": -1,
+      "annotations": [],
+      "origin": {
+        "streamId": "feed\/http:\/\/feeds.feedburner.com\/GoogleOperatingSystem",
+        "title": "Google Operating System",
+        "htmlUrl": "http:\/\/googlesystem.blogspot.com\/"
+      }
+    },
+    {
+      "crawlTimeMsec": "1489562422143",
+      "timestampUsec": "1489562422142743",
+      "id": "tag:google.com,2005:reader\/item\/000000029e3640c3",
+      "categories": [
+        "user\/1005631930\/state\/com.google\/reading-list",
+        "user\/1005631930\/state\/com.google\/read",
+        "user\/1005631930\/label\/★★★☆☆"
+      ],
+      "title": "Google Translate\u0027s 5000 Character Limit",
+      "published": 1481221080,
+      "updated": 1499844712,
+      "canonical": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2016\/12\/google-translates-5000-character-limit.html"
+        }
+      ],
+      "alternate": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2016\/12\/google-translates-5000-character-limit.html",
+          "type": "text\/html"
+        }
+      ],
+      "summary": {
+        "direction": "ltr",
+        "content": "For some reason, \u003Ca href=\u0022https:\/\/translate.google.com\/\u0022\u003EGoogle Translate\u003C\/a\u003E now has a limit of 5000 characters per translation. There\u0027s even a character counter at the bottom of the input box. If you happen to paste a long text that has more than 5000 characters, you\u0027ll get an error message (\u0022maximum characters exceeded: X characters over 5000 maximum\u0022) and a \u0022translate more\u0022 option that lets you translate the rest of the text.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/3.bp.blogspot.com\/-_JFAFBL00Ho\/WEmfykvMgrI\/AAAAAAACN30\/5k9yOrqOp-EptNo_L5vXvpm-ReSkw0I0QCLcB\/s1600\/google-translate-character-limit.png\u0022 alt=\u0022google-translate-character-limit.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003EI don\u0027t understand the purpose of this restriction, considering that Google doesn\u0027t impose any limitation when translating web pages. It\u0027s worth pointing out that \u003Ca href=\u0022https:\/\/cloud.google.com\/translate\/faq\u0022\u003EGoogle Translate\u0027s API\u003C\/a\u003E has a similar limitation: \u0022the maximum size of each text to be translated is 5000 characters, not including any HTML tags\u0022. Google\u0027s translation card from Google Search has a different limit: about 2800 characters.\u003Cimg src=\u0022http:\/\/feeds.feedburner.com\/~r\/GoogleOperatingSystem\/~4\/GvF2l-KNQ_k\u0022 height=\u00221\u0022 width=\u00221\u0022 alt=\u0022\u0022\u003E"
+      },
+      "author": "Alex Chitu",
+      "likingUsers": [],
+      "comments": [],
+      "commentsNum": -1,
+      "annotations": [],
+      "origin": {
+        "streamId": "feed\/http:\/\/feeds.feedburner.com\/GoogleOperatingSystem",
+        "title": "Google Operating System",
+        "htmlUrl": "http:\/\/googlesystem.blogspot.com\/"
+      }
+    },
+    {
+      "crawlTimeMsec": "1489562422143",
+      "timestampUsec": "1489562422142742",
+      "id": "tag:google.com,2005:reader\/item\/000000029e3640d7",
+      "categories": [
+        "user\/1005631930\/state\/com.google\/reading-list",
+        "user\/1005631930\/state\/com.google\/read",
+        "user\/1005631930\/label\/★★★☆☆"
+      ],
+      "title": "Google Tests Movie Ratings",
+      "published": 1481197500,
+      "updated": 1499844712,
+      "canonical": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2016\/12\/google-tests-movie-ratings.html"
+        }
+      ],
+      "alternate": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2016\/12\/google-tests-movie-ratings.html",
+          "type": "text\/html"
+        }
+      ],
+      "summary": {
+        "direction": "ltr",
+        "content": "Google\u0027s knowledge graph card tests a feature that lets you like or dislike movies and TV shows. For example, when you search for \u0022It\u0027s a Wonderful Life\u0022, you can click like or dislike and check the percentage of Google users who liked it.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/2.bp.blogspot.com\/-X5KC4B9PADQ\/WElG4XE_FjI\/AAAAAAACN3M\/B_mu8VcugLEEwSxWUyPD0jMcEGgl5QFZACLcB\/s1600\/movie-like-dislike.png\u0022 alt=\u0022movie-like-dislike.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003EThe same buttons show up when you search for a TV show like \u0022Saturday Night Live\u0022.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/3.bp.blogspot.com\/-EWpELV7cQ9k\/WElJH1x_h4I\/AAAAAAACN3Y\/Yn7wZpLCR44XIn31rNM8v7IAA0EmPvEtgCLcB\/s1600\/tv-shows-like-dislike.png\u0022 alt=\u0022tv-shows-like-dislike.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003E\u003Ca href=\u0022http:\/\/searchengineland.com\/google-confirms-testing-movie-tv-show-ratings-like-dislike-buttons-264869\u0022\u003ESearch Engine Land reports\u003C\/a\u003E that Google confirmed this experiment, which was first spotted last month.\u003Cimg src=\u0022http:\/\/feeds.feedburner.com\/~r\/GoogleOperatingSystem\/~4\/onMw-71j1LU\u0022 height=\u00221\u0022 width=\u00221\u0022 alt=\u0022\u0022\u003E"
+      },
+      "author": "Alex Chitu",
+      "likingUsers": [],
+      "comments": [],
+      "commentsNum": -1,
+      "annotations": [],
+      "origin": {
+        "streamId": "feed\/http:\/\/feeds.feedburner.com\/GoogleOperatingSystem",
+        "title": "Google Operating System",
+        "htmlUrl": "http:\/\/googlesystem.blogspot.com\/"
+      }
+    },
+    {
+      "crawlTimeMsec": "1489562422143",
+      "timestampUsec": "1489562422142741",
+      "id": "tag:google.com,2005:reader\/item\/000000029e3640eb",
+      "categories": [
+        "user\/1005631930\/state\/com.google\/reading-list",
+        "user\/1005631930\/state\/com.google\/read",
+        "user\/1005631930\/label\/★★★☆☆"
+      ],
+      "title": "Google\u0027s Holiday Decorations",
+      "published": 1481034060,
+      "updated": 1499844712,
+      "canonical": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2016\/12\/googles-holiday-decorations.html"
+        }
+      ],
+      "alternate": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2016\/12\/googles-holiday-decorations.html",
+          "type": "text\/html"
+        }
+      ],
+      "summary": {
+        "direction": "ltr",
+        "content": "\n                \u003Ccenter\u003E\n                    \u003Cdiv style=\u0022text-align:center;color:#424242;font-size:0.8em;margin-bottom:30px;\u0022\u003E\n                        \u003Cdiv\u003E\n                            Ads from Inoreader \u0026bull; \u003Ca target=\u0022_blank\u0022 style=\u0022text-decoration:underline;color:#424242;\u0022 href=\u0022https:\/\/www.inoreader.com\/about_ads\u0022\u003ERemove\u003C\/a\u003E\n                        \u003C\/div\u003E\n                        \u003Cdiv style=\u0022margin-top:10px;\u0022\u003E\n                            \u003Ca href=\u0022http:\/\/www.inoreader.com\/adv\/www\/delivery\/ck.php?n=a49f975d\u0026cb=59a15df10befa\u0022 target=\u0022_blank\u0022\u003E\u003Cimg src=\u0022http:\/\/www.inoreader.com\/adv\/www\/delivery\/avw.php?zoneid=23\u0026from_api=1\u0026cb=59a15df10befa\u0026n=a49f975d\u0026sens=0\u0026pd=2\u0022 style=\u0022border:0;width:320px;height:50px;margin:0; auto 0 auto !important;float:none !important;\u0022\u003E\u003C\/a\u003E\n                        \u003C\/div\u003E\n                    \u003C\/div\u003E\n                    \u003Cdiv style=\u0022clear:both;\u0022\u003E\n                    \u003C\/div\u003E\n                \u003C\/center\u003EWhen you search Google for [\u003Ca href=\u0022http:\/\/www.google.com\/search?q=christmas\u0022\u003EChristmas\u003C\/a\u003E], [\u003Ca href=\u0022http:\/\/www.google.com\/search?q=hanukkah\u0022\u003EHanukkah\u003C\/a\u003E], [\u003Ca href=\u0022http:\/\/www.google.com\/search?q=kwanzaa\u0022\u003EKwanzaa\u003C\/a\u003E], [\u003Ca href=\u0022http:\/\/www.google.com\/search?q=festivus\u0022\u003EFestivus\u003C\/a\u003E] or other related queries, you\u0027ll see some special decorations related to each holiday. \u003Ca href=\u0022https:\/\/en.wikipedia.org\/wiki\/Festivus\u0022\u003EFestivus\u003C\/a\u003E is \u0022a holiday celebrated by those seeking an alternative to the commercialism and pressures of the Christmas holiday season.\u0022\u003Cbr\u003E\u003Cbr\u003EChristmas trees, Santa Claus, the Christmas star adorn the Google search page and bring the hoiday spirit.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/3.bp.blogspot.com\/-83tezhLFHZ0\/WEbISUCSUcI\/AAAAAAACN0U\/ok57mVb1HFMDRNBk9NWHbvMl_-iM0g-JQCLcB\/s1600\/christmas-search-2016.png\u0022 alt=\u0022christmas-search-2016.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003EThe Hanukkah menorah and Kwanzaa\u0027s Mishumaa Saba (The Seven Candles) are lighting up Google\u0027s search pages.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/4.bp.blogspot.com\/-xv4JhU7Ydd0\/WEbISRdfccI\/AAAAAAACN0Q\/91kbbwPVGCYVwOl4kWeoeZ0yJDx9CfR4gCLcB\/s1600\/hanukkah-search-2016.png\u0022 alt=\u0022hanukkah-search-2016.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/3.bp.blogspot.com\/-ush40ncByZ0\/WEbISnQU6RI\/AAAAAAACN0c\/D_O90wwJceoq-x7mCVkldm-WGpwCxadpwCLcB\/s1600\/kwanzaa-search-2016.png\u0022 alt=\u0022kwanzaa-search-2016.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/3.bp.blogspot.com\/-ptHQZel0cAk\/WEbISV6yhOI\/AAAAAAACN0Y\/r6XAUcTRR_MGlgVR0YGNET8bYoF2n1-jgCLcB\/s1600\/festivus-search-2016.png\u0022 alt=\u0022festivus-search-2016.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003EHere are the decorations from \u003Ca href=\u0022http:\/\/searchengineland.com\/google-gets-in-the-holiday-spirit-after-all-with-hanukkah-christmas-kwanzaa-decorations-238378\u0022\u003E2015\u003C\/a\u003E, \u003Ca href=\u0022http:\/\/googlesystem.blogspot.com\/2014\/12\/christmas-decorations-in-google-search.html\u0022\u003E2014\u003C\/a\u003E, \u003Ca href=\u0022http:\/\/googlesystem.blogspot.com\/2013\/12\/googles-animated-decorations-christmas.html\u0022\u003E2013\u003C\/a\u003E, \u003Ca href=\u0022https:\/\/www.seroundtable.com\/christmas-kwanzaa-google-decorations-16094.html\u0022\u003E2012\u003C\/a\u003E and \u003Ca href=\u0022http:\/\/googlesystem.blogspot.com\/2011\/12\/googles-christmas-decorations.html\u0022\u003E2011\u003C\/a\u003E.\u003Cimg src=\u0022http:\/\/feeds.feedburner.com\/~r\/GoogleOperatingSystem\/~4\/IzgBMUNoXHo\u0022 height=\u00221\u0022 width=\u00221\u0022 alt=\u0022\u0022\u003E"
+      },
+      "author": "Alex Chitu",
+      "likingUsers": [],
+      "comments": [],
+      "commentsNum": -1,
+      "annotations": [],
+      "origin": {
+        "streamId": "feed\/http:\/\/feeds.feedburner.com\/GoogleOperatingSystem",
+        "title": "Google Operating System",
+        "htmlUrl": "http:\/\/googlesystem.blogspot.com\/"
+      }
+    },
+    {
+      "crawlTimeMsec": "1489562422143",
+      "timestampUsec": "1489562422142740",
+      "id": "tag:google.com,2005:reader\/item\/000000029e3640fe",
+      "categories": [
+        "user\/1005631930\/state\/com.google\/reading-list",
+        "user\/1005631930\/state\/com.google\/read",
+        "user\/1005631930\/label\/★★★☆☆"
+      ],
+      "title": "New Interface for Google Search",
+      "published": 1481031060,
+      "updated": 1499844712,
+      "canonical": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2016\/12\/new-interface-for-google-search.html"
+        }
+      ],
+      "alternate": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2016\/12\/new-interface-for-google-search.html",
+          "type": "text\/html"
+        }
+      ],
+      "summary": {
+        "direction": "ltr",
+        "content": "Google\u0027s desktop search pages have a new interface for navigating between search results. The search box is bigger, there\u0027s a new search icon and Google now only shows 2 or 3 specialized search engines next to \u0022all\u0022, down from 4. Apps and shopping seem to be missing from the list of search engines, so you can only pick from image search, video search, Google News, Google Maps, Google Flights and Google Books.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/1.bp.blogspot.com\/-YdPDshkyaNw\/WEa2OAjvFQI\/AAAAAAACNy8\/V55RHP-Mb18Sj0mRfBvLROw9bsKf7azEwCLcB\/s1600\/google-search-dec2016-1.png\u0022 alt=\u0022google-search-dec2016-1.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003EThe settings dropdown is now placed below the search box and it includes the option that lets you hide private results. You can still change search settings, languages, turn on or turn off SafeSearch, use advanced search options, open Web History or go to the help center.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/2.bp.blogspot.com\/-UgA6IHjBc9s\/WEa2OCLGcdI\/AAAAAAACNzE\/3gJIh0QUb9E0aW4FxtG0EUBfqY39exaAgCLcB\/s1600\/google-search-dec2016-2.png\u0022 alt=\u0022google-search-dec2016-2.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003ESearch tools are now simply called tools and they include the same options: search by date and verbatim.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/1.bp.blogspot.com\/-7OgS1O2B1j0\/WEa2OBvX8SI\/AAAAAAACNzA\/b5Tj7ZBzzFsFaBl89D0q1b9_-hvnqoPsgCLcB\/s1600\/google-search-dec2016-3.png\u0022 alt=\u0022google-search-dec2016-3.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003EImage search lets you quickly go to the saved images page and change SafeSearch setting.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/3.bp.blogspot.com\/-d6dZkERg8-E\/WEa-rcxVLbI\/AAAAAAACNzs\/5JfwDh7FZvowtSLMzcaluS4VNuPX-s9NQCLcB\/s1600\/image-search-dec2016.png\u0022 alt=\u0022image-search-dec2016.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003E\u003Ca href=\u0022https:\/\/www.google.com\/shopping\u0022\u003EGoogle Shopping\u003C\/a\u003E is broken. While the homepage still loads, when you click a product image or search for something, Google shows an empty page.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022border:1px solid #000000;clear:both;padding:1px;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/2.bp.blogspot.com\/-TwjU2N1DE00\/WEbBsYgxM-I\/AAAAAAACNz0\/NP4mbJ6dC0wRWtrQD4UBzHJLzy_VamguQCLcB\/s1600\/google-shopping.png\u0022 alt=\u0022google-shopping.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003E\u003Cdiv style=\u0022border:1px solid #000000;clear:both;padding:1px;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/4.bp.blogspot.com\/-HPlQLqdTpMM\/WEbB-O06gGI\/AAAAAAACNz4\/w2zrefbB3O8gdhGsL1vWvuEftyvkOxxUwCLcB\/s1600\/google-shopping-broken.png\u0022 alt=\u0022google-shopping-broken.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003EHere\u0027s the old Google Search interface, via \u003Ca href=\u0022https:\/\/en.wikipedia.org\/wiki\/File:Google_Web_Search_Wikipedia_result.png\u0022\u003EWikipedia\u003C\/a\u003E:\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/1.bp.blogspot.com\/-J2WLpYerD00\/WEbEvkrm09I\/AAAAAAACN0A\/eB3wIPzuT7wuoem9tTRWHRslI3-f4Ht4ACLcB\/s1600\/Google_Web_Search_Wikipedia_result.png\u0022 alt=\u0022Google_Web_Search_Wikipedia_result.png\u0022\u003E\u003C\/div\u003E\u003Cimg src=\u0022http:\/\/feeds.feedburner.com\/~r\/GoogleOperatingSystem\/~4\/kq6f1oYsDnw\u0022 height=\u00221\u0022 width=\u00221\u0022 alt=\u0022\u0022\u003E"
+      },
+      "author": "Alex Chitu",
+      "likingUsers": [],
+      "comments": [],
+      "commentsNum": -1,
+      "annotations": [],
+      "origin": {
+        "streamId": "feed\/http:\/\/feeds.feedburner.com\/GoogleOperatingSystem",
+        "title": "Google Operating System",
+        "htmlUrl": "http:\/\/googlesystem.blogspot.com\/"
+      }
+    },
+    {
+      "crawlTimeMsec": "1489562422143",
+      "timestampUsec": "1489562422142739",
+      "id": "tag:google.com,2005:reader\/item\/000000029e364117",
+      "categories": [
+        "user\/1005631930\/state\/com.google\/reading-list",
+        "user\/1005631930\/state\/com.google\/read",
+        "user\/1005631930\/label\/★★★☆☆"
+      ],
+      "title": "Random Facts About Animals in Google Search",
+      "published": 1476738000,
+      "updated": 1499844712,
+      "canonical": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2016\/10\/random-facts-about-animals-in-google.html"
+        }
+      ],
+      "alternate": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2016\/10\/random-facts-about-animals-in-google.html",
+          "type": "text\/html"
+        }
+      ],
+      "summary": {
+        "direction": "ltr",
+        "content": "Did you know that \u0022male lions defend the pride\u0027s territory while females do most of the hunting\u0022? Did you know that \u0022the name humpback whale describes the motion it makes as it arches its back out of the water in preparation for a dive\u0022? What about this one: \u0022ostriches have the largest eyes of any land living animal and they measure 50 mm (2 inches) in diameter\u0022?\u003Cbr\u003E\u003Cbr\u003EGoogle now shows random facts about animals in the \u0022did you know\u0022 section of the Knowledge Graph card. They\u0027re extracted from various sites and Google actually links to the source.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/2.bp.blogspot.com\/-uks8wmpB0u4\/WAU5HjzJ_dI\/AAAAAAACNig\/brgyn6AF2YkeGe_jCOj_Zb6H2dBo4MM7QCLcB\/s1600\/alpaca-did-you-know-knowledge-graph.png\u0022 alt=\u0022alpaca-did-you-know-knowledge-graph.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/2.bp.blogspot.com\/-adyDsBzqan4\/WAU8RtrysNI\/AAAAAAACNis\/JgF6h5EGRSAqlHtrZT2ZxpDQnlaEHOvFwCLcB\/s1600\/cat-did-you-know-knowledge-graph.png\u0022 alt=\u0022cat-did-you-know-knowledge-graph.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003ESome example of queries that return random facts: [cat], [lion], [tiger], [alpaca], [giraffe], [ostrich], [duck], [elk], [raccoon], [shark]. It\u0027s worth pointing out that you can get another random fact by reloading the page or searching again for the same animal.\u003Cimg src=\u0022http:\/\/feeds.feedburner.com\/~r\/GoogleOperatingSystem\/~4\/SDu3iPb5Cl4\u0022 height=\u00221\u0022 width=\u00221\u0022 alt=\u0022\u0022\u003E"
+      },
+      "author": "Alex Chitu",
+      "likingUsers": [],
+      "comments": [],
+      "commentsNum": -1,
+      "annotations": [],
+      "origin": {
+        "streamId": "feed\/http:\/\/feeds.feedburner.com\/GoogleOperatingSystem",
+        "title": "Google Operating System",
+        "htmlUrl": "http:\/\/googlesystem.blogspot.com\/"
+      }
+    },
+    {
+      "crawlTimeMsec": "1489562422143",
+      "timestampUsec": "1489562422142738",
+      "id": "tag:google.com,2005:reader\/item\/000000029e36412d",
+      "categories": [
+        "user\/1005631930\/state\/com.google\/reading-list",
+        "user\/1005631930\/state\/com.google\/read",
+        "user\/1005631930\/label\/★★★☆☆"
+      ],
+      "title": "Found in Related Searches",
+      "published": 1476516840,
+      "updated": 1499844712,
+      "canonical": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2016\/10\/found-in-related-searches.html"
+        }
+      ],
+      "alternate": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2016\/10\/found-in-related-searches.html",
+          "type": "text\/html"
+        }
+      ],
+      "summary": {
+        "direction": "ltr",
+        "content": "Google Knowledge Graph has more than \u003Ca href=\u0022http:\/\/www.thesempost.com\/google-1-billion-knowledge-graph-search-results\/\u0022\u003Eone billion entities\u003C\/a\u003E and more than \u003Ca href=\u0022https:\/\/twitter.com\/jeffjarvis\/status\/783338071316135936\u0022\u003E70 billion facts\u003C\/a\u003E about these entities (people, places, things). It\u0027s huge and it brings a different dimension to search: understanding concepts and the relation between them.\u003Cbr\u003E\u003Cbr\u003EMobile Google Search now has a section called \u0022found in related search\u0022, which shows a few entities frequently mentioned in other related searches. For example, I searched for [ethanol molar mass] and Google showed 2 lists of organic and inorganic compounds: one of them was found in the related search [properties of alkanes] and the other was for [polar solvents]. Ethanol is a polar solvent which can be obtained from alkenes, while alkenes can be derived from alkanes, so Google\u0027s suggestions are somewhat useful.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/3.bp.blogspot.com\/-UNQ5okAGcRY\/WAHYptYgi3I\/AAAAAAACNhc\/SC2bBKk6P0MIJU_e9TPw-hvpAmp9ktwDwCLcB\/s1600\/found-in-related-searches-2.png\u0022 alt=\u0022found-in-related-searches-2.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003EThis feature is not limited to chemistry, it also works for other topics. Here\u0027s a different query: [tour eiffel design], which shows other \u0022towers of the world\u0022 and \u0022tourist attractions in France\u0022.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/1.bp.blogspot.com\/-4CObvHs2YQA\/WAHas5t8O1I\/AAAAAAACNho\/B026kSupawEpYaboVVxNoBEabmgmN6XFACLcB\/s1600\/found-in-related-searches-3.png\u0022 alt=\u0022found-in-related-searches-3.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003E\u003Cbr\u003E\u003Cimg src=\u0022http:\/\/feeds.feedburner.com\/~r\/GoogleOperatingSystem\/~4\/lfueGOcuVQQ\u0022 height=\u00221\u0022 width=\u00221\u0022 alt=\u0022\u0022\u003E"
+      },
+      "author": "Alex Chitu",
+      "likingUsers": [],
+      "comments": [],
+      "commentsNum": -1,
+      "annotations": [],
+      "origin": {
+        "streamId": "feed\/http:\/\/feeds.feedburner.com\/GoogleOperatingSystem",
+        "title": "Google Operating System",
+        "htmlUrl": "http:\/\/googlesystem.blogspot.com\/"
+      }
+    },
+    {
+      "crawlTimeMsec": "1489562422143",
+      "timestampUsec": "1489562422142737",
+      "id": "tag:google.com,2005:reader\/item\/000000029e36413a",
+      "categories": [
+        "user\/1005631930\/state\/com.google\/reading-list",
+        "user\/1005631930\/state\/com.google\/read",
+        "user\/1005631930\/label\/★★★☆☆"
+      ],
+      "title": "Google Converts Queries Into Questions",
+      "published": 1476484140,
+      "updated": 1499844712,
+      "canonical": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2016\/10\/google-converts-queries-into-questions.html"
+        }
+      ],
+      "alternate": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2016\/10\/google-converts-queries-into-questions.html",
+          "type": "text\/html"
+        }
+      ],
+      "summary": {
+        "direction": "ltr",
+        "content": "I noticed an interesting Google Search experiment in the mobile\/tablet interface. When searching for [alcohol with the highest boiling], Google converted my query into a question: \u0022Which alcohol has the highest boiling point?\u0022, then it tried to answer the question using a snippet from a web page and then it added a \u0022more results\u0022 link. Google\u0027s link sent to me to the search results page for the question inferred by Google.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/3.bp.blogspot.com\/-rPCQ8kxGazg\/WAFSZaQn1tI\/AAAAAAACNhI\/T0o4KpAozHky08MTqF2W-OdVrKSub2lSQCLcB\/s1600\/queries-to-questions.png\u0022 alt=\u0022queries-to-questions.png\u0022\u003E\u003C\/div\u003E\u003Cimg src=\u0022http:\/\/feeds.feedburner.com\/~r\/GoogleOperatingSystem\/~4\/kvrHnPO4JMw\u0022 height=\u00221\u0022 width=\u00221\u0022 alt=\u0022\u0022\u003E"
+      },
+      "author": "Alex Chitu",
+      "likingUsers": [],
+      "comments": [],
+      "commentsNum": -1,
+      "annotations": [],
+      "origin": {
+        "streamId": "feed\/http:\/\/feeds.feedburner.com\/GoogleOperatingSystem",
+        "title": "Google Operating System",
+        "htmlUrl": "http:\/\/googlesystem.blogspot.com\/"
+      }
+    },
+    {
+      "crawlTimeMsec": "1489562422143",
+      "timestampUsec": "1489562422142736",
+      "id": "tag:google.com,2005:reader\/item\/000000029e364148",
+      "categories": [
+        "user\/1005631930\/state\/com.google\/reading-list",
+        "user\/1005631930\/state\/com.google\/read",
+        "user\/1005631930\/label\/★★★☆☆"
+      ],
+      "title": "Google\u0027s Card for Directions",
+      "published": 1476480420,
+      "updated": 1499844713,
+      "canonical": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2016\/10\/googles-card-for-directions.html"
+        }
+      ],
+      "alternate": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2016\/10\/googles-card-for-directions.html",
+          "type": "text\/html"
+        }
+      ],
+      "summary": {
+        "direction": "ltr",
+        "content": "When you search Google for [directions] or [get directions], you get an error message: \u0022\u003Ci\u003ENo results for that place. Try entering it below to get suggestions.\u003C\/i\u003E\u0022 Google shows a special card for directions with cool features like autocomplete, but the error message is out of place because you haven\u0027t typed a location.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/3.bp.blogspot.com\/-4TobXDAl_XI\/WAFG4plGbhI\/AAAAAAACNgc\/yGu2Rm_XXA0wq91Rk4UMaK2MWvVGRC9CgCLcB\/s1600\/directions-card.png\u0022 alt=\u0022directions-card.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003ESuggestions aren\u0027t very smart. For example, I typed \u0022Brisbane, Australia\u0022 as the starting point and then I started to type \u0022Mel\u0022 as the destination. Google suggested 3 places from California, strictly based on my location, while ignoring that Melbourne is a much better suggestion.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/4.bp.blogspot.com\/-o6Qxo4GE8Zs\/WAFIoxsmPfI\/AAAAAAACNgk\/UR5aW8pn6UYdeo1Adqe_KpEgxChdrfBRwCLcB\/s1600\/directions-card-2.png\u0022 alt=\u0022directions-card-2.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003EGoogle shows directions inside the card and you can pick between driving, walking, cycling or using public transportation.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/4.bp.blogspot.com\/-1psSBNP_ek8\/WAFKqUMsj0I\/AAAAAAACNgw\/V3A14Xa5fy0uVdYVwfjg22wOHNGAJRaHQCLcB\/s1600\/directions-card-3.png\u0022 alt=\u0022directions-card-3.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003ETo see the directions, just click the text that describes your favorite route. If there is only one route, pick that one. Another option is to click \u0022directions\u0022 and go to the Google Maps site.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/1.bp.blogspot.com\/-0z3Sgf03txI\/WAFO2aGlb_I\/AAAAAAACNg8\/yYugKgYWAjkarx2BY3x8SzYGXvapCGwLgCLcB\/s1600\/directions-card-4.png\u0022 alt=\u0022directions-card-4.png\u0022\u003E\u003C\/div\u003E\u003Cimg src=\u0022http:\/\/feeds.feedburner.com\/~r\/GoogleOperatingSystem\/~4\/TO0PES3HSkI\u0022 height=\u00221\u0022 width=\u00221\u0022 alt=\u0022\u0022\u003E"
+      },
+      "author": "Alex Chitu",
+      "likingUsers": [],
+      "comments": [],
+      "commentsNum": -1,
+      "annotations": [],
+      "origin": {
+        "streamId": "feed\/http:\/\/feeds.feedburner.com\/GoogleOperatingSystem",
+        "title": "Google Operating System",
+        "htmlUrl": "http:\/\/googlesystem.blogspot.com\/"
+      }
+    },
+    {
+      "crawlTimeMsec": "1489562422143",
+      "timestampUsec": "1489562422142735",
+      "id": "tag:google.com,2005:reader\/item\/000000029e36415b",
+      "categories": [
+        "user\/1005631930\/state\/com.google\/reading-list",
+        "user\/1005631930\/state\/com.google\/read",
+        "user\/1005631930\/label\/★★★☆☆"
+      ],
+      "title": "Add Home Screen Shortcuts to Google Maps Directions",
+      "published": 1476478080,
+      "updated": 1499844713,
+      "canonical": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2016\/10\/add-home-screen-shortcuts-to-google.html"
+        }
+      ],
+      "alternate": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2016\/10\/add-home-screen-shortcuts-to-google.html",
+          "type": "text\/html"
+        }
+      ],
+      "summary": {
+        "direction": "ltr",
+        "content": "I\u0027m not sure if this is a new feature, but it must be pretty recent. Google Maps for Android lets you add home screen shortcuts to directions directly from the app. Just search for directions, tap the menu icon and pick \u0022add route to Home screen\u0022. This works best when you select the current location, but it\u0027s not a requirement.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/4.bp.blogspot.com\/-SLJhahlrjVs\/WAFB3cqVJ0I\/AAAAAAACNgI\/_LSAnHlQzkkMuAI45uNj0Pp9O6UKSm3UACLcB\/s1600\/add-directions-shortcut-1.png\u0022 alt=\u0022add-directions-shortcut-1.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/3.bp.blogspot.com\/-pN70kZXykR0\/WAFBwtzgZQI\/AAAAAAACNgE\/sRsbjO-LbCYBY6lhnmV_nOC3bWChmiqXwCLcB\/s1600\/add-directions-shortcut-2.png\u0022 alt=\u0022add-directions-shortcut-2.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003EYou may also see this message: \u0022Go here often? Add this route. Tap here to add a Home screen shortcut to this route.\u0022\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/1.bp.blogspot.com\/-j4AGmn6O3ZI\/WAFFStZOjTI\/AAAAAAACNgU\/NP7uMUu3oA8MWHCeD1dR885rewFvifAYACLcB\/s1600\/add-directions-shortcut-3.png\u0022 alt=\u0022add-directions-shortcut-3.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003EAnother option is to add the directions widget, which lets you pick the shortcut name, whether to start turn-by-turn navigation and more.\u003Cimg src=\u0022http:\/\/feeds.feedburner.com\/~r\/GoogleOperatingSystem\/~4\/e-H9CduDmwA\u0022 height=\u00221\u0022 width=\u00221\u0022 alt=\u0022\u0022\u003E"
+      },
+      "author": "Alex Chitu",
+      "likingUsers": [],
+      "comments": [],
+      "commentsNum": -1,
+      "annotations": [],
+      "origin": {
+        "streamId": "feed\/http:\/\/feeds.feedburner.com\/GoogleOperatingSystem",
+        "title": "Google Operating System",
+        "htmlUrl": "http:\/\/googlesystem.blogspot.com\/"
+      }
+    },
+    {
+      "crawlTimeMsec": "1489562422143",
+      "timestampUsec": "1489562422142734",
+      "id": "tag:google.com,2005:reader\/item\/000000029e364163",
+      "categories": [
+        "user\/1005631930\/state\/com.google\/reading-list",
+        "user\/1005631930\/state\/com.google\/read",
+        "user\/1005631930\/label\/★★★☆☆"
+      ],
+      "title": "Google Color Converter",
+      "published": 1476100800,
+      "updated": 1499844713,
+      "canonical": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2016\/10\/google-color-converter.html"
+        }
+      ],
+      "alternate": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2016\/10\/google-color-converter.html",
+          "type": "text\/html"
+        }
+      ],
+      "summary": {
+        "direction": "ltr",
+        "content": "Google has a special card that\u0027s both a color picker and a color converter. For example, you can search for HEX color codes like \u003Ca href=\u0022https:\/\/www.google.com\/search?q=#123456\u0022\u003E#123456\u003C\/a\u003E and Google shows the color and converts it to other formats: RGB, HSV, HSL, CMYK.  Google\u0027s card also shows up when you search for RGB values like \u003Ca href=\u0022https:\/\/www.google.com\/search?q=rgb(255,0,255)\u0022\u003Ergb(255,0,255)\u003C\/a\u003E. The most interesting feature of the card lets you pick a color interactively.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/1.bp.blogspot.com\/-awBYQiozcRs\/V_t_0j_DRqI\/AAAAAAACNew\/KbevoNshMA8ctlB-tYeLFMjd05bOpofXACLcB\/s1600\/google-color-conversion.png\u0022 alt=\u0022google-color-conversion.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003EOther queries that trigger Google\u0027s card: \u003Ca href=\u0022https:\/\/www.google.com\/search?q=rgb+to+hex\u0022\u003ERGB to HEX\u003C\/a\u003E, \u003Ca href=\u0022https:\/\/www.google.com\/search?q=color+converter\u0022\u003Ecolor picker\u003C\/a\u003E.\u003Cbr\u003E\u003Cbr\u003EThis is not a new feature, but it\u0027s worth pointing out that Chrome has its own color picker and converter in the developer tools. Click a color in the styles tab to open the color picker and shift-click a color to convert it to a different format.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/4.bp.blogspot.com\/-EMBrB1KRq70\/V_uG5vwCbSI\/AAAAAAACNfA\/ZUZ-ot_OZ4YP2wW_yUYEPLRFzuabDc-IACLcB\/s1600\/chrome-color-picker.png\u0022 alt=\u0022chrome-color-picker.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003E{ via \u003Ca href=\u0022http:\/\/www.androidpolice.com\/2016\/10\/09\/google-search-now-rgbhex-color-converter\/\u0022\u003EAndroid Police\u003C\/a\u003E }\u003Cimg src=\u0022http:\/\/feeds.feedburner.com\/~r\/GoogleOperatingSystem\/~4\/leb92_Kbo4w\u0022 height=\u00221\u0022 width=\u00221\u0022 alt=\u0022\u0022\u003E"
+      },
+      "author": "Alex Chitu",
+      "likingUsers": [],
+      "comments": [],
+      "commentsNum": -1,
+      "annotations": [],
+      "origin": {
+        "streamId": "feed\/http:\/\/feeds.feedburner.com\/GoogleOperatingSystem",
+        "title": "Google Operating System",
+        "htmlUrl": "http:\/\/googlesystem.blogspot.com\/"
+      }
+    },
+    {
+      "crawlTimeMsec": "1489562422143",
+      "timestampUsec": "1489562422142733",
+      "id": "tag:google.com,2005:reader\/item\/000000029e364176",
+      "categories": [
+        "user\/1005631930\/state\/com.google\/reading-list",
+        "user\/1005631930\/state\/com.google\/read",
+        "user\/1005631930\/label\/★★★☆☆"
+      ],
+      "title": "Google Will Shut Down Panoramio",
+      "published": 1475956140,
+      "updated": 1499844713,
+      "canonical": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2016\/10\/google-will-shut-down-panoramio.html"
+        }
+      ],
+      "alternate": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2016\/10\/google-will-shut-down-panoramio.html",
+          "type": "text\/html"
+        }
+      ],
+      "summary": {
+        "direction": "ltr",
+        "content": "Google intended to discontinue \u003Ca href=\u0022http:\/\/www.panoramio.com\/\u0022\u003EPanoramio\u003C\/a\u003E back in 2014, shortly after \u003Ca href=\u0022http:\/\/googlesystem.blogspot.com\/2014\/09\/google-maps-views-to-replace-panoramio.html\u0022\u003EGoogle Maps Views was launched\u003C\/a\u003E, but a lot of users complained and Panoramio \u003Ca href=\u0022http:\/\/www.gearthblog.com\/blog\/archives\/2015\/06\/panoramio-reprieve-from-google.html\u0022\u003Econtinued to exist\u003C\/a\u003E. Now \u003Ca href=\u0022http:\/\/www.panoramio.com\/maps-faq\u0022\u003EGoogle announces\u003C\/a\u003E that Panoramio will become read-only on November 4th and it\u0027ll be shut down one year later, in November 2017.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/2.bp.blogspot.com\/-eqeplyU-gTU\/V_lMTR-_bLI\/AAAAAAACNd0\/a3uJQStjZFINeXMzW9e7UPRYSMyYPmuYwCLcB\/s1600\/panoramio-closing.png\u0022 alt=\u0022panoramio-closing.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003E\u0022Today, with photo upload tools in Google Maps and our Local Guides program, we are providing easy ways for you to share your photos with an active and growing community. As such, we\u0027ve decided to move forward with closing down Panoramio,\u0022 informs Google. If you\u0027ve linked your Panoramio account with a Google account, you\u0027ll be able to find your photos in \u003Ca href=\u0022https:\/\/get.google.com\/albumarchive\u0022\u003EGoogle Album Archive\u003C\/a\u003E and they\u0027ll not use your storage quota. You can also export your photos in \u003Ca href=\u0022https:\/\/takeout.google.com\/settings\/takeout\u0022\u003EGoogle Takeout\u003C\/a\u003E.\u003Cbr\u003E\u003Cbr\u003EGoogle encourages Panoramio users to join the \u003Ca href=\u0022https:\/\/www.google.com\/local\/guides\/\u0022\u003ELocal Guides program\u003C\/a\u003E for Google Maps and share photos, add reviews and information about places. \u0022It\u0027s all about that warm feeling you get from helping others discover new, enriching experiences. That, and the benefits. Every place you improve on Google Maps gets you closer to unlocking something new - from early access to new products to exclusive contests and events.\u0022\u003Cbr\u003E\u003Cbr\u003EIf you don\u0027t like Google\u0027s options, you can delete your Panoramio photos or go to \u003Ca href=\u0022http:\/\/www.panoramio.com\/settings\u0022\u003EPanoramio\u0027s settings page\u003C\/a\u003E and delete your account.\u003Cbr\u003E\u003Cbr\u003EGoogle \u003Ca href=\u0022http:\/\/googlepress.blogspot.com\/2007\/05\/google-is-planning-to-acquire-panoramio.html\u0022\u003Eacquired Panoramio in 2007\u003C\/a\u003E. It was a Spanish startup which had a site that enabled \u0022digital photographers to geolocate, store and organize their photographs and to view those photographs in Google Earth and Google Maps.\u0022\u003Cimg src=\u0022http:\/\/feeds.feedburner.com\/~r\/GoogleOperatingSystem\/~4\/cCRohiQoZNY\u0022 height=\u00221\u0022 width=\u00221\u0022 alt=\u0022\u0022\u003E"
+      },
+      "author": "Alex Chitu",
+      "likingUsers": [],
+      "comments": [],
+      "commentsNum": -1,
+      "annotations": [],
+      "origin": {
+        "streamId": "feed\/http:\/\/feeds.feedburner.com\/GoogleOperatingSystem",
+        "title": "Google Operating System",
+        "htmlUrl": "http:\/\/googlesystem.blogspot.com\/"
+      }
+    },
+    {
+      "crawlTimeMsec": "1489562422143",
+      "timestampUsec": "1489562422142732",
+      "id": "tag:google.com,2005:reader\/item\/000000029e36418b",
+      "categories": [
+        "user\/1005631930\/state\/com.google\/reading-list",
+        "user\/1005631930\/state\/com.google\/read",
+        "user\/1005631930\/label\/★★★☆☆"
+      ],
+      "title": "More Related Searches in Mobile Google Search",
+      "published": 1475915940,
+      "updated": 1499844713,
+      "canonical": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2016\/10\/more-related-searches-in-mobile-google.html"
+        }
+      ],
+      "alternate": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2016\/10\/more-related-searches-in-mobile-google.html",
+          "type": "text\/html"
+        }
+      ],
+      "summary": {
+        "direction": "ltr",
+        "content": "Google\u0027s mobile search interface shows a new box with related searches after clicking a result and going back to the search page. There\u0027s a list called \u0022people also search for\u0022, which shows queries that are related to both the original search and the search result you\u0027ve previously visited. Swipe left to see the entire the list.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/4.bp.blogspot.com\/-hzZ71Yvt8qc\/V_iqtDRyC0I\/AAAAAAACNdY\/i3Xt8JEiqv01k7hMyE6RZMdN5KwG8iR9wCLcB\/s1600\/people-also-search-for.png\u0022 alt=\u0022people-also-search-for.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003ETap a different search result and you\u0027ll get different suggestions:\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/1.bp.blogspot.com\/-jIHuO0OgonA\/V_iseJL-06I\/AAAAAAACNdk\/ept7vjuMMEocdIrRCHeXXPLJLG9dwIRWwCLcB\/s1600\/people-also-search-for-2.png\u0022 alt=\u0022people-also-search-for-2.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003EGoogle tested this feature \u003Ca href=\u0022https:\/\/www.seroundtable.com\/google-people-also-search-for-looks-new-22192.html\u0022\u003Eback in June\u003C\/a\u003E and now it\u0027s no longer an experiment.\u003Cimg src=\u0022http:\/\/feeds.feedburner.com\/~r\/GoogleOperatingSystem\/~4\/4MQsHfU7BzI\u0022 height=\u00221\u0022 width=\u00221\u0022 alt=\u0022\u0022\u003E"
+      },
+      "author": "Alex Chitu",
+      "likingUsers": [],
+      "comments": [],
+      "commentsNum": -1,
+      "annotations": [],
+      "origin": {
+        "streamId": "feed\/http:\/\/feeds.feedburner.com\/GoogleOperatingSystem",
+        "title": "Google Operating System",
+        "htmlUrl": "http:\/\/googlesystem.blogspot.com\/"
+      }
+    },
+    {
+      "crawlTimeMsec": "1489562422143",
+      "timestampUsec": "1489562422142731",
+      "id": "tag:google.com,2005:reader\/item\/000000029e364197",
+      "categories": [
+        "user\/1005631930\/state\/com.google\/reading-list",
+        "user\/1005631930\/state\/com.google\/read",
+        "user\/1005631930\/label\/★★★☆☆"
+      ],
+      "title": "Android 7.1: Pixel-Only, For Now",
+      "published": 1475788560,
+      "updated": 1499844713,
+      "canonical": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2016\/10\/android-71-pixel-only-for-now.html"
+        }
+      ],
+      "alternate": [
+        {
+          "href": "http:\/\/googlesystem.blogspot.com\/2016\/10\/android-71-pixel-only-for-now.html",
+          "type": "text\/html"
+        }
+      ],
+      "summary": {
+        "direction": "ltr",
+        "content": "\n                \u003Ccenter\u003E\n                    \u003Cdiv style=\u0022text-align:center;color:#424242;font-size:0.8em;margin-bottom:30px;\u0022\u003E\n                        \u003Cdiv\u003E\n                            Ads from Inoreader \u0026bull; \u003Ca target=\u0022_blank\u0022 style=\u0022text-decoration:underline;color:#424242;\u0022 href=\u0022https:\/\/www.inoreader.com\/about_ads\u0022\u003ERemove\u003C\/a\u003E\n                        \u003C\/div\u003E\n                        \u003Cdiv style=\u0022margin-top:10px;\u0022\u003E\n                            \u003Ca href=\u0022http:\/\/www.inoreader.com\/adv\/www\/delivery\/ck.php?n=a49f975d\u0026cb=59a15df10c2a9\u0022 target=\u0022_blank\u0022\u003E\u003Cimg src=\u0022http:\/\/www.inoreader.com\/adv\/www\/delivery\/avw.php?zoneid=23\u0026from_api=1\u0026cb=59a15df10c2a9\u0026n=a49f975d\u0026sens=0\u0026pd=2\u0022 style=\u0022border:0;width:320px;height:50px;margin:0; auto 0 auto !important;float:none !important;\u0022\u003E\u003C\/a\u003E\n                        \u003C\/div\u003E\n                    \u003C\/div\u003E\n                    \u003Cdiv style=\u0022clear:both;\u0022\u003E\n                    \u003C\/div\u003E\n                \u003C\/center\u003EPixel phones will ship with a new Android version: 7.1. It looks like many of the important Nougat features have been left out from the 7.0 release.\u003Cbr\u003E\u003Cbr\u003E\u003Ca href=\u0022http:\/\/www.androidpolice.com\/2016\/10\/04\/android-7-1-nougats-changelog-includes-pixel-exclusive-non-pixel-exclusive-changes\/\u0022\u003EAndroid 7.1\u0027s unofficial changelog\u003C\/a\u003E published by Android Police has many Pixel-specific features, including a new launcher, a new camera app, Google Assistant, a support tab in the settings, solid navbar icons, Smart Storage that removes old backed up photos and videos when storage is full.\u003Cbr\u003E\u003Cbr\u003E\u003Cdiv style=\u0022clear:both;text-align:center;\u0022\u003E\u003Cimg src=\u0022https:\/\/4.bp.blogspot.com\/-VRL1liMuqc0\/V_a7e7wBeyI\/AAAAAAACNdE\/-7Dj8oukL9c2mfWE__frXTdArq9UoiHogCLcB\/s1600\/pixel-phone.png\u0022 alt=\u0022pixel-phone.png\u0022\u003E\u003C\/div\u003E\u003Cbr\u003E\u003Cbr\u003EThere are also some features that aren\u0027t restricted to Pixel devices: night light (filters blue light), fingerprint swipe down gesture, seamless A\/B system updates, Daydream VR mode, support for app shortcuts and circular app icons, keyboard image insertion, manual storage manager and more. Unfortunately, Nexus devices and Pixel C will only get a dev preview \u003Ca href=\u0022http:\/\/www.androidpolice.com\/2016\/10\/04\/android-7-1-coming-current-nexus-devices-pixel-c-will-land-end-2016-dev-preview\/\u0022\u003Eby the end of 2016\u003C\/a\u003E, so the stable release will be available in 2017. So much for buying Nexus devices to be the first to get the latest Android updates.\u003Cbr\u003E\u003Cbr\u003EGoogle Assistant won\u0027t be a Pixel exclusive for long, since it\u0027s a core Google feature that needs wide adoption. I assume that the launcher and camera app will be also available in the Play Store at some point.\u003Cimg src=\u0022http:\/\/feeds.feedburner.com\/~r\/GoogleOperatingSystem\/~4\/sS7WaorNynE\u0022 height=\u00221\u0022 width=\u00221\u0022 alt=\u0022\u0022\u003E"
+      },
+      "author": "Alex Chitu",
+      "likingUsers": [],
+      "comments": [],
+      "commentsNum": -1,
+      "annotations": [],
+      "origin": {
+        "streamId": "feed\/http:\/\/feeds.feedburner.com\/GoogleOperatingSystem",
+        "title": "Google Operating System",
+        "htmlUrl": "http:\/\/googlesystem.blogspot.com\/"
+      }
+    }
+  ],
+  "continuation": "KzSPeTSN4Wu8"
+}
