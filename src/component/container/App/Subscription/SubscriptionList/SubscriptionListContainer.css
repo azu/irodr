@@ -1,5 +1,6 @@
 :root {
     --SubscriptionListContainer-listHeader--height: 24px;
+    --SubscriptionListContainer-item--height: 28px;
 }
 
 .SubscriptionListContainer {
@@ -22,9 +23,15 @@
 
 .SubscriptionListContainer-item {
     color: #00308f;
+    height: var(--SubscriptionListContainer-item--height);
+    min-height: var(--SubscriptionListContainer-item--height);
     padding: 4px;
     cursor: pointer;
     display: flex;
+}
+
+.SubscriptionListContainer-item:hover {
+    background-color: #e8e8e8;
 }
 
 .SubscriptionListContainer-itemImage {

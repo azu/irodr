@@ -1,14 +1,15 @@
 // MIT © 2017 azu
 import { Store } from "almin";
-import { Subscription } from "../../../../../domain/Subscriptions/Subscription";
+import { Subscription, SubscriptionIdentifier } from "../../../../../domain/Subscriptions/Subscription";
 import { SubscriptionRepository } from "../../../../../infra/repository/SubscriptionRepository";
 import { IGroup } from "office-ui-fabric-react";
 import { ToggleListGroupUseCasePayload } from "./use-case/ToggleListGroupUseCase";
 import { splice } from "@immutable-array/prototype";
 import { SubscriptionGroupByCategoryMap } from "../../../../../domain/Subscriptions/InfraSubscription";
+import { ShowSubscriptionContentsUseCasePayload } from "../../../../../use-case/subscription/ShowSubscriptionContentsUseCase";
 
 export interface SubscriptionListStateProps {
-    currentSubscription?: Subscription;
+    currentSubscriptionId?: SubscriptionIdentifier;
     // group for details
     groups: IGroup[];
     groupSubscriptions: Subscription[];
@@ -18,7 +19,7 @@ export interface SubscriptionListStateProps {
 }
 
 export class SubscriptionListState {
-    currentSubscription?: Subscription;
+    currentSubscriptionId?: SubscriptionIdentifier;
     groups: IGroup[];
     groupSubscriptions: Subscription[];
     groupIsCollapsed: {
@@ -26,7 +27,7 @@ export class SubscriptionListState {
     };
 
     constructor(props: SubscriptionListStateProps) {
-        this.currentSubscription = props.currentSubscription;
+        this.currentSubscriptionId = props.currentSubscriptionId;
         this.groups = props.groups;
         this.groupSubscriptions = props.groupSubscriptions;
         this.groupIsCollapsed = props.groupIsCollapsed;
@@ -81,11 +82,16 @@ export class SubscriptionListState {
         return splice(this.groups, index, 1, newGroup);
     }
 
-    reduce(payload: ToggleListGroupUseCasePayload) {
+    reduce(payload: ToggleListGroupUseCasePayload | ShowSubscriptionContentsUseCasePayload) {
         if (payload instanceof ToggleListGroupUseCasePayload) {
             return new SubscriptionListState({
                 ...this as SubscriptionListStateProps,
                 groups: this.toggleGroup(payload.categoryKey)
+            });
+        } else if (payload instanceof ShowSubscriptionContentsUseCasePayload) {
+            return new SubscriptionListState({
+                ...this as SubscriptionListStateProps,
+                currentSubscriptionId: payload.subscriptionId
             });
         } else {
             return this;

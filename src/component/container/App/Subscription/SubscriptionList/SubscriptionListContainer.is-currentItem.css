@@ -1,0 +1,8 @@
+.SubscriptionListContainer-item.is-currentItem {
+    background-color: #1f70ff;
+}
+
+.SubscriptionListContainer-item.is-currentItem .SubscriptionListContainer-itemLink {
+    color: #fff;
+    font-weight: bold;
+}

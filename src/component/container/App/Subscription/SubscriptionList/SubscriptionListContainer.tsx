@@ -52,8 +52,14 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
         const onClick = () => {
             this.onClickSubscription(item);
         };
+        const isCurrentItem = item.id.equals(this.props.subscriptionList.currentSubscriptionId);
         return (
-            <div data-selection-index={itemIndex} className="SubscriptionListContainer-item">
+            <div
+                data-selection-index={itemIndex}
+                className={classnames("SubscriptionListContainer-item", {
+                    "is-currentItem": isCurrentItem
+                })}
+            >
                 <Image
                     className="SubscriptionListContainer-itemImage"
                     src={item.iconUrl}
