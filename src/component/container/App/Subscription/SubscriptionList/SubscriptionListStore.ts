@@ -5,12 +5,10 @@ import { SubscriptionRepository } from "../../../../../infra/repository/Subscrip
 import { IGroup } from "office-ui-fabric-react";
 import { ToggleListGroupUseCasePayload } from "./use-case/ToggleListGroupUseCase";
 import { splice } from "@immutable-array/prototype";
+import { SubscriptionGroupByCategoryMap } from "../../../../../domain/Subscriptions/InfraSubscription";
 
 export interface SubscriptionListStateProps {
     currentSubscription?: Subscription;
-    subscriptions: Subscription[];
-    // displayed itemds
-    displaySubscriptions: Subscription[];
     // group for details
     groups: IGroup[];
     groupSubscriptions: Subscription[];
@@ -21,8 +19,6 @@ export interface SubscriptionListStateProps {
 
 export class SubscriptionListState {
     currentSubscription?: Subscription;
-    subscriptions: Subscription[];
-    displaySubscriptions: Subscription[];
     groups: IGroup[];
     groupSubscriptions: Subscription[];
     groupIsCollapsed: {
@@ -31,53 +27,33 @@ export class SubscriptionListState {
 
     constructor(props: SubscriptionListStateProps) {
         this.currentSubscription = props.currentSubscription;
-        this.subscriptions = props.subscriptions;
-        this.displaySubscriptions = props.displaySubscriptions;
         this.groups = props.groups;
         this.groupSubscriptions = props.groupSubscriptions;
         this.groupIsCollapsed = props.groupIsCollapsed;
     }
 
-    update(subscriptions: Subscription[]) {
-        if (this.subscriptions === subscriptions) {
-            return this;
-        }
-
-        const displaySubscriptions = subscriptions.filter(subscription => subscription.hasUnreadContents);
-        const categories: { [index: string]: Subscription[] } = {};
-        displaySubscriptions.forEach(subscription => {
-            subscription.categories.forEach(category => {
-                if (Array.isArray(categories[category])) {
-                    categories[category].push(subscription);
-                } else {
-                    categories[category] = [subscription];
-                }
-            });
-        });
-
+    update(categoryMap: SubscriptionGroupByCategoryMap) {
         // create groups
         let currentIndex = 0;
         let groupSubscriptions: Subscription[] = [];
-        const groups = Object.keys(categories).sort().map(category => {
-            const subscriptions = categories[category];
-            groupSubscriptions = groupSubscriptions.concat(subscriptions);
-            if (this.groupIsCollapsed[category] === undefined) {
-                this.groupIsCollapsed[category] = false;
+        const groups: IGroup[] = categoryMap.entries().map(([categoryName, subscriptions]) => {
+            const readableSubsctriptions = subscriptions.filter(subscription => subscription.hasUnreadContents);
+            groupSubscriptions = groupSubscriptions.concat(readableSubsctriptions);
+            if (this.groupIsCollapsed[categoryName] === undefined) {
+                this.groupIsCollapsed[categoryName] = false;
             }
             const group = {
-                key: category,
-                name: category,
+                key: categoryName,
+                name: categoryName,
                 startIndex: currentIndex,
-                count: subscriptions.length,
-                isCollapsed: this.groupIsCollapsed[category]
+                count: readableSubsctriptions.length,
+                isCollapsed: this.groupIsCollapsed[categoryName]
             };
-            currentIndex += subscriptions.length;
+            currentIndex += readableSubsctriptions.length;
             return group;
         });
         return new SubscriptionListState({
             ...this as SubscriptionListStateProps,
-            subscriptions,
-            displaySubscriptions,
             groups,
             groupSubscriptions
         });
@@ -115,8 +91,6 @@ export class SubscriptionListStore extends Store<SubscriptionListState> {
     constructor(private repo: { subscriptionRepository: SubscriptionRepository }) {
         super();
         this.state = new SubscriptionListState({
-            subscriptions: [],
-            displaySubscriptions: [],
             groups: [],
             groupSubscriptions: [],
             groupIsCollapsed: {}
@@ -124,8 +98,8 @@ export class SubscriptionListStore extends Store<SubscriptionListState> {
     }
 
     receivePayload(payload: any) {
-        const subscriptions = this.repo.subscriptionRepository.getAll();
-        this.setState(this.state.update(subscriptions).reduce(payload));
+        const subscriptionGroupByCategory = this.repo.subscriptionRepository.groupByCategory();
+        this.setState(this.state.update(subscriptionGroupByCategory).reduce(payload));
     }
 
     getState(): SubscriptionListState {

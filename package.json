@@ -29,6 +29,7 @@
     "lodash.groupby": "^4.6.0",
     "lodash.keyby": "^4.6.0",
     "lodash.sortby": "^4.7.0",
+    "map-like": "^2.0.0",
     "office-ui-fabric-react": "^4.37.5",
     "popsicle": "^9.1.0",
     "react": "^15.6.1",
