@@ -12,10 +12,7 @@
 }
 
 .AppContainer-header {
-    background-color: #222;
     height: var(--AppContainer-header--height);
-    min-height: var(--AppContainer-header--height);
-    color: white;
 }
 
 .AppContainer-body {

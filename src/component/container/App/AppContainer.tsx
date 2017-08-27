@@ -2,20 +2,14 @@ import * as React from "react";
 import "./AppContainer.css";
 import { appStoreGroup } from "./AppStoreGroup";
 import { BaseContainer } from "../BaseContainer";
-import { createUpdateSubscriptionsUseCase } from "../../../use-case/subscription/UpdateSubscriptionsUseCase";
 import { SubscriptionContainer } from "./Subscription/SubscriptionContainer";
+import { AppHeaderContainer } from "./AppHeader/AppHeaderContainer";
 
 export class AppContainer extends BaseContainer<typeof appStoreGroup.state, {}> {
-    fetchList = () => {
-        this.useCase(createUpdateSubscriptionsUseCase()).executor(useCase => useCase.execute());
-    };
-
     render() {
         return (
             <div className="AppContainer">
-                <header className="AppContainer-header">
-                    <button onClick={this.fetchList}>Fetch</button>
-                </header>
+                <AppHeaderContainer className="AppContainer-header" appHeader={this.props.appHeader} />
                 <SubscriptionContainer
                     className="AppContainer-body"
                     subscriptionContents={this.props.subscriptionContents}

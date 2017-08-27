@@ -6,6 +6,7 @@
     min-width: 300px;
     width: 300px;
     overflow: scroll;
+    border-right: 1px #eee solid;
 }
 
 .SubscriptionContainer-main {

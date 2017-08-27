@@ -1,0 +1,30 @@
+.AppHeaderContainer {
+    min-height: var(--AppContainer-header--height);
+    color: white;
+    background-color: #222;
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.AppHeaderContainer-left {
+    display: flex;
+}
+
+.AppHeaderContainer-title {
+    font-size: 16px;
+    padding: 0;
+    margin: 0;
+}
+
+.AppHeaderContainer-right {
+    display: inline-block;
+    margin-left: auto;
+}
+
+.AppHeaderContainer-totalUnreadCount {
+}
+
+.AppHeaderContainer-totalSubscriptionCount {
+}
