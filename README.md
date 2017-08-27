@@ -2,13 +2,9 @@
 
 inoreader RSS reader client on browser
 
-## Install
-
-Install with [npm](https://www.npmjs.com/):
-
-    npm install irodr
-
 ## Usage
+
+    npm start
 
 ## Notes
 
