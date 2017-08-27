@@ -76,6 +76,12 @@
   dependencies:
     "@types/lodash" "*"
 
+"@types/lodash.maxby@^4.6.3":
+  version "4.6.3"
+  resolved "https://registry.yarnpkg.com/@types/lodash.maxby/-/lodash.maxby-4.6.3.tgz#be73126d59e1838c847006f05276392347714be9"
+  dependencies:
+    "@types/lodash" "*"
+
 "@types/lodash.sortby@^4.7.3":
   version "4.7.3"
   resolved "https://registry.yarnpkg.com/@types/lodash.sortby/-/lodash.sortby-4.7.3.tgz#d1f7a7fd955246e685a7541ac184dc058c553eb5"
@@ -3330,6 +3336,10 @@ lodash.keyby@^4.6.0:
   version "4.6.0"
   resolved "https://registry.yarnpkg.com/lodash.keyby/-/lodash.keyby-4.6.0.tgz#7f6a1abda93fd24e22728a4d361ed8bcba5a4354"
 
+lodash.maxby@^4.6.0:
+  version "4.6.0"
+  resolved "https://registry.yarnpkg.com/lodash.maxby/-/lodash.maxby-4.6.0.tgz#082240068f3c7a227aa00a8380e4f38cf0786e3d"
+
 lodash.memoize@^4.1.2:
   version "4.1.2"
   resolved "https://registry.yarnpkg.com/lodash.memoize/-/lodash.memoize-4.1.2.tgz#bcc6c49a42a2840ed997f323eada5ecd182e0bfe"
@@ -3571,6 +3581,10 @@ mkdirp@0.5.x, "mkdirp@>=0.5 0", mkdirp@^0.5.0, mkdirp@^0.5.1, mkdirp@~0.5.0, mkd
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.5.1.tgz#30057438eac6cf7f8c4767f38648d6697d75c903"
   dependencies:
     minimist "0.0.8"
+
+most-visible@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/most-visible/-/most-visible-1.0.1.tgz#d8335acc324b67eee58fd1b2dce514efff6615a1"
 
 ms@2.0.0:
   version "2.0.0"

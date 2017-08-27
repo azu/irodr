@@ -11,7 +11,7 @@ export interface BaseContainerProps {
  * Extends React.Component for Container.
  * It has executor feature for almin UseCase.
  */
-export class BaseContainer<T, P> extends React.Component<T & BaseContainerProps, P> {
+export class BaseContainer<T, P> extends React.PureComponent<T & BaseContainerProps, P> {
     useCase<T extends UseCase>(useCase: T): UseCaseExecutor<T> {
         return appLocator.context.useCase(useCase);
     }
