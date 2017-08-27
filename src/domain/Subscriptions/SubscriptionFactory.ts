@@ -37,7 +37,10 @@ export function createSubscriptionFromResponse(
         htmlUrl: subscriptionResponse.htmlUrl,
         lastUpdated: new SubscriptionLastUpdated(new Date(subscriptionResponse.firstitemmsec)),
         categories: subscriptionResponse.categories.map(category => category.label),
-        contents: new SubscriptionContents([]),
+        contents: new SubscriptionContents({
+            contents: [],
+            lastUpdatedTimestampMs: 0
+        }),
         order: new SubscriptionOrder(),
         unread: new SubscriptionUnread({
             count: Number(unreadResponse.count),

@@ -27,6 +27,15 @@ export class ShowSubscriptionContentsUseCase extends UseCase {
         if (!subscription) {
             throw new Error(`Not found subscription: ${subscriptionId}`);
         }
+        const currentTimeStampMs = Date.now();
+        if (!subscription.contents.isNeededToUpdate(currentTimeStampMs)) {
+            console.info(`No need update.
+Now : ${currentTimeStampMs}
+Wait: ${subscription.contents.debounceDelayTimeMs / 1000} seconds
+`);
+            this.dispatch(new ShowSubscriptionContentsUseCasePayload(subscriptionId));
+            return;
+        }
         const client = new InoreaderAPI();
         return client
             .streamContents(subscription)

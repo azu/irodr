@@ -2,19 +2,40 @@
 import { SubscriptionContent, SubscriptionContentIdentifier } from "./SubscriptionContent";
 import { splice } from "@immutable-array/prototype";
 
+export interface SubscriptionContentsArgs {
+    contents: SubscriptionContent[];
+    lastUpdatedTimestampMs: number;
+}
+
 export class SubscriptionContents {
     contents: SubscriptionContent[];
+    lastUpdatedTimestampMs: number;
 
-    constructor(contents: SubscriptionContent[]) {
-        this.contents = contents;
+    constructor(args: SubscriptionContentsArgs) {
+        this.contents = args.contents;
+        this.lastUpdatedTimestampMs = args.lastUpdatedTimestampMs;
     }
 
     get hasContent(): boolean {
         return this.contents.length > 0;
     }
 
-    update(contents: SubscriptionContent[]) {
-        return new SubscriptionContents(contents);
+    get debounceDelayTimeMs() {
+        return 60 * 1000;
+    }
+
+    isNeededToUpdate(currentTimeStamp: number) {
+        if (!this.hasContent) {
+            return true;
+        }
+        return currentTimeStamp > this.lastUpdatedTimestampMs + this.debounceDelayTimeMs;
+    }
+
+    updateContents(contents: SubscriptionContent[]) {
+        return new SubscriptionContents({
+            ...this as SubscriptionContentsArgs,
+            contents
+        });
     }
 
     getContents() {
@@ -30,7 +51,7 @@ export class SubscriptionContents {
     }
 
     add(aContent: SubscriptionContent) {
-        return new SubscriptionContents(this.contents.concat(aContent));
+        return this.updateContents(this.contents.concat(aContent));
     }
 
     remove(aContent: SubscriptionContent) {
@@ -38,6 +59,6 @@ export class SubscriptionContents {
         if (index === -1) {
             return;
         }
-        return new SubscriptionContents(splice(this.contents, index, 1));
+        return this.updateContents(splice(this.contents, index, 1));
     }
 }

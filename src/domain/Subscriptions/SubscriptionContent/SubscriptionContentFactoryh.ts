@@ -10,7 +10,11 @@ export const createSubscriptionContentsFromResponse = (
     const contentList = streamContentResponse.items.map(item => {
         return createSubscriptionContentFromResponse(item);
     });
-    return new SubscriptionContents(contentList);
+    const updatedTimestampMs = streamContentResponse.updated * 1000;
+    return new SubscriptionContents({
+        contents: contentList,
+        lastUpdatedTimestampMs: updatedTimestampMs
+    });
 };
 
 export const createSubscriptionContentFromResponse = (
