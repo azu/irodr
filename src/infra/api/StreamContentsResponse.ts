@@ -9,7 +9,7 @@ export interface Canonical {
     href: string;
 }
 
-export interface Item {
+export interface StreamContentResponse {
     crawlTimeMsec: string;
     canonical: Canonical[];
     annotations: any[];
@@ -41,7 +41,7 @@ export interface StreamContentsResponse {
     direction: string;
     self: Canonical;
     updated: number;
-    items: Item[];
+    items: StreamContentResponse[];
     title: string;
     updatedUsec: string;
 }

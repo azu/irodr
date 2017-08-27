@@ -10,7 +10,7 @@ export interface SubscriptionContentArgs {
     author: string;
     publishedDate: Date;
     // if is not update, same with publishedDate
-    updateDate: Date;
+    updatedDate: Date;
     title: string;
     body: SubscriptionContentBody;
     url: string;
@@ -21,7 +21,7 @@ export class SubscriptionContent extends Entity<SubscriptionContentIdentifier> {
     author: string;
     publishedDate: Date;
     // if is not update, same with publishedDate
-    updateDate: Date;
+    updatedDate: Date;
     title: string;
     body: SubscriptionContentBody;
     url: string;
@@ -31,7 +31,7 @@ export class SubscriptionContent extends Entity<SubscriptionContentIdentifier> {
         this.id = args.id;
         this.author = args.author;
         this.publishedDate = args.publishedDate;
-        this.updateDate = args.updateDate;
+        this.updatedDate = args.updatedDate;
         this.title = args.title;
         this.body = args.body;
         this.url = args.url;

@@ -1,0 +1,36 @@
+:root {
+    --SubscriptionListContainer-listHeader--height: 24px;
+}
+
+.SubscriptionListContainer {
+    min-width: 100px;
+}
+
+.SubscriptionListContainer-listHeader {
+    width: 100%;
+    height: var(--SubscriptionListContainer-listHeader--height);
+    min-height: var(--SubscriptionListContainer-listHeader--height);
+    background-color: #f4f4f4;
+}
+
+.SubscriptionListContainer-listHeaderButton {
+    width: 100%;
+    height: var(--SubscriptionListContainer-listHeader--height);
+    min-height: var(--SubscriptionListContainer-listHeader--height);
+    color: #000;
+}
+
+.SubscriptionListContainer-item {
+    color: #00308f;
+    padding: 4px;
+    cursor: pointer;
+    display: flex;
+}
+
+.SubscriptionListContainer-itemImage {
+    flex-shrink: 1;
+}
+
+.SubscriptionListContainer-itemLink {
+    padding: 0 4px;
+}

@@ -10,6 +10,7 @@ import { appLocator } from "./AppLocator";
 import AlminReactContainer from "almin-react-container";
 import { createBootSubscriptionUseCase } from "./use-case/subscription/BootSubscriptionUseCase";
 
+require("office-ui-fabric-react/dist/css/fabric.css");
 // require all css files
 function requireAll(r: any) {
     r.keys().forEach(r);
@@ -41,6 +42,7 @@ const context = new Context({
 });
 appLocator.context = context;
 if (process.env.NODE_ENV !== "production") {
+    console.clear();
     const { AlminLogger } = require("almin-logger");
     const logger = new AlminLogger();
     logger.startLogging(context);

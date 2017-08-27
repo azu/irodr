@@ -54,4 +54,11 @@ export class Subscription extends Entity<SubscriptionIdentifier> {
             ...subscriptionArgs
         });
     }
+
+    updateContents(subscriptionContents: SubscriptionContents) {
+        return new Subscription({
+            ...this as SubscriptionArgs,
+            contents: subscriptionContents
+        });
+    }
 }

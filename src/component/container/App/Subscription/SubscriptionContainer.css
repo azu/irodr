@@ -1,0 +1,14 @@
+.SubscriptionContainer {
+    display: flex;
+}
+
+.SubscriptionContainer-side {
+    min-width: 300px;
+    width: 300px;
+    overflow: scroll;
+}
+
+.SubscriptionContainer-main {
+    flex: 1;
+    overflow: scroll;
+}

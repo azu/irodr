@@ -4,6 +4,7 @@ import { getNewTokenUrl, getToken } from "./auth";
 import { UnreadCountsResponse } from "./UnreadCountResponse";
 import { SubscriptionsResponse } from "./SubscriptionResponse";
 import { Subscription } from "../../domain/Subscriptions/Subscription";
+import { StreamContentsResponse } from "./StreamContentsResponse";
 
 export class InoreaderAPI {
     private basePath = "";
@@ -46,7 +47,11 @@ export class InoreaderAPI {
         return this.getRequest<UnreadCountsResponse>("/api/0/unread-count");
     }
 
-    streamContents(subscription: Subscription) {
+    streamContents(subscription: Subscription): Promise<StreamContentsResponse> {
         // use SubscriptionIdentifier
+        // http://www.inoreader.com/developers/stream-contents
+        return this.getRequest<StreamContentsResponse>(
+            `/api/0/stream/contents/${encodeURIComponent(subscription.id.toValue())}`
+        );
     }
 }

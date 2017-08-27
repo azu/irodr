@@ -1,0 +1,19 @@
+.SubscriptionContentsContainer {
+}
+
+.SubscriptionContentsContainer-content {
+    font-size: 100%;
+    line-height: 1.5;
+    margin: 0 1rem;
+    padding: 0 0.5rem;
+}
+
+.SubscriptionContentsContainer-content * {
+    max-width: 100%;
+}
+
+/*
+.SubscriptionContentsContainer-contentBody > center:first-of-type > div {
+    display: none;
+}
+*/

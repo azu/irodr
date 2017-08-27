@@ -9,6 +9,10 @@ export class SubscriptionContents {
         this.contents = contents;
     }
 
+    get hasContent(): boolean {
+        return this.contents.length > 0;
+    }
+
     update(contents: SubscriptionContent[]) {
         return new SubscriptionContents(contents);
     }
