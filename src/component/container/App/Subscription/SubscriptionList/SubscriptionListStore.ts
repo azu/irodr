@@ -32,13 +32,21 @@ export class SubscriptionListState {
         this.groupIsCollapsed = props.groupIsCollapsed;
     }
 
+    getNextItem(currentSubscription: Subscription): Subscription | undefined {
+        const index = this.groupSubscriptions.indexOf(currentSubscription);
+        if (index === -1) {
+            return;
+        }
+        return this.groupSubscriptions[index + 1];
+    }
+
     update(categoryMap: SubscriptionGroupByCategoryMap) {
         // create groups
         let currentIndex = 0;
         let groupSubscriptions: Subscription[] = [];
-        const groups: IGroup[] = categoryMap.entries().map(([categoryName, subscriptions]) => {
-            const readableSubsctriptions = subscriptions.filter(subscription => subscription.hasUnreadContents);
-            groupSubscriptions = groupSubscriptions.concat(readableSubsctriptions);
+        const groups: IGroup[] = categoryMap.sortedEntities().map(([categoryName, subscriptions]) => {
+            const readableSubscriptions = subscriptions.filter(subscription => subscription.hasUnreadContents);
+            groupSubscriptions = groupSubscriptions.concat(readableSubscriptions);
             if (this.groupIsCollapsed[categoryName] === undefined) {
                 this.groupIsCollapsed[categoryName] = false;
             }
@@ -46,10 +54,10 @@ export class SubscriptionListState {
                 key: categoryName,
                 name: categoryName,
                 startIndex: currentIndex,
-                count: readableSubsctriptions.length,
+                count: readableSubscriptions.length,
                 isCollapsed: this.groupIsCollapsed[categoryName]
             };
-            currentIndex += readableSubsctriptions.length;
+            currentIndex += readableSubscriptions.length;
             return group;
         });
         return new SubscriptionListState({

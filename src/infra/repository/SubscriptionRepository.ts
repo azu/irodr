@@ -2,21 +2,20 @@
 import { NullableBaseRepository } from "ddd-base/lib/NullableBaseRepository";
 import { Subscription } from "../../domain/Subscriptions/Subscription";
 import { SubscriptionGroupByCategoryMap } from "../../domain/Subscriptions/InfraSubscription";
-import { MapLike } from "map-like";
 
 export class SubscriptionRepository extends NullableBaseRepository<Subscription> {
     categoryMap: SubscriptionGroupByCategoryMap;
 
     constructor() {
         super();
-        this.categoryMap = new MapLike<string, Subscription[]>();
+        this.categoryMap = new SubscriptionGroupByCategoryMap();
     }
 
     groupByCategory() {
         return this.categoryMap;
     }
 
-    getAllCategories() {
+    getAllCategoryNames() {
         return this.categoryMap.keys();
     }
 

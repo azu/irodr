@@ -8,14 +8,29 @@ import { BaseContainer } from "../../../BaseContainer";
 import classnames from "classnames";
 import { createShowSubscriptionContentsUseCase } from "../../../../../use-case/subscription/ShowSubscriptionContentsUseCase";
 import { createToggleListGroupUseCase } from "./use-case/ToggleListGroupUseCase";
+import { createPrefetchSubscriptContentsUseCase } from "../../../../../use-case/subscription/PrefetchSubscriptContentsUseCase";
 
 export interface SubscriptionListContainerProps {
     subscriptionList: SubscriptionListState;
 }
 
 export class SubscriptionListContainer extends BaseContainer<SubscriptionListContainerProps, {}> {
-    private onClickSubscription = (item: Subscription) => {
-        this.useCase(createShowSubscriptionContentsUseCase()).executor(useCase => useCase.execute(item.id));
+    private onClickSubscription = async (item: Subscription) => {
+        await this.useCase(createShowSubscriptionContentsUseCase()).executor(useCase => useCase.execute(item.id));
+        // prefetch 3 items
+        return this.fetchSubscriptions(item, 3);
+    };
+
+    private fetchSubscriptions = async (currentSubscription: Subscription, count: number): Promise<void> => {
+        if (count <= 0) {
+            return;
+        }
+        const nextItem = this.props.subscriptionList.getNextItem(currentSubscription);
+        if (!nextItem) {
+            return;
+        }
+        await this.useCase(createPrefetchSubscriptContentsUseCase()).executor(useCase => useCase.execute(nextItem.id));
+        return this.fetchSubscriptions(nextItem, count - 1);
     };
 
     render() {

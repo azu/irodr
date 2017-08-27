@@ -4,6 +4,7 @@ import { subscriptionRepository, SubscriptionRepository } from "../../infra/repo
 import { SubscriptionIdentifier } from "../../domain/Subscriptions/Subscription";
 import { InoreaderAPI } from "../../infra/api/InoreaderAPI";
 import { createSubscriptionContentsFromResponse } from "../../domain/Subscriptions/SubscriptionContent/SubscriptionContentFactoryh";
+import { isSatisfiedSubscriptionContentsFetchSpec } from "./spec/SubscriptionContentsFetchSpec";
 
 export const createShowSubscriptionContentsUseCase = () => {
     return new ShowSubscriptionContentsUseCase({
@@ -27,12 +28,9 @@ export class ShowSubscriptionContentsUseCase extends UseCase {
         if (!subscription) {
             throw new Error(`Not found subscription: ${subscriptionId}`);
         }
-        const currentTimeStampMs = Date.now();
-        if (!subscription.contents.isNeededToUpdate(currentTimeStampMs)) {
-            console.info(`No need update.
-Now : ${currentTimeStampMs}
-Wait: ${subscription.contents.debounceDelayTimeMs / 1000} seconds
-`);
+        const specResult = isSatisfiedSubscriptionContentsFetchSpec(subscription);
+        if (!specResult.ok) {
+            console.info(specResult.reason);
             this.dispatch(new ShowSubscriptionContentsUseCasePayload(subscriptionId));
             return;
         }
@@ -40,8 +38,13 @@ Wait: ${subscription.contents.debounceDelayTimeMs / 1000} seconds
         return client
             .streamContents(subscription)
             .then(response => {
+                // get again, because async
+                const oldSubscription = this.repo.subscriptionRepository.findById(subscriptionId);
+                if (!oldSubscription) {
+                    return;
+                }
                 const subscriptionContents = createSubscriptionContentsFromResponse(response);
-                const newSubscription = subscription.updateContents(subscriptionContents);
+                const newSubscription = oldSubscription.updateContents(subscriptionContents);
                 this.repo.subscriptionRepository.save(newSubscription);
             })
             .then(() => {
