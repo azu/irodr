@@ -60,9 +60,19 @@
   version "2.2.3"
   resolved "https://registry.yarnpkg.com/@types/classnames/-/classnames-2.2.3.tgz#3f0ff6873da793870e20a260cada55982f38a9e5"
 
+"@types/combokeys@^2.4.5":
+  version "2.4.5"
+  resolved "https://registry.yarnpkg.com/@types/combokeys/-/combokeys-2.4.5.tgz#98f794f4baf72a6219cf255516386252c95ac53d"
+
 "@types/jest@^20.0.8":
   version "20.0.8"
   resolved "https://registry.yarnpkg.com/@types/jest/-/jest-20.0.8.tgz#7f8c97f73d20d3bf5448fbe33661a342002b5954"
+
+"@types/lodash.debounce@^4.0.3":
+  version "4.0.3"
+  resolved "https://registry.yarnpkg.com/@types/lodash.debounce/-/lodash.debounce-4.0.3.tgz#d712aee9e6136be77f70523ed9f0fc049a6cf15a"
+  dependencies:
+    "@types/lodash" "*"
 
 "@types/lodash.groupby@^4.6.3":
   version "4.6.3"
@@ -85,6 +95,12 @@
 "@types/lodash.sortby@^4.7.3":
   version "4.7.3"
   resolved "https://registry.yarnpkg.com/@types/lodash.sortby/-/lodash.sortby-4.7.3.tgz#d1f7a7fd955246e685a7541ac184dc058c553eb5"
+  dependencies:
+    "@types/lodash" "*"
+
+"@types/lodash.throttle@^4.1.3":
+  version "4.1.3"
+  resolved "https://registry.yarnpkg.com/@types/lodash.throttle/-/lodash.throttle-4.1.3.tgz#8bfa4fec519d09ebce56c815bcbff3e55c604db9"
   dependencies:
     "@types/lodash" "*"
 
@@ -1090,6 +1106,10 @@ combined-stream@^1.0.5, combined-stream@~1.0.5:
   dependencies:
     delayed-stream "~1.0.0"
 
+combokeys@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/combokeys/-/combokeys-3.0.0.tgz#955c59a3959af40d26846ab6fc3c682448e7572e"
+
 commander@2.11.x, commander@^2.9.0, commander@~2.11.0:
   version "2.11.0"
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.11.0.tgz#157152fd1e7a6c8d98a5b715cf376df928004563"
@@ -1415,9 +1435,9 @@ date-now@^0.1.4:
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/date-now/-/date-now-0.1.4.tgz#eaf439fd4d4848ad74e5cc7dbef200672b9e345b"
 
-ddd-base@^0.2.2:
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/ddd-base/-/ddd-base-0.2.2.tgz#f26369e33fa06d8041ef67f942e6f20de2ed677b"
+ddd-base@^0.2.3:
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/ddd-base/-/ddd-base-0.2.3.tgz#1d86953c78abaa82ad5dafa4a8c98b82116d9a2d"
   dependencies:
     map-like "^2.0.0"
     shallow-equal-object "^1.0.1"
@@ -3409,6 +3429,10 @@ lodash.chunk@^4.2.0:
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/lodash.chunk/-/lodash.chunk-4.2.0.tgz#66e5ce1f76ed27b4303d8c6512e8d1216e8106bc"
 
+lodash.debounce@^4.0.8:
+  version "4.0.8"
+  resolved "https://registry.yarnpkg.com/lodash.debounce/-/lodash.debounce-4.0.8.tgz#82d79bff30a67c4005ffd5e2515300ad9ca4d7af"
+
 lodash.defaults@^4.2.0:
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/lodash.defaults/-/lodash.defaults-4.2.0.tgz#d09178716ffea4dde9e5fb7b37f6f0802274580c"
@@ -3445,6 +3469,10 @@ lodash.templatesettings@^4.0.0:
   resolved "https://registry.yarnpkg.com/lodash.templatesettings/-/lodash.templatesettings-4.1.0.tgz#2b4d4e95ba440d915ff08bc899e4553666713316"
   dependencies:
     lodash._reinterpolate "~3.0.0"
+
+lodash.throttle@^4.1.1:
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/lodash.throttle/-/lodash.throttle-4.1.1.tgz#c23e91b710242ac70c37f1e1cda9274cc39bf2f4"
 
 lodash.uniq@^4.5.0:
   version "4.5.0"
@@ -4495,9 +4523,9 @@ preserve@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/preserve/-/preserve-0.2.0.tgz#815ed1f6ebc65926f865b310c0713bcb3315ce4b"
 
-prettier@1.6.0-beta2:
-  version "1.6.0-beta2"
-  resolved "https://registry.yarnpkg.com/prettier/-/prettier-1.6.0-beta2.tgz#55c1662c5fc076a79ab8e40e7bb8a7708791cbf3"
+prettier@^1.6.0:
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/prettier/-/prettier-1.6.0.tgz#23e9c68251f440feb847f558821bead21765919a"
 
 pretty-bytes@^4.0.2:
   version "4.0.2"

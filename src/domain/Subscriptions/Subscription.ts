@@ -18,6 +18,7 @@ export interface SubscriptionArgs {
     order: SubscriptionOrder;
     unread: SubscriptionUnread;
     lastUpdated: SubscriptionLastUpdated;
+    isContentsUpdating: boolean;
 }
 
 export class Subscription extends Entity<SubscriptionIdentifier> {
@@ -30,6 +31,7 @@ export class Subscription extends Entity<SubscriptionIdentifier> {
     order: SubscriptionOrder;
     unread: SubscriptionUnread;
     lastUpdated: SubscriptionLastUpdated;
+    isContentsUpdating: boolean;
 
     constructor(args: SubscriptionArgs) {
         super(args.id);
@@ -42,6 +44,7 @@ export class Subscription extends Entity<SubscriptionIdentifier> {
         this.order = args.order;
         this.unread = args.unread;
         this.lastUpdated = args.lastUpdated;
+        this.isContentsUpdating = args.isContentsUpdating;
     }
 
     get hasUnreadContents(): boolean {
@@ -60,5 +63,13 @@ export class Subscription extends Entity<SubscriptionIdentifier> {
             ...this as SubscriptionArgs,
             contents: subscriptionContents
         });
+    }
+
+    mutableBeginContentUpdating() {
+        this.isContentsUpdating = true;
+    }
+
+    mutableEndContentUpdating() {
+        this.isContentsUpdating = false;
     }
 }

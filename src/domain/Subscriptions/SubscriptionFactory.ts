@@ -45,6 +45,7 @@ export function createSubscriptionFromResponse(
         unread: new SubscriptionUnread({
             count: Number(unreadResponse.count),
             maxCount: 1000
-        })
+        }),
+        isContentsUpdating: false
     });
 }

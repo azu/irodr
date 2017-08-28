@@ -28,23 +28,24 @@ export class ShowSubscriptionContentsUseCase extends UseCase {
         if (!subscription) {
             throw new Error(`Not found subscription: ${subscriptionId}`);
         }
+        if (subscription.isContentsUpdating) {
+            console.info(`This subscription is updating. No more update at once. ${subscription.id}`);
+            return;
+        }
         const specResult = isSatisfiedSubscriptionContentsFetchSpec(subscription);
         if (!specResult.ok) {
             console.info(specResult.reason);
             this.dispatch(new ShowSubscriptionContentsUseCasePayload(subscriptionId));
             return;
         }
+        subscription.mutableBeginContentUpdating();
         const client = new InoreaderAPI();
         return client
             .streamContents(subscription)
             .then(response => {
-                // get again, because async
-                const oldSubscription = this.repo.subscriptionRepository.findById(subscriptionId);
-                if (!oldSubscription) {
-                    return;
-                }
                 const subscriptionContents = createSubscriptionContentsFromResponse(response);
-                const newSubscription = oldSubscription.updateContents(subscriptionContents);
+                const newSubscription = subscription.updateContents(subscriptionContents);
+                newSubscription.mutableEndContentUpdating();
                 this.repo.subscriptionRepository.save(newSubscription);
             })
             .then(() => {

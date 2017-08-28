@@ -5,7 +5,6 @@ import { SubscriptionRepository } from "../../../../../infra/repository/Subscrip
 import { IGroup } from "office-ui-fabric-react";
 import { ToggleListGroupUseCasePayload } from "./use-case/ToggleListGroupUseCase";
 import { splice } from "@immutable-array/prototype";
-import { SubscriptionGroupByCategoryMap } from "../../../../../domain/Subscriptions/InfraSubscription";
 import { ShowSubscriptionContentsUseCasePayload } from "../../../../../use-case/subscription/ShowSubscriptionContentsUseCase";
 
 export interface SubscriptionListStateProps {
@@ -17,7 +16,9 @@ export interface SubscriptionListStateProps {
         [index: string]: boolean;
     };
     // cache
-    currentVersion: number;
+    categoryMap: {
+        [index: string]: Subscription[];
+    };
 }
 
 export class SubscriptionListState {
@@ -27,35 +28,50 @@ export class SubscriptionListState {
     groupIsCollapsed: {
         [index: string]: boolean;
     };
-    currentVersion: number;
+    categoryMap: {
+        [index: string]: Subscription[];
+    };
 
     constructor(props: SubscriptionListStateProps) {
         this.currentSubscriptionId = props.currentSubscriptionId;
         this.groups = props.groups;
         this.groupSubscriptions = props.groupSubscriptions;
         this.groupIsCollapsed = props.groupIsCollapsed;
-        this.currentVersion = props.currentVersion;
+        this.categoryMap = props.categoryMap;
     }
 
-    getNextItem(currentSubscription: Subscription): Subscription | undefined {
-        const index = this.groupSubscriptions.indexOf(currentSubscription);
+    getFirstItem(): Subscription | undefined {
+        return this.groupSubscriptions[0];
+    }
+
+    getPrevItem(currentSubscriptionId: SubscriptionIdentifier): Subscription | undefined {
+        const index = this.groupSubscriptions.findIndex(subscription => subscription.id.equals(currentSubscriptionId));
+        if (index === -1) {
+            return;
+        }
+        return this.groupSubscriptions[index - 1];
+    }
+
+    getNextItem(currentSubscriptionId: SubscriptionIdentifier): Subscription | undefined {
+        const index = this.groupSubscriptions.findIndex(subscription => subscription.id.equals(currentSubscriptionId));
         if (index === -1) {
             return;
         }
         return this.groupSubscriptions[index + 1];
     }
 
-    update(categoryMap: SubscriptionGroupByCategoryMap) {
-        const currentVersion = categoryMap.version;
+    update(categoryMap: { [index: string]: Subscription[] }) {
         // no change
-        if (currentVersion === this.currentVersion) {
+        if (categoryMap === this.categoryMap) {
             return this;
         }
         // create groups
         let currentIndex = 0;
         let groupSubscriptions: Subscription[] = [];
-        const groups: IGroup[] = categoryMap.sortedEntities().map(([categoryName, subscriptions]) => {
-            const readableSubscriptions = subscriptions;
+        const categoryNames = Object.keys(categoryMap).sort();
+        const groups: IGroup[] = categoryNames.map(categoryName => {
+            const subscriptions = categoryMap[categoryName];
+            const readableSubscriptions = subscriptions.filter(subscription => subscription.hasUnreadContents);
             groupSubscriptions = groupSubscriptions.concat(readableSubscriptions);
             if (this.groupIsCollapsed[categoryName] === undefined) {
                 this.groupIsCollapsed[categoryName] = false;
@@ -71,9 +87,10 @@ export class SubscriptionListState {
             currentIndex += count;
             return group;
         });
+        console.log(groupSubscriptions);
         return new SubscriptionListState({
             ...this as SubscriptionListStateProps,
-            currentVersion: currentVersion,
+            categoryMap,
             groups,
             groupSubscriptions
         });
@@ -116,7 +133,7 @@ export class SubscriptionListStore extends Store<SubscriptionListState> {
     constructor(private repo: { subscriptionRepository: SubscriptionRepository }) {
         super();
         this.state = new SubscriptionListState({
-            currentVersion: -1,
+            categoryMap: {},
             groups: [],
             groupSubscriptions: [],
             groupIsCollapsed: {}

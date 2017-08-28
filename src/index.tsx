@@ -48,7 +48,10 @@ if (process.env.NODE_ENV !== "production") {
     logger.startLogging(context);
 }
 const App = AlminReactContainer.create(AppContainer, context);
-context.useCase(createBootSubscriptionUseCase()).execute().then(() => {
-    ReactDOM.render(<App />, document.getElementById("root") as HTMLElement);
-});
+context
+    .useCase(createBootSubscriptionUseCase())
+    .execute()
+    .then(() => {
+        ReactDOM.render(<App />, document.getElementById("root") as HTMLElement);
+    });
 registerServiceWorker();

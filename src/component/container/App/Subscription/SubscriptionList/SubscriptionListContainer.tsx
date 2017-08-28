@@ -26,7 +26,7 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
         if (count <= 0) {
             return;
         }
-        const nextItem = this.props.subscriptionList.getNextItem(currentSubscription);
+        const nextItem = this.props.subscriptionList.getNextItem(currentSubscription.id);
         if (!nextItem) {
             return;
         }

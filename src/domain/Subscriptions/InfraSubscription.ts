@@ -1,7 +1,7 @@
 // MIT © 2017 azu
 import { Subscription } from "./Subscription";
 import { MapLike } from "map-like";
-// TODO: should be immutable map
+// TODO: should be immutable m
 let version = 0;
 
 export class SubscriptionGroupByCategoryMap extends MapLike<string, Subscription[]> {

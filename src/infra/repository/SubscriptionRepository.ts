@@ -1,14 +1,18 @@
 // MIT © 2017 azu
 import { Subscription } from "../../domain/Subscriptions/Subscription";
-import { SubscriptionGroupByCategoryMap } from "../../domain/Subscriptions/InfraSubscription";
 import { NullableRepository } from "ddd-base";
+import { splice } from "@immutable-array/prototype";
 
 export class SubscriptionRepository extends NullableRepository<Subscription> {
-    categoryMap: SubscriptionGroupByCategoryMap;
+    // Why not Map
+    // Built-in Map is difficult to be immutable
+    categoryMap: {
+        [index: string]: Subscription[];
+    };
 
     constructor() {
         super();
-        this.categoryMap = new SubscriptionGroupByCategoryMap();
+        this.categoryMap = {};
     }
 
     groupByCategory() {
@@ -16,22 +20,43 @@ export class SubscriptionRepository extends NullableRepository<Subscription> {
     }
 
     getAllCategoryNames() {
-        return this.categoryMap.keys();
+        return Object.keys(this.categoryMap);
     }
 
     getAllByCategories(category: string) {
-        return this.categoryMap.get(category);
+        return this.categoryMap[category];
     }
+
+    /**
+     * Save subscriptions and build categories
+     * @param {Subscription[]} subscriptions
+     */
+    saveBuild(subscriptions: Subscription[]) {}
 
     save(subscription: Subscription) {
         super.save(subscription);
         subscription.categories.forEach(category => {
-            if (this.categoryMap.has(category)) {
-                this.categoryMap.set(category, this.categoryMap.get(category)!.concat(subscription));
+            if (this.categoryMap[category] !== undefined) {
+                const subscriptions = this.categoryMap[category];
+                const index = subscriptions.indexOf(subscription);
+                if (index === -1) {
+                    this.categoryMap = {
+                        ...this.categoryMap,
+                        [category]: subscriptions.concat(subscription)
+                    };
+                } else {
+                    // replace
+                    this.categoryMap = {
+                        ...this.categoryMap,
+                        [category]: splice(subscriptions, index, 1, subscription)
+                    };
+                }
             } else {
-                this.categoryMap.set(category, [subscription]);
+                this.categoryMap = {
+                    ...this.categoryMap,
+                    [category]: [subscription]
+                };
             }
-            this.categoryMap.versionUp();
         });
     }
 }
