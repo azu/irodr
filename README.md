@@ -9,8 +9,8 @@ It aim to work on browser/electron.
 ## Purpose
 
 - Fast read
-    - Prefetch
-    - Mark as "read" at idle time
+    - [x] Prefetch contents
+    - [ ] Mark as "read" at idle time
 - Customizable for user
     - [ ] We will provide some API like `window.getActiveItem` for UserScript.
 - Allow of other RSS reader API like Feedly
@@ -30,6 +30,18 @@ This server is also proxy server.
     - [x] Comment to [Inoreader Developers - User authentication via OAuth 2.0](http://www.inoreader.com/developers/oauth "Inoreader Developers - User authentication via OAuth 2.0")
 - Currently, We need CORS proxy in `package.json`
     - In other word, require proxy or proxy server
+
+## CORS workaound
+
+### Local server
+
+This project use the server that avoid CORS for Inoreader.
+
+    npm start
+
+### Browser extension
+
+- [ ] Chrome/Firefox browser extension for avoiding CORS
 
 ## Changelog
 
