@@ -1,16 +1,35 @@
 # irodr
 
-inoreader RSS reader client on browser
+RSS reader client for [Inoreader](http://www.inoreader.com/ "Inoreader").
+
+It aim to work on browser/electron.
+
+![screenshot](https://media.giphy.com/media/3o7aD1E8CZAirML9WE/giphy.gif)
+
+## Purpose
+
+- Fast read
+    - Prefetch
+    - Mark as "read" at idle time
+- Customizable for user
+    - [ ] We will provide some API like `window.getActiveItem` for UserScript.
+- Allow of other RSS reader API like Feedly
+    - Domain model should not depended on Inoreader
+- Welcome to Pull Request
 
 ## Usage
 
     npm start
 
-## Notes
+This server is also proxy server.
+
+## :memo: Notes
 
 - Inoreader doesn't support CORS
-- [Inoreader Developers - User authentication via OAuth 2.0](http://www.inoreader.com/developers/oauth "Inoreader Developers - User authentication via OAuth 2.0")
+    - Please support CORS :bow:
+    - [x] Comment to [Inoreader Developers - User authentication via OAuth 2.0](http://www.inoreader.com/developers/oauth "Inoreader Developers - User authentication via OAuth 2.0")
 - Currently, We need CORS proxy in `package.json`
+    - In other word, require proxy or proxy server
 
 ## Changelog
 
