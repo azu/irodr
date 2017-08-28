@@ -37,6 +37,16 @@ export class AppRepository extends NonNullableRepository<App> {
             });
         return this;
     }
+
+    save(entity: App) {
+        super.save(entity);
+        return this.storage.setItem(entity.id.toValue(), AppSerializer.toJSON(entity));
+    }
+
+    clear() {
+        super.clear();
+        return this.storage.clear();
+    }
 }
 
 export const appRepository = new AppRepository(createApp());

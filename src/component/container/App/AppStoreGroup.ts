@@ -4,6 +4,8 @@ import { SubscriptionListStore } from "./Subscription/SubscriptionList/Subscript
 import { subscriptionRepository } from "../../../infra/repository/SubscriptionRepository";
 import { SubscriptionContentsStore } from "./Subscription/SubscriptionContents/SubscriptionContentsStore";
 import { AppHeaderStore } from "./AppHeader/AppHeaderStore";
+import { appRepository } from "../../../infra/repository/AppRepository";
+import { AppPreferencesStore } from "./Preferences/AppPreferencesStore";
 
 export const appStoreGroup = new StoreGroup({
     subscriptionList: new SubscriptionListStore({
@@ -14,5 +16,8 @@ export const appStoreGroup = new StoreGroup({
     }),
     appHeader: new AppHeaderStore({
         subscriptionRepository
+    }),
+    appPreferences: new AppPreferencesStore({
+        appRepository
     })
 });

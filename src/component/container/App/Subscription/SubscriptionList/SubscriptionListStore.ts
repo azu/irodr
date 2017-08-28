@@ -16,6 +16,8 @@ export interface SubscriptionListStateProps {
     groupIsCollapsed: {
         [index: string]: boolean;
     };
+    // cache
+    currentVersion: number;
 }
 
 export class SubscriptionListState {
@@ -25,12 +27,14 @@ export class SubscriptionListState {
     groupIsCollapsed: {
         [index: string]: boolean;
     };
+    currentVersion: number;
 
     constructor(props: SubscriptionListStateProps) {
         this.currentSubscriptionId = props.currentSubscriptionId;
         this.groups = props.groups;
         this.groupSubscriptions = props.groupSubscriptions;
         this.groupIsCollapsed = props.groupIsCollapsed;
+        this.currentVersion = props.currentVersion;
     }
 
     getNextItem(currentSubscription: Subscription): Subscription | undefined {
@@ -42,27 +46,34 @@ export class SubscriptionListState {
     }
 
     update(categoryMap: SubscriptionGroupByCategoryMap) {
+        const currentVersion = categoryMap.version;
+        // no change
+        if (currentVersion === this.currentVersion) {
+            return this;
+        }
         // create groups
         let currentIndex = 0;
         let groupSubscriptions: Subscription[] = [];
         const groups: IGroup[] = categoryMap.sortedEntities().map(([categoryName, subscriptions]) => {
-            const readableSubscriptions = subscriptions.filter(subscription => subscription.hasUnreadContents);
+            const readableSubscriptions = subscriptions;
             groupSubscriptions = groupSubscriptions.concat(readableSubscriptions);
             if (this.groupIsCollapsed[categoryName] === undefined) {
                 this.groupIsCollapsed[categoryName] = false;
             }
+            const count = readableSubscriptions.length;
             const group = {
                 key: categoryName,
                 name: categoryName,
                 startIndex: currentIndex,
-                count: readableSubscriptions.length,
+                count: count,
                 isCollapsed: this.groupIsCollapsed[categoryName]
             };
-            currentIndex += readableSubscriptions.length;
+            currentIndex += count;
             return group;
         });
         return new SubscriptionListState({
             ...this as SubscriptionListStateProps,
+            currentVersion: currentVersion,
             groups,
             groupSubscriptions
         });
@@ -105,6 +116,7 @@ export class SubscriptionListStore extends Store<SubscriptionListState> {
     constructor(private repo: { subscriptionRepository: SubscriptionRepository }) {
         super();
         this.state = new SubscriptionListState({
+            currentVersion: -1,
             groups: [],
             groupSubscriptions: [],
             groupIsCollapsed: {}

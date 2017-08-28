@@ -1,0 +1,12 @@
+.QuerySettingPanel .ms-Label {
+    font-weight: 600;
+}
+
+.QuerySettingPanel-itemDescription {
+    margin-top: 0.1rem;
+}
+
+.QuickIssuePanelState-footer > * {
+    line-height: 1.5;
+    margin-top: 0.5rem;
+}

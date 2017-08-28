@@ -4,6 +4,8 @@ import { createUpdateSubscriptionsUseCase } from "../../../../use-case/subscript
 import { BaseContainer } from "../../BaseContainer";
 import { AppHeaderState } from "./AppHeaderStore";
 import classnames from "classnames";
+import { IconButton } from "office-ui-fabric-react";
+import { ShowAppPreferenceUseCase } from "../Preferences/use-case/ToggleAppPreferenceUseCase";
 
 export interface AppHeaderContainerProps {
     appHeader: AppHeaderState;
@@ -12,6 +14,10 @@ export interface AppHeaderContainerProps {
 export class AppHeaderContainer extends BaseContainer<AppHeaderContainerProps, {}> {
     fetchList = () => {
         this.useCase(createUpdateSubscriptionsUseCase()).executor(useCase => useCase.execute());
+    };
+
+    onClickPreferences = () => {
+        this.useCase(new ShowAppPreferenceUseCase()).executor(useCase => useCase.execute());
     };
 
     render() {
@@ -28,6 +34,12 @@ export class AppHeaderContainer extends BaseContainer<AppHeaderContainerProps, {
                     <span className="AppHeaderContainer-totalSubscriptionCount">
                         Subscriptions: {this.props.appHeader.totalSubscriptionCount}
                     </span>
+                    <IconButton
+                        className="AppHeaderContainer-preferencesButton"
+                        iconProps={{ iconName: "Settings" }}
+                        title="Setting"
+                        onClick={this.onClickPreferences}
+                    />
                 </div>
             </header>
         );

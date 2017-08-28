@@ -31,6 +31,7 @@ export class SubscriptionRepository extends NullableRepository<Subscription> {
             } else {
                 this.categoryMap.set(category, [subscription]);
             }
+            this.categoryMap.versionUp();
         });
     }
 }

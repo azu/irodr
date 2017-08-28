@@ -9,8 +9,8 @@ import { appStoreGroup } from "./component/container/App/AppStoreGroup";
 import { appLocator } from "./AppLocator";
 import AlminReactContainer from "almin-react-container";
 import { createBootSubscriptionUseCase } from "./use-case/subscription/BootSubscriptionUseCase";
-
 require("office-ui-fabric-react/dist/css/fabric.css");
+
 // require all css files
 function requireAll(r: any) {
     r.keys().forEach(r);
