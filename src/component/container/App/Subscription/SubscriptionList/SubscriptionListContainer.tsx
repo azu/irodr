@@ -16,6 +16,7 @@ export interface SubscriptionListContainerProps {
 
 export class SubscriptionListContainer extends BaseContainer<SubscriptionListContainerProps, {}> {
     private onClickSubscription = async (item: Subscription) => {
+        console.log("click");
         await this.useCase(createShowSubscriptionContentsUseCase()).executor(useCase => useCase.execute(item.id));
         // prefetch 3 items
         return this.fetchSubscriptions(item, 3);

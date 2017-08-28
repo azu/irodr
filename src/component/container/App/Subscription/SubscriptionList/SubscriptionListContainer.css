@@ -11,11 +11,11 @@
     width: 100%;
     height: var(--SubscriptionListContainer-listHeader--height);
     min-height: var(--SubscriptionListContainer-listHeader--height);
-    background-color: #f4f4f4;
 }
 
 .SubscriptionListContainer-listHeaderButton {
     width: 100%;
+    background-color: #f4f4f4;
     height: var(--SubscriptionListContainer-listHeader--height);
     min-height: var(--SubscriptionListContainer-listHeader--height);
     color: #000;
@@ -40,4 +40,5 @@
 
 .SubscriptionListContainer-itemLink {
     padding: 0 4px;
+    width: 100%;
 }

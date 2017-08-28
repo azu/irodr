@@ -51,7 +51,7 @@ export class InoreaderAPI {
         // use SubscriptionIdentifier
         // http://www.inoreader.com/developers/stream-contents
         return this.getRequest<StreamContentsResponse>(
-            `/api/0/stream/contents/${encodeURIComponent(subscription.id.toValue())}`
+            `/api/0/stream/contents/${encodeURIComponent(subscription.id.toValue())}?n=5`
         );
     }
 }

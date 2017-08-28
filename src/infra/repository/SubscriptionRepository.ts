@@ -1,9 +1,9 @@
 // MIT © 2017 azu
-import { NullableBaseRepository } from "ddd-base/lib/NullableBaseRepository";
 import { Subscription } from "../../domain/Subscriptions/Subscription";
 import { SubscriptionGroupByCategoryMap } from "../../domain/Subscriptions/InfraSubscription";
+import { NullableRepository } from "ddd-base";
 
-export class SubscriptionRepository extends NullableBaseRepository<Subscription> {
+export class SubscriptionRepository extends NullableRepository<Subscription> {
     categoryMap: SubscriptionGroupByCategoryMap;
 
     constructor() {

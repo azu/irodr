@@ -109,15 +109,16 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
             const observer = new IntersectionObserver(
                 entries => {
                     const activeItemId = getActiveItem();
-                    console.log("activeItemId", activeItemId);
                     if (activeItemId) {
                         const contentId = this.props.subscriptionContents.getContentId(activeItemId);
-                        this.useCase(new FocusContentUseCase()).executor(useCase => useCase.execute(contentId));
+                        if (!contentId.equals(this.props.subscriptionContents.focusContentId)) {
+                            this.useCase(new FocusContentUseCase()).executor(useCase => useCase.execute(contentId));
+                        }
                     }
                 },
                 {
                     root: this.element,
-                    threshold: [0, 0.2, 0.4, 0.5, 0.6, 0.8, 1.0]
+                    threshold: [0, 0.2, 0.4, 0.6, 0.8, 1.0]
                 }
             );
             Array.from(document.querySelectorAll(".SubscriptionContentsContainer-content")).forEach(element => {
