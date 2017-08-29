@@ -9,9 +9,11 @@ import { AppPreferencesStore } from "./Preferences/AppPreferencesStore";
 
 export const appStoreGroup = new StoreGroup({
     subscriptionList: new SubscriptionListStore({
+        appRepository,
         subscriptionRepository
     }),
     subscriptionContents: new SubscriptionContentsStore({
+        appRepository,
         subscriptionRepository
     }),
     appHeader: new AppHeaderStore({

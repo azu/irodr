@@ -5,7 +5,8 @@ import { SubscriptionRepository } from "../../../../../infra/repository/Subscrip
 import { IGroup } from "office-ui-fabric-react";
 import { ToggleListGroupUseCasePayload } from "./use-case/ToggleListGroupUseCase";
 import { splice } from "@immutable-array/prototype";
-import { ShowSubscriptionContentsUseCasePayload } from "../../../../../use-case/subscription/ShowSubscriptionContentsUseCase";
+import { AppRepository } from "../../../../../infra/repository/AppRepository";
+import { AppSubscriptionActivityItem } from "../../../../../domain/App/User/AppSubscriptionActivityItem";
 
 export interface SubscriptionListStateProps {
     currentSubscriptionId?: SubscriptionIdentifier;
@@ -60,7 +61,15 @@ export class SubscriptionListState {
         return this.groupSubscriptions[index + 1];
     }
 
-    update(categoryMap: { [index: string]: Subscription[] }) {
+    updateCurrentSubscriptionId(currentActivityItem: AppSubscriptionActivityItem | undefined) {
+        const currentSubscriptionId = currentActivityItem ? currentActivityItem.id : undefined;
+        return new SubscriptionListState({
+            ...this as SubscriptionListStateProps,
+            currentSubscriptionId
+        });
+    }
+
+    updateCategoryMap(categoryMap: { [index: string]: Subscription[] }) {
         // no change
         if (categoryMap === this.categoryMap) {
             return this;
@@ -87,7 +96,6 @@ export class SubscriptionListState {
             currentIndex += count;
             return group;
         });
-        console.log(groupSubscriptions);
         return new SubscriptionListState({
             ...this as SubscriptionListStateProps,
             categoryMap,
@@ -110,16 +118,11 @@ export class SubscriptionListState {
         return splice(this.groups, index, 1, newGroup);
     }
 
-    reduce(payload: ToggleListGroupUseCasePayload | ShowSubscriptionContentsUseCasePayload) {
+    reduce(payload: ToggleListGroupUseCasePayload) {
         if (payload instanceof ToggleListGroupUseCasePayload) {
             return new SubscriptionListState({
                 ...this as SubscriptionListStateProps,
                 groups: this.toggleGroup(payload.categoryKey)
-            });
-        } else if (payload instanceof ShowSubscriptionContentsUseCasePayload) {
-            return new SubscriptionListState({
-                ...this as SubscriptionListStateProps,
-                currentSubscriptionId: payload.subscriptionId
             });
         } else {
             return this;
@@ -130,7 +133,12 @@ export class SubscriptionListState {
 export class SubscriptionListStore extends Store<SubscriptionListState> {
     state: SubscriptionListState;
 
-    constructor(private repo: { subscriptionRepository: SubscriptionRepository }) {
+    constructor(
+        private repo: {
+            appRepository: AppRepository;
+            subscriptionRepository: SubscriptionRepository;
+        }
+    ) {
         super();
         this.state = new SubscriptionListState({
             categoryMap: {},
@@ -141,8 +149,14 @@ export class SubscriptionListStore extends Store<SubscriptionListState> {
     }
 
     receivePayload(payload: any) {
+        const app = this.repo.appRepository.get();
         const subscriptionGroupByCategory = this.repo.subscriptionRepository.groupByCategory();
-        this.setState(this.state.update(subscriptionGroupByCategory).reduce(payload));
+        this.setState(
+            this.state
+                .updateCategoryMap(subscriptionGroupByCategory)
+                .updateCurrentSubscriptionId(app.user.subscriptionActivity.current)
+                .reduce(payload)
+        );
     }
 
     getState(): SubscriptionListState {

@@ -1,25 +1,26 @@
 // MIT © 2017 azu
-import { Payload, UseCase } from "almin";
+import { UseCase } from "almin";
 import { subscriptionRepository, SubscriptionRepository } from "../../infra/repository/SubscriptionRepository";
 import { SubscriptionIdentifier } from "../../domain/Subscriptions/Subscription";
 import { InoreaderAPI } from "../../infra/api/InoreaderAPI";
 import { createSubscriptionContentsFromResponse } from "../../domain/Subscriptions/SubscriptionContent/SubscriptionContentFactoryh";
 import { isSatisfiedSubscriptionContentsFetchSpec } from "./spec/SubscriptionContentsFetchSpec";
+import { appRepository, AppRepository } from "../../infra/repository/AppRepository";
 
 export const createShowSubscriptionContentsUseCase = () => {
     return new ShowSubscriptionContentsUseCase({
+        appRepository,
         subscriptionRepository
     });
 };
 
-export class ShowSubscriptionContentsUseCasePayload extends Payload {
-    constructor(public subscriptionId: SubscriptionIdentifier) {
-        super({ type: "ShowSubscriptionContentsUseCasePayload" });
-    }
-}
-
 export class ShowSubscriptionContentsUseCase extends UseCase {
-    constructor(private repo: { subscriptionRepository: SubscriptionRepository }) {
+    constructor(
+        private repo: {
+            appRepository: AppRepository;
+            subscriptionRepository: SubscriptionRepository;
+        }
+    ) {
         super();
     }
 
@@ -33,23 +34,21 @@ export class ShowSubscriptionContentsUseCase extends UseCase {
             return;
         }
         const specResult = isSatisfiedSubscriptionContentsFetchSpec(subscription);
+        const app = this.repo.appRepository.get();
         if (!specResult.ok) {
             console.info(specResult.reason);
-            this.dispatch(new ShowSubscriptionContentsUseCasePayload(subscriptionId));
+            app.user.openNewSubscription(subscription);
             return;
         }
         subscription.mutableBeginContentUpdating();
         const client = new InoreaderAPI();
-        return client
-            .streamContents(subscription)
-            .then(response => {
-                const subscriptionContents = createSubscriptionContentsFromResponse(response);
-                const newSubscription = subscription.updateContents(subscriptionContents);
-                newSubscription.mutableEndContentUpdating();
-                this.repo.subscriptionRepository.save(newSubscription);
-            })
-            .then(() => {
-                this.dispatch(new ShowSubscriptionContentsUseCasePayload(subscriptionId));
-            });
+        return client.streamContents(subscription).then(response => {
+            const subscriptionContents = createSubscriptionContentsFromResponse(response);
+            const newSubscription = subscription.updateContents(subscriptionContents);
+            newSubscription.mutableEndContentUpdating();
+            app.user.openNewSubscription(subscription);
+            this.repo.appRepository.save(app);
+            this.repo.subscriptionRepository.save(newSubscription);
+        });
     }
 }

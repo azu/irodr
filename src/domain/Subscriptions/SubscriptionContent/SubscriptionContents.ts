@@ -50,6 +50,8 @@ export class SubscriptionContents {
         return this.contents.find(content => content.id.equals(id));
     }
 
+    nextContentOf(content: SubscriptionContent) {}
+
     add(aContent: SubscriptionContent) {
         return this.updateContents(this.contents.concat(aContent));
     }
