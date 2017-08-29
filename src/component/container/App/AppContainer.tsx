@@ -12,7 +12,10 @@ export class AppContainer extends BaseContainer<typeof appStoreGroup.state, {}> 
         return (
             <div className="AppContainer">
                 <AppPreferencesContainer appPreferences={this.props.appPreferences} />
-                <ShortcutKeyContainer subscriptionList={this.props.subscriptionList} />
+                <ShortcutKeyContainer
+                    subscriptionList={this.props.subscriptionList}
+                    subscriptionContents={this.props.subscriptionContents}
+                />
                 <AppHeaderContainer className="AppContainer-header" appHeader={this.props.appHeader} />
                 <SubscriptionContainer
                     className="AppContainer-body"

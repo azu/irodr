@@ -4,6 +4,9 @@ import { BaseContainer } from "../../BaseContainer";
 import { SubscriptionListState } from "../Subscription/SubscriptionList/SubscriptionListStore";
 import { createShowSubscriptionContentsUseCase } from "../../../../use-case/subscription/ShowSubscriptionContentsUseCase";
 import debounce from "lodash.debounce";
+import { SubscriptionContentsState } from "../Subscription/SubscriptionContents/SubscriptionContentsStore";
+import { ScrollToNextContentUseCase } from "../Subscription/SubscriptionContents/use-case/ScrollToNextContentUseCase";
+import { ScrollToPrevContentUseCase } from "../Subscription/SubscriptionContents/use-case/ScrollToPrevContentUseCase";
 
 const DEBOUNCE_TIME = 32;
 const IGNORE_NODE_NAME_PATTERN = /webview/i;
@@ -16,6 +19,7 @@ const isIgnoreNode = (event: Event): boolean => {
 };
 
 export interface ShortcutKeyContainerProps {
+    subscriptionContents: SubscriptionContentsState;
     subscriptionList: SubscriptionListState;
 }
 
@@ -54,8 +58,20 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
                 }
                 this.useCase(createShowSubscriptionContentsUseCase()).executor(useCase => useCase.execute(nextItem.id));
             }, DEBOUNCE_TIME),
-            "move-next-content-item": (_event: Event) => {},
-            "move-prev-content-item": (_event: Event) => {}
+            "move-next-content-item": (_event: Event) => {
+                const nextContent = this.props.subscriptionContents.getNextContent();
+                if (!nextContent) {
+                    return;
+                }
+                this.useCase(new ScrollToNextContentUseCase()).executor(useCase => useCase.execute(nextContent.id));
+            },
+            "move-prev-content-item": (_event: Event) => {
+                const prevContent = this.props.subscriptionContents.getPrevContent();
+                if (!prevContent) {
+                    return;
+                }
+                this.useCase(new ScrollToPrevContentUseCase()).executor(useCase => useCase.execute(prevContent.id));
+            }
         };
         const keyMap: { [index: string]: keyof typeof actionMap } = {
             j: "move-next-content-item",

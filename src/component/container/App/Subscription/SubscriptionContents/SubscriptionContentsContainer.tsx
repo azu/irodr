@@ -2,7 +2,10 @@ import * as React from "react";
 import { BaseContainer } from "../../../BaseContainer";
 import classnames from "classnames";
 import { SubscriptionContentsState } from "./SubscriptionContentsStore";
-import { SubscriptionContent } from "../../../../../domain/Subscriptions/SubscriptionContent/SubscriptionContent";
+import {
+    SubscriptionContent,
+    SubscriptionContentIdentifier
+} from "../../../../../domain/Subscriptions/SubscriptionContent/SubscriptionContent";
 import { Link } from "office-ui-fabric-react";
 import { FocusContentUseCase } from "./use-case/FocusContentUseCase";
 import { HTMLContent } from "../../../../ui-kit/HTMLContent";
@@ -13,31 +16,33 @@ export interface SubscriptionContentsContainerProps {
 
 /**
  * get Active Item from the scroll position
- * https://gist.github.com/anonymous/2d8641f3cbd24753dac81bfc992870da
+ * @see https://gist.github.com/azu/c306c1efa31f0f41aa01c5b69576d00c#file-reader_main-0-3-8-js-L1205
  * @returns {string}
  */
 function getActiveItem(): string | undefined {
-    // return 1;
-    const rightBody = document.querySelector(".SubscriptionContentsContainer") as HTMLElement;
-    const h2Elements = document.querySelectorAll(".SubscriptionContentsContainer-contentTitle") as NodeListOf<
+    const contentContainer = document.querySelector(".SubscriptionContentsContainer") as HTMLElement;
+    const contentElements = document.querySelectorAll(".SubscriptionContentsContainer-content") as NodeListOf<
         HTMLElement
     >;
-    const containerScrollTop = rightBody.scrollTop;
-    const containerOffsetHeight = rightBody.offsetHeight;
-
-    const contentCount = h2Elements.length;
+    const containerScrollTop = contentContainer.scrollTop;
+    const containerOffsetHeight = contentContainer.offsetHeight;
+    // TODO: should be computables
+    // AppHeader's height = 32px
+    const marginTopOfContentContainer = 32;
+    console.log(marginTopOfContentContainer);
+    const contentCount = contentElements.length;
     if (!contentCount) return;
-    const offsets = [];
+    const offsets: number[] = [];
     for (let i = 0; i < contentCount; i++) {
-        offsets.push(h2Elements[i].offsetTop);
+        offsets.push(contentElements[i].offsetTop - marginTopOfContentContainer);
     }
-    if (!rightBody) {
+    if (!contentContainer) {
         return;
     }
     const screen = [containerScrollTop, containerScrollTop + containerOffsetHeight];
-    const pairs = offsets.map(function(v, i, self) {
-        if (self[i + 1]) {
-            return [v, self[i + 1]];
+    const pairs = offsets.map(function(v, i, element) {
+        if (element[i + 1]) {
+            return [v, element[i + 1]];
         } else {
             return [v, containerOffsetHeight];
         }
@@ -54,24 +59,24 @@ function getActiveItem(): string | undefined {
         return bottom - top;
     });
     if (contentCount == 1) {
-        const h2Element = h2Elements[0];
-        return h2Element.dataset.contentId;
+        const content = contentElements[0];
+        return content.dataset.contentId;
     } else {
         if (full_contain.length > 0) {
             const offset = full_contain.shift();
             if (offset === undefined) {
                 return;
             }
-            const h2Element = h2Elements[offset];
-            return h2Element.dataset.contentId;
+            const content = contentElements[offset];
+            return content.dataset.contentId;
         } else {
             const max_intersection = Math.max.apply(null, intersections);
             const offset = max_intersection === 0 ? contentCount - 1 : intersections.indexOf(max_intersection);
             if (offset === undefined) {
                 return;
             }
-            const h2Element = h2Elements[offset];
-            return h2Element.dataset.contentId;
+            const content = contentElements[offset];
+            return content.dataset.contentId;
         }
     }
 }
@@ -90,7 +95,17 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
                 ref={c => (this.element = c)}
                 className={classnames("SubscriptionContentsContainer", this.props.className)}
             >
-                {contents}
+                <div role="main" className="SubscriptionContentsContainer-body">
+                    {contents}
+                </div>
+                <footer className="SubscriptionContentsContainer-footer">
+                    <div
+                        className="SubscriptionContentsContainer-footerPadding"
+                        style={{
+                            height: 545
+                        }}
+                    />
+                </footer>
             </div>
         );
     }
@@ -102,19 +117,18 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
             }
             this.onContentChange();
         }
+        const scrollContentId = this.props.subscriptionContents.scrollContentId;
+        if (scrollContentId && prevProps.subscriptionContents.scrollContentId !== scrollContentId) {
+            this.scrollToContentId(scrollContentId);
+        }
+        this.updateCurrentFocus();
     }
 
     private onContentChange() {
         if (this.element) {
             const observer = new IntersectionObserver(
                 entries => {
-                    const activeItemId = getActiveItem();
-                    if (activeItemId) {
-                        const contentId = this.props.subscriptionContents.getContentId(activeItemId);
-                        if (!contentId.equals(this.props.subscriptionContents.focusContentId)) {
-                            this.useCase(new FocusContentUseCase()).executor(useCase => useCase.execute(contentId));
-                        }
-                    }
+                    this.updateCurrentFocus();
                 },
                 {
                     root: this.element,
@@ -127,16 +141,29 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
         }
     }
 
+    private updateCurrentFocus() {
+        const activeItemId = getActiveItem();
+        console.log("activeItemId", activeItemId);
+        if (activeItemId) {
+            const contentId = this.props.subscriptionContents.getContentId(activeItemId);
+            if (!contentId.equals(this.props.subscriptionContents.focusContentId)) {
+                this.useCase(new FocusContentUseCase()).executor(useCase => useCase.execute(contentId));
+            }
+        }
+    }
+
     private makeContent(content: SubscriptionContent, index: number) {
         const isFocus = this.props.subscriptionContents.isFocusContent(content);
+        const contentIdString = content.id.toValue();
         return (
             <div
                 className={classnames("SubscriptionContentsContainer-content", {
                     "is-focus": isFocus
                 })}
-                key={`${content.id.toValue()}-${index}`}
+                key={`${contentIdString}-${index}`}
+                data-content-id={contentIdString}
             >
-                <h2 className="SubscriptionContentsContainer-contentTitle" data-content-id={content.id.toValue()}>
+                <h2 className="SubscriptionContentsContainer-contentTitle">
                     <Link href={content.url} target="_blank" rel="noopener">
                         {content.title}
                     </Link>
@@ -146,5 +173,13 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
                 </HTMLContent>
             </div>
         );
+    }
+
+    private scrollToContentId(scrollContentId: SubscriptionContentIdentifier) {
+        const targetElement = document.querySelector(`[data-content-id="${scrollContentId.toValue()}"]`);
+        console.log("targetElement", targetElement);
+        if (targetElement) {
+            targetElement.scrollIntoView();
+        }
     }
 }

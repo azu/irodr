@@ -1,5 +1,6 @@
 // MIT © 2017 azu
 import { AppSubscriptionActivityItem } from "./AppSubscriptionActivityItem";
+import { SubscriptionIdentifier } from "../../Subscriptions/Subscription";
 
 export interface AppSubscriptionActivityArgs {
     items: AppSubscriptionActivityItem[];
@@ -14,6 +15,10 @@ export class AppSubscriptionActivity {
 
     get current(): AppSubscriptionActivityItem | undefined {
         return this.items[this.items.length - 1];
+    }
+
+    get currentId(): SubscriptionIdentifier | undefined {
+        return this.current ? this.current.id : undefined;
     }
 
     addItem(item: AppSubscriptionActivityItem) {

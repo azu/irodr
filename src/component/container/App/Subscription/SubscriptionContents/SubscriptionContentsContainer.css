@@ -1,6 +1,10 @@
 .SubscriptionContentsContainer {
 }
 
+.SubscriptionContentsContainer-body {
+    border: 1px solid #eee;
+}
+
 .SubscriptionContentsContainer-content {
     font-size: 100%;
     line-height: 1.5;

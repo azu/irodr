@@ -50,7 +50,21 @@ export class SubscriptionContents {
         return this.contents.find(content => content.id.equals(id));
     }
 
-    nextContentOf(content: SubscriptionContent) {}
+    prevContentOf(aContent: SubscriptionContent) {
+        const index = this.contents.findIndex(content => content.equals(aContent));
+        if (index === -1) {
+            return;
+        }
+        return this.contents[index - 1];
+    }
+
+    nextContentOf(aContent: SubscriptionContent) {
+        const index = this.contents.findIndex(content => content.equals(aContent));
+        if (index === -1) {
+            return;
+        }
+        return this.contents[index + 1];
+    }
 
     add(aContent: SubscriptionContent) {
         return this.updateContents(this.contents.concat(aContent));

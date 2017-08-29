@@ -8,19 +8,25 @@ import {
 } from "../../../../../domain/Subscriptions/SubscriptionContent/SubscriptionContent";
 import { FocusContentUseCasePayload } from "./use-case/FocusContentUseCase";
 import { AppRepository } from "../../../../../infra/repository/AppRepository";
+import { ScrollToNextContentUseCasePayload } from "./use-case/ScrollToNextContentUseCase";
+import { ScrollToPrevContentUseCasePayload } from "./use-case/ScrollToPrevContentUseCase";
 
 export interface SubscriptionContentsStateProps {
     contents?: SubscriptionContents;
     focusContentId?: SubscriptionContentIdentifier;
+    // if exist it, scroll to ths id at once
+    scrollContentId?: SubscriptionContentIdentifier;
 }
 
 export class SubscriptionContentsState {
     contents?: SubscriptionContents;
     focusContentId?: SubscriptionContentIdentifier;
+    scrollContentId?: SubscriptionContentIdentifier;
 
     constructor(props: SubscriptionContentsStateProps) {
         this.contents = props.contents;
         this.focusContentId = props.focusContentId;
+        this.scrollContentId = props.scrollContentId;
     }
 
     get hasContents(): boolean {
@@ -29,6 +35,39 @@ export class SubscriptionContentsState {
 
     getContentId(id: string): SubscriptionContentIdentifier {
         return new SubscriptionContentIdentifier(id);
+    }
+
+    getPrevContent(
+        contentIdentifier: SubscriptionContentIdentifier | undefined = this.focusContentId
+    ): SubscriptionContent | undefined {
+        if (!this.contents) {
+            return;
+        }
+
+        if (!contentIdentifier) {
+            return;
+        }
+        const subscriptionContent = this.contents.findContentById(contentIdentifier);
+        if (!subscriptionContent) {
+            return;
+        }
+        return this.contents.prevContentOf(subscriptionContent);
+    }
+
+    getNextContent(
+        contentIdentifier: SubscriptionContentIdentifier | undefined = this.focusContentId
+    ): SubscriptionContent | undefined {
+        if (!this.contents) {
+            return;
+        }
+        if (!contentIdentifier) {
+            return;
+        }
+        const subscriptionContent = this.contents.findContentById(contentIdentifier);
+        if (!subscriptionContent) {
+            return;
+        }
+        return this.contents.nextContentOf(subscriptionContent);
     }
 
     isFocusContent(content: SubscriptionContent): boolean {
@@ -44,11 +83,23 @@ export class SubscriptionContentsState {
         });
     }
 
-    reduce(payload: FocusContentUseCasePayload) {
+    reduce(
+        payload: FocusContentUseCasePayload | ScrollToNextContentUseCasePayload | ScrollToPrevContentUseCasePayload
+    ) {
         if (payload instanceof FocusContentUseCasePayload) {
             return new SubscriptionContentsState({
                 ...this as SubscriptionContentsStateProps,
                 focusContentId: payload.contentId
+            });
+        } else if (payload instanceof ScrollToNextContentUseCasePayload) {
+            return new SubscriptionContentsState({
+                ...this as SubscriptionContentsStateProps,
+                scrollContentId: payload.subscriptionContentId
+            });
+        } else if (payload instanceof ScrollToPrevContentUseCasePayload) {
+            return new SubscriptionContentsState({
+                ...this as SubscriptionContentsStateProps,
+                scrollContentId: payload.subscriptionContentId
             });
         } else {
             return this;
