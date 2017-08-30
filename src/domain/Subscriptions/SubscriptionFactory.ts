@@ -7,6 +7,7 @@ import { SubscriptionUnread } from "./SubscriptionUnread";
 import { SubscriptionLastUpdated } from "./SubscriptionLastUpdated";
 import { UnreadCountResponse, UnreadCountsResponse } from "../../infra/api/UnreadCountResponse";
 import keyBy from "lodash.keyby";
+import { TimeStamp } from "./TimeStamp";
 
 export function createSubscriptionsFromResponses(
     subscriptionsResponse: SubscriptionsResponse,
@@ -44,7 +45,9 @@ export function createSubscriptionFromResponse(
         order: new SubscriptionOrder(),
         unread: new SubscriptionUnread({
             count: Number(unreadResponse.count),
-            maxCount: 1000
+            maxCount: 1000,
+            // last read time
+            readTimestamp: TimeStamp.createTimeStampFromSecond(subscriptionResponse.firstitemmsec)
         }),
         isContentsUpdating: false
     });

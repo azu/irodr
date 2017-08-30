@@ -29,7 +29,6 @@ function getActiveItem(): string | undefined {
     // TODO: should be computables
     // AppHeader's height = 32px
     const marginTopOfContentContainer = 32;
-    console.log(marginTopOfContentContainer);
     const contentCount = contentElements.length;
     if (!contentCount) return;
     const offsets: number[] = [];

@@ -51,6 +51,13 @@ export class Subscription extends Entity<SubscriptionIdentifier> {
         return this.unread.count > 0;
     }
 
+    readAll() {
+        return new Subscription({
+            ...this as SubscriptionArgs,
+            unread: this.unread.read()
+        });
+    }
+
     refreshSubscription(subscriptionArgs: Partial<SubscriptionArgs>) {
         return new Subscription({
             ...this as SubscriptionArgs,

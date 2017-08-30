@@ -7,6 +7,7 @@ import debounce from "lodash.debounce";
 import { SubscriptionContentsState } from "../Subscription/SubscriptionContents/SubscriptionContentsStore";
 import { ScrollToNextContentUseCase } from "../Subscription/SubscriptionContents/use-case/ScrollToNextContentUseCase";
 import { ScrollToPrevContentUseCase } from "../Subscription/SubscriptionContents/use-case/ScrollToPrevContentUseCase";
+import { createMarkAsReadUseCase } from "../../../../use-case/subscription/MarkAsReadUseCase";
 
 const DEBOUNCE_TIME = 32;
 const IGNORE_NODE_NAME_PATTERN = /webview/i;
@@ -99,6 +100,13 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
                 if (contentContainer) {
                     scrollByScrollSize(contentContainer, 0.3, "up");
                 }
+            },
+            "make-subscription-read": (event: Event) => {
+                event.preventDefault();
+                const currentSubscriptionId = this.props.subscriptionList.currentSubscriptionId;
+                if (currentSubscriptionId) {
+                    this.useCase(createMarkAsReadUseCase()).executor(useCase => useCase.execute(currentSubscriptionId));
+                }
             }
         };
         const keyMap: { [index: string]: keyof typeof actionMap } = {
@@ -106,6 +114,7 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
             k: "move-prev-content-item",
             a: "move-prev-subscription-feed",
             s: "move-next-subscription-feed",
+            m: "make-subscription-read",
             space: "scroll-down-content",
             "shift+space": "scroll-up-content"
         };

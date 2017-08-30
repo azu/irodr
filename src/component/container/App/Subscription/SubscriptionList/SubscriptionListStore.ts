@@ -80,7 +80,16 @@ export class SubscriptionListState {
         const categoryNames = Object.keys(categoryMap).sort();
         const groups: IGroup[] = categoryNames.map(categoryName => {
             const subscriptions = categoryMap[categoryName];
-            const readableSubscriptions = subscriptions.filter(subscription => subscription.hasUnreadContents);
+            const readableSubscriptions = subscriptions.filter(subscription => {
+                if (subscription.hasUnreadContents) {
+                    return true;
+                }
+                // current subscription
+                if (subscription.id.equals(this.currentSubscriptionId)) {
+                    return true;
+                }
+                return false;
+            });
             groupSubscriptions = groupSubscriptions.concat(readableSubscriptions);
             if (this.groupIsCollapsed[categoryName] === undefined) {
                 this.groupIsCollapsed[categoryName] = false;

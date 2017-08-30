@@ -46,9 +46,9 @@ export class ShowSubscriptionContentsUseCase extends UseCase {
             const subscriptionContents = createSubscriptionContentsFromResponse(response);
             const newSubscription = subscription.updateContents(subscriptionContents);
             newSubscription.mutableEndContentUpdating();
-            app.user.openNewSubscription(subscription);
-            this.repo.appRepository.save(app);
             this.repo.subscriptionRepository.save(newSubscription);
+            app.user.openNewSubscription(newSubscription);
+            this.repo.appRepository.save(app);
         });
     }
 }

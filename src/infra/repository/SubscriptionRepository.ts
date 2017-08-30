@@ -33,28 +33,28 @@ export class SubscriptionRepository extends NullableRepository<Subscription> {
      */
     saveBuild(subscriptions: Subscription[]) {}
 
-    save(subscription: Subscription) {
-        super.save(subscription);
-        subscription.categories.forEach(category => {
+    save(aSubscription: Subscription) {
+        super.save(aSubscription);
+        aSubscription.categories.forEach(category => {
             if (this.categoryMap[category] !== undefined) {
                 const subscriptions = this.categoryMap[category];
-                const index = subscriptions.indexOf(subscription);
+                const index = subscriptions.findIndex(subscription => subscription.equals(aSubscription));
                 if (index === -1) {
                     this.categoryMap = {
                         ...this.categoryMap,
-                        [category]: subscriptions.concat(subscription)
+                        [category]: subscriptions.concat(aSubscription)
                     };
                 } else {
                     // replace
                     this.categoryMap = {
                         ...this.categoryMap,
-                        [category]: splice(subscriptions, index, 1, subscription)
+                        [category]: splice(subscriptions, index, 1, aSubscription)
                     };
                 }
             } else {
                 this.categoryMap = {
                     ...this.categoryMap,
-                    [category]: [subscription]
+                    [category]: [aSubscription]
                 };
             }
         });
