@@ -56,9 +56,11 @@
     "postcommit": "git reset",
     "prettier": "prettier --write 'src/**/*.{css,ts,tsx}'",
     "start": "react-scripts-ts start",
-    "build": "PUBLIC_URL=https://azu.github.io/irodr INOREADER_API_BASE_URL=https://jp.inoreader.com/reader react-scripts-ts build",
+    "build": "react-scripts-ts build",
     "test": "react-scripts-ts test --env=jsdom",
-    "eject": "react-scripts-ts eject"
+    "eject": "react-scripts-ts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "lint-staged": {
     "*.{js,ts,tsx,css}": [
@@ -81,6 +83,7 @@
   },
   "devDependencies": {
     "@alrra/travis-scripts": "^3.0.1",
+    "gh-pages": "^1.0.0",
     "husky": "^0.14.3",
     "lint-staged": "^4.0.4",
     "prettier": "^1.6.0"
