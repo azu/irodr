@@ -12,6 +12,7 @@ import { HTMLContent } from "../../../../ui-kit/HTMLContent";
 import distanceInWordsToNow from "date-fns/distance_in_words_to_now";
 import format from "date-fns/format";
 import isEqual from "date-fns/is_equal";
+import { ProgressColorBar } from "../../../../project/ProgressColorBar/ProgressColorBar";
 
 export interface SubscriptionContentsContainerProps {
     subscriptionContents: SubscriptionContentsState;
@@ -97,6 +98,11 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
                 ref={c => (this.element = c)}
                 className={classnames("SubscriptionContentsContainer", this.props.className)}
             >
+                <ProgressColorBar
+                    color="#a5c5ff"
+                    height={3}
+                    isCompleted={!this.props.subscriptionContents.isContentsLoadings}
+                />
                 <div role="main" className="SubscriptionContentsContainer-body">
                     {contents}
                 </div>

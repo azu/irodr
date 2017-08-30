@@ -1,7 +1,6 @@
 .AppHeaderContainer {
     min-height: var(--AppContainer-header--height);
-    color: white;
-    background-color: #222;
+    background-color: #f7f7f7;
     padding: 0 12px;
     display: flex;
     align-items: center;
@@ -13,23 +12,32 @@
 }
 
 .AppHeaderContainer-title {
-    font-size: 16px;
+    font-size: 20px;
     padding: 0;
-    margin: 0;
-    margin-right: 1rem;
+    margin: 0 1rem 0 0;
+}
+
+.AppHeaderContainer-reloadButton {
+    display: flex;
+    align-items: center;
 }
 
 .AppHeaderContainer-right {
-    display: inline-block;
+    display: flex;
     margin-left: auto;
 }
 
 .AppHeaderContainer-totalUnreadCount {
+    display: flex;
+    align-items: center;
+    margin-right: 0.5rem;
 }
 
 .AppHeaderContainer-totalSubscriptionCount {
+    display: flex;
+    align-items: center;
+    margin-right: 0.5rem;
 }
 
 .AppHeaderContainer-preferencesButton {
-    color: white;
 }

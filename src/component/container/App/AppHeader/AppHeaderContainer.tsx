@@ -25,7 +25,14 @@ export class AppHeaderContainer extends BaseContainer<AppHeaderContainerProps, {
             <header className={classnames("AppHeaderContainer", this.props.className)}>
                 <div className="AppHeaderContainer-left">
                     <h1 className="AppHeaderContainer-title">Irodr</h1>
-                    <button onClick={this.fetchList}>Fetch</button>
+                    <div className="AppHeaderContainer-menu">
+                        <IconButton
+                            className="AppHeaderContainer-reloadButton"
+                            iconProps={{ iconName: "Refresh" }}
+                            title="Reload subscriptions"
+                            onClick={this.fetchList}
+                        />
+                    </div>
                 </div>
                 <div className="AppHeaderContainer-right">
                     <span className="AppHeaderContainer-totalUnreadCount">

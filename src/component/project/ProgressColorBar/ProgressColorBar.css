@@ -1,0 +1,8 @@
+.ProgressColorBar {
+    width: 100%;
+    transition: all 0.1s ease-in-out;
+    will-change: transform;
+    /* transform */
+    /*transform: scaleX(0.1);*/
+    transform-origin: left;
+}

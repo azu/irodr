@@ -10,8 +10,13 @@ import { FocusContentUseCasePayload } from "./use-case/FocusContentUseCase";
 import { AppRepository } from "../../../../../infra/repository/AppRepository";
 import { ScrollToNextContentUseCasePayload } from "./use-case/ScrollToNextContentUseCase";
 import { ScrollToPrevContentUseCasePayload } from "./use-case/ScrollToPrevContentUseCase";
+import {
+    FinishLoadingPayload,
+    StartLoadingPayload
+} from "../../../../../use-case/subscription/ShowSubscriptionContentsUseCase";
 
 export interface SubscriptionContentsStateProps {
+    isContentsLoadings: boolean;
     contents?: SubscriptionContents;
     focusContentId?: SubscriptionContentIdentifier;
     // if exist it, scroll to ths id at once
@@ -19,11 +24,13 @@ export interface SubscriptionContentsStateProps {
 }
 
 export class SubscriptionContentsState {
+    isContentsLoadings: boolean;
     contents?: SubscriptionContents;
     focusContentId?: SubscriptionContentIdentifier;
     scrollContentId?: SubscriptionContentIdentifier;
 
     constructor(props: SubscriptionContentsStateProps) {
+        this.isContentsLoadings = props.isContentsLoadings;
         this.contents = props.contents;
         this.focusContentId = props.focusContentId;
         this.scrollContentId = props.scrollContentId;
@@ -79,12 +86,18 @@ export class SubscriptionContentsState {
             return this;
         }
         return new SubscriptionContentsState({
+            ...this as SubscriptionContentsStateProps,
             contents
         });
     }
 
     reduce(
-        payload: FocusContentUseCasePayload | ScrollToNextContentUseCasePayload | ScrollToPrevContentUseCasePayload
+        payload:
+            | FocusContentUseCasePayload
+            | ScrollToNextContentUseCasePayload
+            | ScrollToPrevContentUseCasePayload
+            | StartLoadingPayload
+            | FinishLoadingPayload
     ) {
         if (payload instanceof FocusContentUseCasePayload) {
             return new SubscriptionContentsState({
@@ -100,6 +113,16 @@ export class SubscriptionContentsState {
             return new SubscriptionContentsState({
                 ...this as SubscriptionContentsStateProps,
                 scrollContentId: payload.subscriptionContentId
+            });
+        } else if (payload instanceof StartLoadingPayload) {
+            return new SubscriptionContentsState({
+                ...this as SubscriptionContentsStateProps,
+                isContentsLoadings: true
+            });
+        } else if (payload instanceof FinishLoadingPayload) {
+            return new SubscriptionContentsState({
+                ...this as SubscriptionContentsStateProps,
+                isContentsLoadings: false
             });
         } else {
             return this;
@@ -117,7 +140,9 @@ export class SubscriptionContentsStore extends Store<SubscriptionContentsState> 
         }
     ) {
         super();
-        this.state = new SubscriptionContentsState({});
+        this.state = new SubscriptionContentsState({
+            isContentsLoadings: false
+        });
     }
 
     receivePayload(payload: any) {
