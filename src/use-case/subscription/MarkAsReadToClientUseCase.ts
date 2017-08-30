@@ -2,15 +2,17 @@
 import { UseCase } from "almin";
 import { subscriptionRepository, SubscriptionRepository } from "../../infra/repository/SubscriptionRepository";
 import { SubscriptionIdentifier } from "../../domain/Subscriptions/Subscription";
-import { InoreaderAPI } from "../../infra/api/InoreaderAPI";
 
-export const createMarkAsReadUseCase = () => {
-    return new MarkAsReadUseCase({
+export const createMarkAsReadToClientUseCase = () => {
+    return new MarkAsReadToClientUseCase({
         subscriptionRepository
     });
 };
 
-export class MarkAsReadUseCase extends UseCase {
+/**
+ * Mark as read in client
+ */
+export class MarkAsReadToClientUseCase extends UseCase {
     constructor(
         private repo: {
             subscriptionRepository: SubscriptionRepository;
@@ -26,12 +28,5 @@ export class MarkAsReadUseCase extends UseCase {
         }
         const newSubscription = subscription.readAll();
         this.repo.subscriptionRepository.save(newSubscription);
-        //
-        const client = new InoreaderAPI();
-        return client.markAsRead(subscription).catch(error => {
-            console.error(error);
-            // revert
-            this.repo.subscriptionRepository.save(subscription);
-        });
     }
 }

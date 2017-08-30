@@ -7,7 +7,7 @@ import debounce from "lodash.debounce";
 import { SubscriptionContentsState } from "../Subscription/SubscriptionContents/SubscriptionContentsStore";
 import { ScrollToNextContentUseCase } from "../Subscription/SubscriptionContents/use-case/ScrollToNextContentUseCase";
 import { ScrollToPrevContentUseCase } from "../Subscription/SubscriptionContents/use-case/ScrollToPrevContentUseCase";
-import { createMarkAsReadUseCase } from "../../../../use-case/subscription/MarkAsReadUseCase";
+import { createMarkAsReadToServerUseCase } from "../../../../use-case/subscription/MarkAsReadToServerUseCase";
 
 const DEBOUNCE_TIME = 32;
 const IGNORE_NODE_NAME_PATTERN = /webview/i;
@@ -42,14 +42,14 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
     componentDidMount() {
         this.combokeys = new Combokeys(document.documentElement);
         const actionMap = {
-            "move-next-subscription-feed": debounce((_event: Event) => {
+            "move-next-subscription-feed": debounce(async (_event: Event) => {
                 const currentSubscriptionId = this.props.subscriptionList.currentSubscriptionId;
                 if (!currentSubscriptionId) {
                     const firstItem = this.props.subscriptionList.getFirstItem();
                     if (!firstItem) {
                         return console.info("Not found first item");
                     }
-                    this.useCase(createShowSubscriptionContentsUseCase()).executor(useCase =>
+                    await this.useCase(createShowSubscriptionContentsUseCase()).executor(useCase =>
                         useCase.execute(firstItem.id)
                     );
                     return;
@@ -58,9 +58,11 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
                 if (!nextItem) {
                     return console.info("Not found next item");
                 }
-                this.useCase(createShowSubscriptionContentsUseCase()).executor(useCase => useCase.execute(nextItem.id));
+                await this.useCase(createShowSubscriptionContentsUseCase()).executor(useCase =>
+                    useCase.execute(nextItem.id)
+                );
             }, DEBOUNCE_TIME),
-            "move-prev-subscription-feed": debounce((_event: Event) => {
+            "move-prev-subscription-feed": debounce(async (_event: Event) => {
                 const currentSubscriptionId = this.props.subscriptionList.currentSubscriptionId;
                 if (!currentSubscriptionId) {
                     return;
@@ -69,7 +71,9 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
                 if (!nextItem) {
                     return console.info("Not found next item");
                 }
-                this.useCase(createShowSubscriptionContentsUseCase()).executor(useCase => useCase.execute(nextItem.id));
+                await this.useCase(createShowSubscriptionContentsUseCase()).executor(useCase =>
+                    useCase.execute(nextItem.id)
+                );
             }, DEBOUNCE_TIME),
             "move-next-content-item": (_event: Event) => {
                 const nextContent = this.props.subscriptionContents.getNextContent();
@@ -105,7 +109,9 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
                 event.preventDefault();
                 const currentSubscriptionId = this.props.subscriptionList.currentSubscriptionId;
                 if (currentSubscriptionId) {
-                    this.useCase(createMarkAsReadUseCase()).executor(useCase => useCase.execute(currentSubscriptionId));
+                    this.useCase(createMarkAsReadToServerUseCase()).executor(useCase =>
+                        useCase.execute(currentSubscriptionId)
+                    );
                 }
             }
         };

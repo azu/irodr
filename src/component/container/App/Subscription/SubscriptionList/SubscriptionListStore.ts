@@ -7,6 +7,7 @@ import { ToggleListGroupUseCasePayload } from "./use-case/ToggleListGroupUseCase
 import { splice } from "@immutable-array/prototype";
 import { AppRepository } from "../../../../../infra/repository/AppRepository";
 import { AppSubscriptionActivityItem } from "../../../../../domain/App/User/AppSubscriptionActivityItem";
+import { AppSubscriptionActivity } from "../../../../../domain/App/User/AppSubscriptionActivity";
 
 export interface SubscriptionListStateProps {
     currentSubscriptionId?: SubscriptionIdentifier;
@@ -69,7 +70,7 @@ export class SubscriptionListState {
         });
     }
 
-    updateCategoryMap(categoryMap: { [index: string]: Subscription[] }) {
+    updateCategoryMap(categoryMap: { [index: string]: Subscription[] }, subscriptionActivity: AppSubscriptionActivity) {
         // no change
         if (categoryMap === this.categoryMap) {
             return this;
@@ -85,7 +86,7 @@ export class SubscriptionListState {
                     return true;
                 }
                 // current subscription
-                if (subscription.id.equals(this.currentSubscriptionId)) {
+                if (subscriptionActivity.isReadRecently(subscription.id)) {
                     return true;
                 }
                 return false;
@@ -159,10 +160,11 @@ export class SubscriptionListStore extends Store<SubscriptionListState> {
 
     receivePayload(payload: any) {
         const app = this.repo.appRepository.get();
+        const subscriptionActivity = app.user.subscriptionActivity;
         const subscriptionGroupByCategory = this.repo.subscriptionRepository.groupByCategory();
         this.setState(
             this.state
-                .updateCategoryMap(subscriptionGroupByCategory)
+                .updateCategoryMap(subscriptionGroupByCategory, subscriptionActivity)
                 .updateCurrentSubscriptionId(app.user.subscriptionActivity.current)
                 .reduce(payload)
         );

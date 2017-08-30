@@ -13,6 +13,11 @@ export class AppSubscriptionActivity {
         this.items = args.items;
     }
 
+    isReadRecently(subscriptionId: SubscriptionIdentifier): boolean {
+        const RECENT = 3;
+        return this.items.slice(-RECENT).some(item => subscriptionId.equals(item.id));
+    }
+
     get current(): AppSubscriptionActivityItem | undefined {
         return this.items[this.items.length - 1];
     }
