@@ -1,4 +1,4 @@
-# irodr
+# irodr [![Build Status](https://travis-ci.org/azu/irodr.svg?branch=master)](https://travis-ci.org/azu/irodr)
 
 RSS reader client for [Inoreader](http://www.inoreader.com/ "Inoreader").
 
