@@ -18,6 +18,18 @@ const isIgnoreNode = (event: Event): boolean => {
     return IGNORE_NODE_NAME_PATTERN.test(target.nodeName);
 };
 
+/**
+ * Scroll by screen size ratio
+ * @param {HTMLElement} target
+ * @param {number} ratio
+ * @param {"up" | "down"} direction
+ */
+const scrollByScrollSize = (target: HTMLElement, ratio: number, direction: "up" | "down") => {
+    const directionOperator = direction === "down" ? 1 : -1;
+    ratio = ratio || 1;
+    target.scrollBy(0, window.innerHeight / 2 * directionOperator * ratio);
+};
+
 export interface ShortcutKeyContainerProps {
     subscriptionContents: SubscriptionContentsState;
     subscriptionList: SubscriptionListState;
@@ -71,13 +83,31 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
                     return;
                 }
                 this.useCase(new ScrollToPrevContentUseCase()).executor(useCase => useCase.execute(prevContent.id));
+            },
+            "scroll-down-content": (event: Event) => {
+                event.preventDefault();
+                // TODO: make explicitly
+                const contentContainer = document.querySelector(".SubscriptionContentsContainer") as HTMLElement;
+                if (contentContainer) {
+                    scrollByScrollSize(contentContainer, 0.3, "down");
+                }
+            },
+            "scroll-up-content": (event: Event) => {
+                event.preventDefault();
+                // TODO: make explicitly
+                const contentContainer = document.querySelector(".SubscriptionContentsContainer") as HTMLElement;
+                if (contentContainer) {
+                    scrollByScrollSize(contentContainer, 0.3, "up");
+                }
             }
         };
         const keyMap: { [index: string]: keyof typeof actionMap } = {
             j: "move-next-content-item",
             k: "move-prev-content-item",
             a: "move-prev-subscription-feed",
-            s: "move-next-subscription-feed"
+            s: "move-next-subscription-feed",
+            space: "scroll-down-content",
+            "shift+space": "scroll-up-content"
         };
         Object.keys(keyMap).forEach(key => {
             this.combokeys.bind(key, (event: Event) => {

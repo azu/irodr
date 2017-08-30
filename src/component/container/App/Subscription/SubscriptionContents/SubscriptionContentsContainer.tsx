@@ -143,7 +143,6 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
 
     private updateCurrentFocus() {
         const activeItemId = getActiveItem();
-        console.log("activeItemId", activeItemId);
         if (activeItemId) {
             const contentId = this.props.subscriptionContents.getContentId(activeItemId);
             if (!contentId.equals(this.props.subscriptionContents.focusContentId)) {
@@ -177,7 +176,6 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
 
     private scrollToContentId(scrollContentId: SubscriptionContentIdentifier) {
         const targetElement = document.querySelector(`[data-content-id="${scrollContentId.toValue()}"]`);
-        console.log("targetElement", targetElement);
         if (targetElement) {
             targetElement.scrollIntoView();
         }
