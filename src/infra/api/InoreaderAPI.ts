@@ -78,11 +78,11 @@ export class InoreaderAPI {
             });
     }
 
-    streamContents(subscription: Subscription): Promise<StreamContentsResponse> {
+    streamContents(subscription: Subscription, prefetchSubscriptionCount: number): Promise<StreamContentsResponse> {
         // use SubscriptionIdentifier
         // http://www.inoreader.com/developers/stream-contents
         return this.getRequest(`/api/0/stream/contents/${encodeURIComponent(subscription.id.toValue())}`, {
-            n: 5
+            n: prefetchSubscriptionCount
         })
             .then(res => res.json())
             .then(function(res: StreamContentsResponse) {

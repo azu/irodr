@@ -5,15 +5,22 @@ import { SubscriptionIdentifier } from "../../domain/Subscriptions/Subscription"
 import { InoreaderAPI } from "../../infra/api/InoreaderAPI";
 import { createSubscriptionContentsFromResponse } from "../../domain/Subscriptions/SubscriptionContent/SubscriptionContentFactoryh";
 import { isSatisfiedSubscriptionContentsFetchSpec } from "./spec/SubscriptionContentsFetchSpec";
+import { AppRepository, appRepository } from "../../infra/repository/AppRepository";
 
 export const createPrefetchSubscriptContentsUseCase = () => {
     return new PrefetchSubscriptContentsUseCase({
+        appRepository,
         subscriptionRepository
     });
 };
 
 export class PrefetchSubscriptContentsUseCase extends UseCase {
-    constructor(private repo: { subscriptionRepository: SubscriptionRepository }) {
+    constructor(
+        private repo: {
+            appRepository: AppRepository;
+            subscriptionRepository: SubscriptionRepository;
+        }
+    ) {
         super();
     }
 
@@ -26,8 +33,9 @@ export class PrefetchSubscriptContentsUseCase extends UseCase {
         if (!specResult.ok) {
             return;
         }
+        const app = this.repo.appRepository.get();
         const client = new InoreaderAPI();
-        return client.streamContents(subscription).then(response => {
+        return client.streamContents(subscription, app.preferences.prefetchSubscriptionCount).then(response => {
             // get again, because async
             const oldSubscription = this.repo.subscriptionRepository.findById(subscriptionId);
             if (!oldSubscription) {

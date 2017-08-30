@@ -9,6 +9,9 @@ import {
 import { Link } from "office-ui-fabric-react";
 import { FocusContentUseCase } from "./use-case/FocusContentUseCase";
 import { HTMLContent } from "../../../../ui-kit/HTMLContent";
+import distanceInWordsToNow from "date-fns/distance_in_words_to_now";
+import format from "date-fns/format";
+import isEqual from "date-fns/is_equal";
 
 export interface SubscriptionContentsContainerProps {
     subscriptionContents: SubscriptionContentsState;
@@ -153,6 +156,24 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
     private makeContent(content: SubscriptionContent, index: number) {
         const isFocus = this.props.subscriptionContents.isFocusContent(content);
         const contentIdString = content.id.toValue();
+        const author = content.author ? (
+            <span>
+                <span> by </span>
+                <span className="SubscriptionContentsContainer-contentAuthor">{content.author}</span>
+            </span>
+        ) : null;
+        const updatedFooter = isEqual(content.publishedDate, content.updatedDate) ? null : (
+            <span>
+                <span> | </span>
+                <label>Updated: </label>
+                <time
+                    className="SubscriptionContentsContainer-contentUpdatedTime"
+                    dateTime={content.updatedDate.toISOString()}
+                >
+                    {format(content.updatedDate, "YYYY-MM-DD mm:ss")}
+                </time>
+            </span>
+        );
         return (
             <div
                 className={classnames("SubscriptionContentsContainer-content", {
@@ -161,14 +182,49 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
                 key={`${contentIdString}-${index}`}
                 data-content-id={contentIdString}
             >
-                <h2 className="SubscriptionContentsContainer-contentTitle">
-                    <Link href={content.url} target="_blank" rel="noopener">
-                        {content.title}
-                    </Link>
-                </h2>
+                <header className="SubscriptionContentsContainer-contentHeader">
+                    <h2 className="SubscriptionContentsContainer-contentTitle">
+                        <Link
+                            className="SubscriptionContentsContainer-contentTitleLink"
+                            href={content.url}
+                            target="_blank"
+                            rel="noopener"
+                        >
+                            {content.title}
+                        </Link>
+                    </h2>
+                    <div>
+                        <Link
+                            className="SubscriptionContentsContainer-contentOriginalLink"
+                            href={content.url}
+                            target="_blank"
+                            rel="noopener"
+                        >
+                            Original
+                        </Link>
+                        <span> | </span>
+                        <time
+                            className="SubscriptionContentsContainer-contentUpdatedTime"
+                            dateTime={content.updatedDate.toISOString()}
+                        >
+                            {distanceInWordsToNow(content.updatedDate)}
+                        </time>
+                        {author}
+                    </div>
+                </header>
                 <HTMLContent className="SubscriptionContentsContainer-contentBody">
                     {content.body.HTMLString}
                 </HTMLContent>
+                <footer className="SubscriptionContentsContainer-contentFooter">
+                    <label>Posted: </label>
+                    <time
+                        className="SubscriptionContentsContainer-contentPostedTime"
+                        dateTime={content.publishedDate.toISOString()}
+                    >
+                        {format(content.publishedDate, "YYYY-MM-DD mm:ss")}
+                    </time>
+                    {updatedFooter}
+                </footer>
             </div>
         );
     }

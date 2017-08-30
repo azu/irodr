@@ -10,10 +10,31 @@
     line-height: 1.5;
     margin: 0 1rem;
     padding: 0 0.5rem;
+    border-bottom: 2px solid #a5c5ff;
+}
+
+.SubscriptionContentsContainer-contentBody {
+    padding: 0.5rem 1rem;
 }
 
 .SubscriptionContentsContainer-content * {
     max-width: 100%;
+}
+
+.SubscriptionContentsContainer-contentTitle {
+    margin: 0;
+    padding-top: 0.5em;
+}
+
+.SubscriptionContentsContainer-contentTitleLink {
+    color: #000;
+}
+
+.SubscriptionContentsContainer-contentFooter {
+    font-size: 14px;
+    color: #747474;
+    padding: 6px;
+    border-top: 1px dotted #cbcbcb;
 }
 
 /*

@@ -42,7 +42,7 @@ export class ShowSubscriptionContentsUseCase extends UseCase {
         }
         subscription.mutableBeginContentUpdating();
         const client = new InoreaderAPI();
-        return client.streamContents(subscription).then(response => {
+        return client.streamContents(subscription, app.preferences.prefetchSubscriptionCount).then(response => {
             const subscriptionContents = createSubscriptionContentsFromResponse(response);
             const newSubscription = subscription.updateContents(subscriptionContents);
             newSubscription.mutableEndContentUpdating();
