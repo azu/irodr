@@ -2,6 +2,10 @@
 # yarn lockfile v1
 
 
+"@alrra/travis-scripts@^3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@alrra/travis-scripts/-/travis-scripts-3.0.1.tgz#45d5b9357317b6cc5553dfd99931843ae0b0e53a"
+
 "@immutable-array/copy-within@^1.0.1":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@immutable-array/copy-within/-/copy-within-1.0.1.tgz#dc5c4a673ed2e557197a7154781f5dc350b5dd4c"

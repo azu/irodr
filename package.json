@@ -79,6 +79,7 @@
     }
   },
   "devDependencies": {
+    "@alrra/travis-scripts": "^3.0.1",
     "husky": "^0.14.3",
     "lint-staged": "^4.0.4",
     "prettier": "^1.6.0"

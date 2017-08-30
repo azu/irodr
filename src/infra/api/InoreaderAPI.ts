@@ -8,7 +8,7 @@ import { StreamContentsResponse } from "./StreamContentsResponse";
 import { stringify } from "querystring";
 
 export class InoreaderAPI {
-    private basePath = "";
+    private basePath = process.env.INOREADER_API_BASE_URL || "";
 
     private getToken(): Promise<Token> {
         return getToken().catch(error => {

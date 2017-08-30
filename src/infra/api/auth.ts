@@ -8,7 +8,7 @@ const inoreaderAuth = new ClientOAuth2({
     clientSecret: "yzy8mHQPeDPoT_kQhMQ6x04xrMhQWR09",
     accessTokenUri: "/cors/oauth2/token",
     authorizationUri: "https://www.inoreader.com/oauth2/auth",
-    redirectUri: "http://localhost:3000/",
+    redirectUri: process.env.PUBLIC_URL,
     scopes: ["read", "write"],
     state: "inoreader"
 });

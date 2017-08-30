@@ -84,6 +84,7 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
                 className={classnames("SubscriptionListContainer-item", {
                     "is-currentItem": isCurrentItem
                 })}
+                onClick={onClick}
             >
                 <Image
                     className="SubscriptionListContainer-itemImage"
@@ -92,7 +93,7 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
                     height={16}
                     imageFit={ImageFit.cover}
                 />
-                <Link className="SubscriptionListContainer-itemLink" onClick={onClick}>
+                <Link className="SubscriptionListContainer-itemLink">
                     {item.title} ({item.unread.count})
                 </Link>
             </div>
