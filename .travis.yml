@@ -1,6 +1,5 @@
 language: node_js
 node_js: stable
-script: npm run build
 after_success:
   - |
 
