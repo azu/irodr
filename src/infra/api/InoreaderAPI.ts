@@ -13,7 +13,9 @@ export class InoreaderAPI {
     private getToken(): Promise<Token> {
         return getToken().catch(error => {
             // TODO: make clear
-            location.href = getNewTokenUrl();
+            if (confirm(`Does you go to Inoreader Auth page? Error:${error.message}`)) {
+                location.href = getNewTokenUrl();
+            }
             return Promise.reject(error);
         });
     }
