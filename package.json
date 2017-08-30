@@ -56,7 +56,7 @@
     "postcommit": "git reset",
     "prettier": "prettier --write 'src/**/*.{css,ts,tsx}'",
     "start": "react-scripts-ts start",
-    "build": "react-scripts-ts build",
+    "build": "PUBLIC_URL=https://azu.github.io/irodr INOREADER_API_BASE_URL=https://jp.inoreader.com/reader react-scripts-ts build",
     "test": "react-scripts-ts test --env=jsdom",
     "eject": "react-scripts-ts eject"
   },
