@@ -9,6 +9,8 @@ import { appStoreGroup } from "./component/container/App/AppStoreGroup";
 import { appLocator } from "./AppLocator";
 import AlminReactContainer from "almin-react-container";
 import { createBootSubscriptionUseCase } from "./use-case/subscription/BootSubscriptionUseCase";
+import { createUpdateSubscriptionsUseCase } from "./use-case/subscription/UpdateSubscriptionsUseCase";
+
 require("office-ui-fabric-react/dist/css/fabric.css");
 
 // require all css files
@@ -53,5 +55,8 @@ context
     .execute()
     .then(() => {
         ReactDOM.render(<App />, document.getElementById("root") as HTMLElement);
+    })
+    .then(() => {
+        return context.useCase(createUpdateSubscriptionsUseCase()).execute();
     });
 registerServiceWorker();

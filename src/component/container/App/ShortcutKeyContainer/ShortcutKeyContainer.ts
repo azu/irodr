@@ -8,6 +8,7 @@ import { SubscriptionContentsState } from "../Subscription/SubscriptionContents/
 import { ScrollToNextContentUseCase } from "../Subscription/SubscriptionContents/use-case/ScrollToNextContentUseCase";
 import { ScrollToPrevContentUseCase } from "../Subscription/SubscriptionContents/use-case/ScrollToPrevContentUseCase";
 import { createMarkAsReadToServerUseCase } from "../../../../use-case/subscription/MarkAsReadToServerUseCase";
+import { createOpenSubscriptionContentInNewTabUseCase } from "../../../../use-case/subscription/OpenSubscriptionContentInNewTabUseCase";
 
 const DEBOUNCE_TIME = 32;
 const IGNORE_NODE_NAME_PATTERN = /webview/i;
@@ -113,6 +114,17 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
                         useCase.execute(currentSubscriptionId)
                     );
                 }
+            },
+            "open-current-content-url": (event: Event) => {
+                event.preventDefault();
+                const currentSubscriptionId = this.props.subscriptionList.currentSubscriptionId;
+                const focusContentId = this.props.subscriptionContents.focusContentId;
+                if (!currentSubscriptionId || !focusContentId) {
+                    return;
+                }
+                this.useCase(createOpenSubscriptionContentInNewTabUseCase()).executor(useCase =>
+                    useCase.execute(currentSubscriptionId, focusContentId)
+                );
             }
         };
         const keyMap: { [index: string]: keyof typeof actionMap } = {
@@ -121,6 +133,7 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
             a: "move-prev-subscription-feed",
             s: "move-next-subscription-feed",
             m: "make-subscription-read",
+            v: "open-current-content-url",
             space: "scroll-down-content",
             "shift+space": "scroll-up-content"
         };
