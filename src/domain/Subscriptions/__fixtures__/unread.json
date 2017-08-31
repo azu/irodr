@@ -1,0 +1,60 @@
+{
+  "max": "1000",
+  "unreadcounts": [
+    {
+      "id": "user\/1005631930\/state\/com.google\/reading-list",
+      "count": 391,
+      "newestItemTimestampUsec": "1503723299417483"
+    },
+    {
+      "id": "user\/1005631930\/state\/com.google\/starred",
+      "count": "5",
+      "newestItemTimestampUsec": "0"
+    },
+    {
+      "id": "user\/1005631930\/label\/★★★★★",
+      "count": 98,
+      "newestItemTimestampUsec": "1503726940141315"
+    },
+    {
+      "id": "user\/1005631930\/label\/★★★★☆",
+      "count": 40,
+      "newestItemTimestampUsec": "1503726940141315"
+    },
+    {
+      "id": "user\/1005631930\/label\/★★★☆☆",
+      "count": 61,
+      "newestItemTimestampUsec": "1503726940141315"
+    },
+    {
+      "id": "user\/1005631930\/label\/★★☆☆☆",
+      "count": 55,
+      "newestItemTimestampUsec": "1503726940141315"
+    },
+    {
+      "id": "user\/1005631930\/label\/★☆☆☆☆",
+      "count": 0,
+      "newestItemTimestampUsec": "1503726940141315"
+    },
+    {
+      "id": "user\/1005631930\/label\/☆☆☆☆☆",
+      "count": 137,
+      "newestItemTimestampUsec": "1503726940141315"
+    },
+    {
+      "id": "feed\/http:\/\/feeds.feedburner.com\/withd",
+      "count": 0,
+      "newestItemTimestampUsec": "1500969938756719"
+    },
+    {
+      "id": "feed\/http:\/\/jamesshore.com\/index.rss",
+      "count": 0,
+      "newestItemTimestampUsec": "1498697942496198"
+    },
+    {
+      "id": "feed\/http:\/\/www.echojs.com\/rss",
+      "count": 0,
+      "newestItemTimestampUsec": "1503705281319779"
+    }
+  ]
+}
