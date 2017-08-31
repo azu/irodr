@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { AppContainer } from "./component/container/App/AppContainer";
-import registerServiceWorker from "./registerServiceWorker";
+// import registerServiceWorker from "./registerServiceWorker";
 import { InoreaderAPI } from "./infra/api/InoreaderAPI";
 import { saveTokenFromCallbackURL } from "./infra/api/auth";
 import { Context, Dispatcher } from "almin";
