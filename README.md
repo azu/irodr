@@ -10,7 +10,7 @@ It aim to work on browser/electron.
 
 - Fast read
     - [x] Prefetch contents
-    - [ ] Mark as "read" at idle time
+    - [x] Mark as "read" at idle time
 - Customizable for user
     - [ ] We will provide some API like `window.getActiveItem` for UserScript.
 - Allow of other RSS reader API like Feedly
@@ -42,6 +42,8 @@ This project use the server that avoid CORS for Inoreader.
 ### Browser extension
 
 - [ ] Chrome/Firefox browser extension for avoiding CORS
+- [ ] <https://github.com/azu/irodr/issues/11>
+- [ ] Blocking: <https://github.com/azu/irodr/issues/16>
 
 ## Changelog
 
