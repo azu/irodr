@@ -6,8 +6,8 @@ import { Token } from "client-oauth2";
 const inoreaderAuth = new ClientOAuth2({
     clientId: "1000000590",
     clientSecret: "yzy8mHQPeDPoT_kQhMQ6x04xrMhQWR09",
-    accessTokenUri: "https://www.inoreader.com/oauth2/token"
-        ? "https://www.inoreader.com/oauth2/token"
+    accessTokenUri: process.env.INOREADER_ACCESS_TOKEN_URL
+        ? process.env.INOREADER_ACCESS_TOKEN_URL
         : "/cors/oauth2/token",
     authorizationUri: "https://www.inoreader.com/oauth2/auth",
     redirectUri: process.env.PUBLIC_URL,

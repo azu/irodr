@@ -59,4 +59,4 @@ context
     .then(() => {
         return context.useCase(createUpdateSubscriptionsUseCase()).execute();
     });
-registerServiceWorker();
+// registerServiceWorker();
