@@ -23,14 +23,14 @@ export interface SubscriptionContentsContainerProps {
  * @see https://gist.github.com/azu/c306c1efa31f0f41aa01c5b69576d00c#file-reader_main-0-3-8-js-L1205
  * @returns {string}
  */
-function getActiveItem(): string | undefined {
+export function getActiveContentIdString(): string | undefined {
     const contentContainer = document.querySelector(".SubscriptionContentsContainer") as HTMLElement;
     const contentElements = document.querySelectorAll(".SubscriptionContentsContainer-content") as NodeListOf<
         HTMLElement
     >;
     const containerScrollTop = contentContainer.scrollTop;
     const containerOffsetHeight = contentContainer.offsetHeight;
-    // TODO: should be computables
+    // TODO: should be computable
     // AppHeader's height = 32px
     const marginTopOfContentContainer = 32;
     const contentCount = contentElements.length;
@@ -150,7 +150,7 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
     }
 
     private updateCurrentFocus() {
-        const activeItemId = getActiveItem();
+        const activeItemId = getActiveContentIdString();
         if (activeItemId) {
             const contentId = this.props.subscriptionContents.getContentId(activeItemId);
             if (!contentId.equals(this.props.subscriptionContents.focusContentId)) {

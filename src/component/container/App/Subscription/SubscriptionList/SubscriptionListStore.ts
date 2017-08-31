@@ -46,6 +46,10 @@ export class SubscriptionListState {
         return this.groupSubscriptions[0];
     }
 
+    getItem(currentSubscriptionId: SubscriptionIdentifier): Subscription | undefined {
+        return this.groupSubscriptions.find(subscription => subscription.id.equals(currentSubscriptionId));
+    }
+
     getPrevItem(currentSubscriptionId: SubscriptionIdentifier): Subscription | undefined {
         const index = this.groupSubscriptions.findIndex(subscription => subscription.id.equals(currentSubscriptionId));
         if (index === -1) {

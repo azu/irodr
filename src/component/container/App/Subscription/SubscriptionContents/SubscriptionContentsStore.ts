@@ -44,6 +44,17 @@ export class SubscriptionContentsState {
         return new SubscriptionContentIdentifier(id);
     }
 
+    getContent(id: SubscriptionContentIdentifier): SubscriptionContent | undefined {
+        if (!this.contents) {
+            return;
+        }
+        const subscriptionContent = this.contents.findContentById(id);
+        if (!subscriptionContent) {
+            return;
+        }
+        return subscriptionContent;
+    }
+
     getPrevContent(
         contentIdentifier: SubscriptionContentIdentifier | undefined = this.focusContentId
     ): SubscriptionContent | undefined {

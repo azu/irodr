@@ -48,7 +48,6 @@
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
     "react-render-html": "^0.5.0",
-    "react-scripts-ts": "2.6.0",
     "ulid": "^0.2.0"
   },
   "scripts": {
@@ -87,6 +86,7 @@
     "husky": "^0.14.3",
     "jest": "^20.1.0-delta.1",
     "lint-staged": "^4.0.4",
-    "prettier": "^1.6.0"
+    "prettier": "^1.6.0",
+    "react-scripts-ts": "^2.6.0"
   }
 }

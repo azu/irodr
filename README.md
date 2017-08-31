@@ -23,6 +23,12 @@ It aim to work on browser/electron.
 
 This server is also proxy server.
 
+## UserScript API
+
+You can get current content/subscription data from `window.userScript.getActiveContent()` and `window.userScript.getActiveSubscription()`.
+
+See [UserScript API document](src/component/container/App/UserScript) for more details.
+
 ## :memo: Notes
 
 - Inoreader doesn't support CORS

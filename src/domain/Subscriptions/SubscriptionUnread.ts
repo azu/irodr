@@ -1,6 +1,29 @@
 // MIT © 2017 azu
-import { ValueObject } from "ddd-base";
-import { TimeStamp } from "./TimeStamp";
+import { Serializer, ValueObject } from "ddd-base";
+import { TimeStamp, TimeStampSerializer } from "./TimeStamp";
+
+export const SubscriptionUnreadSerializer: Serializer<SubscriptionUnread, SubscriptionUnreadJSON> = {
+    fromJSON(json) {
+        return new SubscriptionUnread({
+            count: json.count,
+            maxCount: json.maxCount,
+            readTimestamp: TimeStampSerializer.fromJSON(json.readTimestamp)
+        });
+    },
+    toJSON(entity) {
+        return {
+            count: entity.count,
+            maxCount: entity.maxCount,
+            readTimestamp: TimeStampSerializer.toJSON(entity.readTimestamp)
+        };
+    }
+};
+
+export interface SubscriptionUnreadJSON {
+    count: number;
+    maxCount: number;
+    readTimestamp: number;
+}
 
 export interface SubscriptionUnreadArgs {
     count: number;

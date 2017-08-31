@@ -1,4 +1,15 @@
-import { ValueObject } from "ddd-base";
+import { Serializer, ValueObject } from "ddd-base";
+
+export const SubscriptionLastUpdatedSerializer: Serializer<SubscriptionLastUpdated, SubscriptionLastUpdatedJSON> = {
+    toJSON(entity) {
+        return entity.date.toISOString();
+    },
+    fromJSON(json) {
+        return new SubscriptionLastUpdated(new Date(json));
+    }
+};
+// iso-8601
+export type SubscriptionLastUpdatedJSON = string;
 
 export class SubscriptionLastUpdated extends ValueObject {
     date: Date;

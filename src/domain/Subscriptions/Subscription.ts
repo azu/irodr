@@ -1,9 +1,61 @@
 // MIT © 2017 azu
-import { Entity, Identifier } from "ddd-base";
+import { Entity, Identifier, Serializer } from "ddd-base";
 import { SubscriptionOrder } from "./SubscriptionOrder";
-import { SubscriptionUnread } from "./SubscriptionUnread";
-import { SubscriptionContents } from "./SubscriptionContent/SubscriptionContents";
-import { SubscriptionLastUpdated } from "./SubscriptionLastUpdated";
+import { SubscriptionUnread, SubscriptionUnreadJSON, SubscriptionUnreadSerializer } from "./SubscriptionUnread";
+import {
+    SubscriptionContents,
+    SubscriptionContentsJSON,
+    SubscriptionContentsSerializer
+} from "./SubscriptionContent/SubscriptionContents";
+import {
+    SubscriptionLastUpdated,
+    SubscriptionLastUpdatedJSON,
+    SubscriptionLastUpdatedSerializer
+} from "./SubscriptionLastUpdated";
+
+export const SubscriptionSerializer: Serializer<Subscription, SubscriptionJSON> = {
+    toJSON(entity) {
+        return {
+            id: entity.id.toValue(),
+            title: entity.title,
+            url: entity.url,
+            iconUrl: entity.iconUrl,
+            htmlUrl: entity.htmlUrl,
+            categories: entity.categories,
+            contents: SubscriptionContentsSerializer.toJSON(entity.contents),
+            unread: SubscriptionUnreadSerializer.toJSON(entity.unread),
+            lastUpdated: SubscriptionLastUpdatedSerializer.toJSON(entity.lastUpdated)
+        };
+    },
+    fromJSON(json) {
+        return new Subscription({
+            id: new SubscriptionIdentifier(json.id),
+            title: json.title,
+            url: json.url,
+            iconUrl: json.iconUrl,
+            htmlUrl: json.htmlUrl,
+            categories: json.categories,
+            order: new SubscriptionOrder(),
+            contents: SubscriptionContentsSerializer.fromJSON(json.contents),
+            unread: SubscriptionUnreadSerializer.fromJSON(json.unread),
+            lastUpdated: SubscriptionLastUpdatedSerializer.fromJSON(json.lastUpdated),
+            isContentsUpdating: false
+        });
+    }
+};
+
+export interface SubscriptionJSON {
+    id: string;
+    title: string;
+    url: string;
+    iconUrl: string;
+    htmlUrl: string;
+    categories: string[];
+    contents: SubscriptionContentsJSON;
+    // order: SubscriptionOrder;
+    unread: SubscriptionUnreadJSON;
+    lastUpdated: SubscriptionLastUpdatedJSON;
+}
 
 export class SubscriptionIdentifier extends Identifier<string> {}
 

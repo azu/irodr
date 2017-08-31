@@ -1,6 +1,32 @@
 // MIT © 2017 azu
-import { SubscriptionContent, SubscriptionContentIdentifier } from "./SubscriptionContent";
+import {
+    SubscriptionContent,
+    SubscriptionContentIdentifier,
+    SubscriptionContentJSON,
+    SubscriptionContentSerializer
+} from "./SubscriptionContent";
 import { splice } from "@immutable-array/prototype";
+import { Serializer } from "ddd-base";
+
+export const SubscriptionContentsSerializer: Serializer<SubscriptionContents, SubscriptionContentsJSON> = {
+    fromJSON(json) {
+        return new SubscriptionContents({
+            contents: json.contents.map(content => SubscriptionContentSerializer.fromJSON(content)),
+            lastUpdatedTimestampMs: json.lastUpdatedTimestampMs
+        });
+    },
+    toJSON(entity) {
+        return {
+            contents: entity.contents.map(content => SubscriptionContentSerializer.toJSON(content)),
+            lastUpdatedTimestampMs: entity.lastUpdatedTimestampMs
+        };
+    }
+};
+
+export interface SubscriptionContentsJSON {
+    contents: SubscriptionContentJSON[];
+    lastUpdatedTimestampMs: number;
+}
 
 export interface SubscriptionContentsArgs {
     contents: SubscriptionContent[];
