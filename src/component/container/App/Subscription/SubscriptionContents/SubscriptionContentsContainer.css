@@ -1,6 +1,9 @@
 .SubscriptionContentsContainer {
 }
 
+.SubscriptionContentsContainer-header {
+}
+
 .SubscriptionContentsContainer-subscriptionTitle {
     display: flex;
     margin: 0;
