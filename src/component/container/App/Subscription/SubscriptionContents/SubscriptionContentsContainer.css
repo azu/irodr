@@ -1,6 +1,30 @@
 .SubscriptionContentsContainer {
 }
 
+.SubscriptionContentsContainer-subscriptionTitle {
+    display: flex;
+    margin: 0;
+    padding: 8px;
+}
+
+.SubscriptionContentsContainer-subscriptionImage {
+    flex-shrink: 1;
+    margin: 0 4px;
+}
+
+.SubscriptionContentsContainer-subscriptionLink {
+    font-size: 16px;
+    line-height: 16px;
+    margin-right: 8px;
+}
+
+.SubscriptionContentsContainer-subscriptionEditLink {
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+    line-height: 16px;
+}
+
 .SubscriptionContentsContainer-body {
     border: 1px solid #eee;
 }

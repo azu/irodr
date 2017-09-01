@@ -4,11 +4,9 @@ import * as ClientOAuth2 from "client-oauth2";
 import { Token } from "client-oauth2";
 
 const inoreaderAuth = new ClientOAuth2({
-    clientId: "1000000590",
-    clientSecret: "yzy8mHQPeDPoT_kQhMQ6x04xrMhQWR09",
-    accessTokenUri: process.env.INOREADER_ACCESS_TOKEN_URL
-        ? process.env.INOREADER_ACCESS_TOKEN_URL
-        : "/cors/oauth2/token",
+    clientId: process.env.REACT_APP_INOREADER_CLIENT_ID,
+    clientSecret: process.env.REACT_APP_INOREADER_CLIENT_KEY,
+    accessTokenUri: process.env.REACT_APP_INOREADER_ACCESS_TOKEN_URL,
     authorizationUri: "https://www.inoreader.com/oauth2/auth",
     redirectUri: process.env.PUBLIC_URL,
     scopes: ["read", "write"],
@@ -51,6 +49,12 @@ export const saveTokenFromCallbackURL = (url: string) => {
     });
 };
 export const getToken = () => {
+    console.info("process.env", {
+        clientId: process.env.REACT_APP_INOREADER_CLIENT_ID,
+        clientSecret: process.env.REACT_APP_INOREADER_CLIENT_KEY,
+        accessTokenUri: process.env.REACT_APP_INOREADER_ACCESS_TOKEN_URL,
+        redirectUri: process.env.PUBLIC_URL
+    });
     const savedTokenJSON = loadToken();
     if (!savedTokenJSON) {
         return Promise.reject(new Error("Token is not found"));

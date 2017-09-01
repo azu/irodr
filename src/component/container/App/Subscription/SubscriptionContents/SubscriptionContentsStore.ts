@@ -14,9 +14,11 @@ import {
     FinishLoadingPayload,
     StartLoadingPayload
 } from "../../../../../use-case/subscription/ShowSubscriptionContentsUseCase";
+import { Subscription } from "../../../../../domain/Subscriptions/Subscription";
 
 export interface SubscriptionContentsStateProps {
     isContentsLoadings: boolean;
+    subscription?: Subscription;
     contents?: SubscriptionContents;
     focusContentId?: SubscriptionContentIdentifier;
     // if exist it, scroll to ths id at once
@@ -25,12 +27,14 @@ export interface SubscriptionContentsStateProps {
 
 export class SubscriptionContentsState {
     isContentsLoadings: boolean;
+    subscription?: Subscription;
     contents?: SubscriptionContents;
     focusContentId?: SubscriptionContentIdentifier;
     scrollContentId?: SubscriptionContentIdentifier;
 
     constructor(props: SubscriptionContentsStateProps) {
         this.isContentsLoadings = props.isContentsLoadings;
+        this.subscription = props.subscription;
         this.contents = props.contents;
         this.focusContentId = props.focusContentId;
         this.scrollContentId = props.scrollContentId;
@@ -92,12 +96,14 @@ export class SubscriptionContentsState {
         return content.id.equals(this.focusContentId);
     }
 
-    update(contents: SubscriptionContents) {
+    update(subscription: Subscription) {
+        const contents = subscription.contents;
         if (this.contents === contents) {
             return this;
         }
         return new SubscriptionContentsState({
             ...this as SubscriptionContentsStateProps,
+            subscription,
             contents
         });
     }
@@ -166,7 +172,7 @@ export class SubscriptionContentsStore extends Store<SubscriptionContentsState> 
         if (!subscription) {
             return;
         }
-        this.setState(this.state.update(subscription.contents).reduce(payload));
+        this.setState(this.state.update(subscription).reduce(payload));
     }
 
     getState(): SubscriptionContentsState {

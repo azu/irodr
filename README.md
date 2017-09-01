@@ -51,6 +51,12 @@ This project use the server that avoid CORS for Inoreader.
 - [ ] <https://github.com/azu/irodr/issues/11>
 - [ ] Blocking: <https://github.com/azu/irodr/issues/16>
 
+## Develop
+
+### Build config
+
+See [.env.production](./.env.production)
+
 ## Changelog
 
 See [Releases page](https://github.com/azu/irodr/releases).

@@ -6,13 +6,14 @@ import {
     SubscriptionContent,
     SubscriptionContentIdentifier
 } from "../../../../../domain/Subscriptions/SubscriptionContent/SubscriptionContent";
-import { Link } from "office-ui-fabric-react";
+import { Link, ImageFit, Image } from "office-ui-fabric-react";
 import { FocusContentUseCase } from "./use-case/FocusContentUseCase";
 import { HTMLContent } from "../../../../ui-kit/HTMLContent";
 import distanceInWordsToNow from "date-fns/distance_in_words_to_now";
 import format from "date-fns/format";
 import isEqual from "date-fns/is_equal";
 import { ProgressColorBar } from "../../../../project/ProgressColorBar/ProgressColorBar";
+import { Subscription } from "../../../../../domain/Subscriptions/Subscription";
 
 export interface SubscriptionContentsContainerProps {
     subscriptionContents: SubscriptionContentsState;
@@ -88,6 +89,7 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
     element: HTMLDivElement | null;
 
     render() {
+        const header = this.makeHeaderContent(this.props.subscriptionContents.subscription);
         const contents = this.props.subscriptionContents.contents
             ? this.props.subscriptionContents.contents
                   .getContents()
@@ -103,6 +105,7 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
                     height={3}
                     isCompleted={!this.props.subscriptionContents.isContentsLoadings}
                 />
+                {header}
                 <div role="main" className="SubscriptionContentsContainer-body">
                     {contents}
                 </div>
@@ -130,6 +133,38 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
             this.scrollToContentId(scrollContentId);
         }
         this.updateCurrentFocus();
+    }
+
+    private makeHeaderContent(subscription?: Subscription) {
+        if (!subscription) {
+            return null;
+        }
+        const editLink = (
+            <Link
+                className="SubscriptionContentsContainer-subscriptionEditLink"
+                title="Edit subscription"
+                href={`https://www.inoreader.com/feed/${encodeURIComponent(subscription.url)}`}
+            >
+                <i className="ms-Icon ms-Icon--Settings" aria-hidden="true" />
+            </Link>
+        );
+        return (
+            <header className="SubscriptionContentsContainer-header">
+                <h2 className="SubscriptionContentsContainer-subscriptionTitle">
+                    <Image
+                        className="SubscriptionContentsContainer-subscriptionImage"
+                        src={subscription.iconUrl}
+                        width={18}
+                        height={18}
+                        imageFit={ImageFit.cover}
+                    />
+                    <Link className="SubscriptionContentsContainer-subscriptionLink" href={subscription.htmlUrl}>
+                        {subscription.title}
+                    </Link>
+                    {editLink}
+                </h2>
+            </header>
+        );
     }
 
     private onContentChange() {
