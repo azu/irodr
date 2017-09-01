@@ -4,10 +4,10 @@ import { Serializer } from "ddd-base";
 
 export const TimeStampSerializer: Serializer<TimeStamp, TimeStampJSON> = {
     fromJSON(json) {
-        return new TimeStamp(json);
+        return TimeStamp.createTimeStampFromMillisecond(json);
     },
     toJSON(entity) {
-        return entity.second;
+        return entity.millSecond;
     }
 };
 // unix-time
@@ -17,14 +17,26 @@ export class TimeStamp {
     value: number;
 
     static createTimeStampFromSecond(second: number) {
-        return new TimeStamp(second);
+        return new TimeStamp(second * 1000);
     }
 
-    constructor(second: number) {
-        this.value = second;
+    static createTimeStampFromMillisecond(millisecond: number) {
+        return new TimeStamp(millisecond);
+    }
+
+    static now() {
+        return new TimeStamp(Date.now());
+    }
+
+    constructor(millisecond: number) {
+        this.value = millisecond;
     }
 
     get second() {
+        return this.value / 1000;
+    }
+
+    get millSecond() {
         return this.value;
     }
 }

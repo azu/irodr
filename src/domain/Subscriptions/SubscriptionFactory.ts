@@ -40,7 +40,7 @@ export function createSubscriptionFromResponse(
         categories: subscriptionResponse.categories.map(category => category.label),
         contents: new SubscriptionContents({
             contents: [],
-            lastUpdatedTimestampMs: 0
+            lastUpdatedTimestamp: new TimeStamp(0)
         }),
         order: new SubscriptionOrder(),
         unread: new SubscriptionUnread({

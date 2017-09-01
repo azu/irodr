@@ -3,6 +3,7 @@ import { StreamContentResponse, StreamContentsResponse } from "../../../infra/ap
 import { SubscriptionContent, SubscriptionContentIdentifier } from "./SubscriptionContent";
 import { SubscriptionContentBody } from "./SubscriptionContentBody";
 import { SubscriptionContents } from "./SubscriptionContents";
+import { TimeStamp } from "../TimeStamp";
 
 export const createSubscriptionContentsFromResponse = (
     streamContentResponse: StreamContentsResponse
@@ -10,10 +11,9 @@ export const createSubscriptionContentsFromResponse = (
     const contentList = streamContentResponse.items.map(item => {
         return createSubscriptionContentFromResponse(item);
     });
-    const updatedTimestampMs = streamContentResponse.updated * 1000;
     return new SubscriptionContents({
         contents: contentList,
-        lastUpdatedTimestampMs: updatedTimestampMs
+        lastUpdatedTimestamp: TimeStamp.createTimeStampFromMillisecond(streamContentResponse.updated)
     });
 };
 

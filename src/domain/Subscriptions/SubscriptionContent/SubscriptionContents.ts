@@ -7,18 +7,19 @@ import {
 } from "./SubscriptionContent";
 import { splice } from "@immutable-array/prototype";
 import { Serializer } from "ddd-base";
+import { TimeStamp } from "../TimeStamp";
 
 export const SubscriptionContentsSerializer: Serializer<SubscriptionContents, SubscriptionContentsJSON> = {
     fromJSON(json) {
         return new SubscriptionContents({
             contents: json.contents.map(content => SubscriptionContentSerializer.fromJSON(content)),
-            lastUpdatedTimestampMs: json.lastUpdatedTimestampMs
+            lastUpdatedTimestamp: TimeStamp.createTimeStampFromMillisecond(json.lastUpdatedTimestampMs)
         });
     },
     toJSON(entity) {
         return {
             contents: entity.contents.map(content => SubscriptionContentSerializer.toJSON(content)),
-            lastUpdatedTimestampMs: entity.lastUpdatedTimestampMs
+            lastUpdatedTimestampMs: entity.lastUpdatedTimestamp.millSecond
         };
     }
 };
@@ -30,16 +31,16 @@ export interface SubscriptionContentsJSON {
 
 export interface SubscriptionContentsArgs {
     contents: SubscriptionContent[];
-    lastUpdatedTimestampMs: number;
+    lastUpdatedTimestamp: TimeStamp;
 }
 
 export class SubscriptionContents {
     contents: SubscriptionContent[];
-    lastUpdatedTimestampMs: number;
+    lastUpdatedTimestamp: TimeStamp;
 
     constructor(args: SubscriptionContentsArgs) {
         this.contents = args.contents;
-        this.lastUpdatedTimestampMs = args.lastUpdatedTimestampMs;
+        this.lastUpdatedTimestamp = args.lastUpdatedTimestamp;
     }
 
     get hasContent(): boolean {
@@ -50,11 +51,11 @@ export class SubscriptionContents {
         return 60 * 1000;
     }
 
-    isNeededToUpdate(currentTimeStamp: number) {
+    isNeededToUpdate(currentTimeStampMs: number) {
         if (!this.hasContent) {
             return true;
         }
-        return currentTimeStamp > this.lastUpdatedTimestampMs + this.debounceDelayTimeMs;
+        return currentTimeStampMs > this.lastUpdatedTimestamp.millSecond + this.debounceDelayTimeMs;
     }
 
     updateContents(contents: SubscriptionContent[]) {
