@@ -27,7 +27,7 @@ This server is also proxy server.
 
 You can get current content/subscription data from `window.userScript.getActiveContent()` and `window.userScript.getActiveSubscription()`.
 
-See [UserScript API document](src/component/container/App/UserScript) for more details.
+See [UserScript API document](src/component/container/App/Hidden/UserScript) for more details.
 
 ## :memo: Notes
 

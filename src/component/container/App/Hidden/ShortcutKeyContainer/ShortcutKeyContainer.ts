@@ -1,19 +1,22 @@
 // MIT © 2017 azu
 import Combokeys from "combokeys";
-import { BaseContainer } from "../../BaseContainer";
-import { SubscriptionListState } from "../Subscription/SubscriptionList/SubscriptionListStore";
-import { createShowSubscriptionContentsUseCase } from "../../../../use-case/subscription/ShowSubscriptionContentsUseCase";
+import { BaseContainer } from "../../../BaseContainer";
+import { SubscriptionListState } from "../../Subscription/SubscriptionList/SubscriptionListStore";
+import { createShowSubscriptionContentsUseCase } from "../../../../../use-case/subscription/ShowSubscriptionContentsUseCase";
 import debounce from "lodash.debounce";
-import { SubscriptionContentsState } from "../Subscription/SubscriptionContents/SubscriptionContentsStore";
-import { ScrollToNextContentUseCase } from "../Subscription/SubscriptionContents/use-case/ScrollToNextContentUseCase";
-import { ScrollToPrevContentUseCase } from "../Subscription/SubscriptionContents/use-case/ScrollToPrevContentUseCase";
-import { createMarkAsReadToServerUseCase } from "../../../../use-case/subscription/MarkAsReadToServerUseCase";
-import { createOpenSubscriptionContentInNewTabUseCase } from "../../../../use-case/subscription/OpenSubscriptionContentInNewTabUseCase";
+import { SubscriptionContentsState } from "../../Subscription/SubscriptionContents/SubscriptionContentsStore";
+import { ScrollToNextContentUseCase } from "../../Subscription/SubscriptionContents/use-case/ScrollToNextContentUseCase";
+import { ScrollToPrevContentUseCase } from "../../Subscription/SubscriptionContents/use-case/ScrollToPrevContentUseCase";
+import { createMarkAsReadToServerUseCase } from "../../../../../use-case/subscription/MarkAsReadToServerUseCase";
+import { createOpenSubscriptionContentInNewTabUseCase } from "../../../../../use-case/subscription/OpenSubscriptionContentInNewTabUseCase";
 
 const DEBOUNCE_TIME = 32;
 const IGNORE_NODE_NAME_PATTERN = /webview/i;
 const isIgnoreNode = (event: Event): boolean => {
     const target = event.target as HTMLElement;
+    if (!target) {
+        return false;
+    }
     if (!target.nodeName) {
         return false;
     }
@@ -39,6 +42,12 @@ export interface ShortcutKeyContainerProps {
 
 export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProps, {}> {
     combokeys: any;
+
+    trigger(keys: string, action?: string): void {
+        if (this.combokeys) {
+            this.combokeys.trigger(keys, action);
+        }
+    }
 
     componentDidMount() {
         this.combokeys = new Combokeys(document.documentElement);

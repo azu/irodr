@@ -1,9 +1,10 @@
 import * as React from "react";
-import { SubscriptionListState } from "../Subscription/SubscriptionList/SubscriptionListStore";
-import { SubscriptionContentsState } from "../Subscription/SubscriptionContents/SubscriptionContentsStore";
-import { getActiveContentIdString } from "../Subscription/SubscriptionContents/SubscriptionContentsContainer";
-import { SubscriptionContentSerializer } from "../../../../domain/Subscriptions/SubscriptionContent/SubscriptionContent";
-import { SubscriptionSerializer } from "../../../../domain/Subscriptions/Subscription";
+import { SubscriptionListState } from "../../Subscription/SubscriptionList/SubscriptionListStore";
+import { SubscriptionContentsState } from "../../Subscription/SubscriptionContents/SubscriptionContentsStore";
+import { getActiveContentIdString } from "../../Subscription/SubscriptionContents/SubscriptionContentsContainer";
+import { SubscriptionContentSerializer } from "../../../../../domain/Subscriptions/SubscriptionContent/SubscriptionContent";
+import { SubscriptionSerializer } from "../../../../../domain/Subscriptions/Subscription";
+import { ShortcutKeyContainer } from "../ShortcutKeyContainer/ShortcutKeyContainer";
 
 export interface UserScriptActiveContent {
     id: string;
@@ -27,10 +28,12 @@ export interface UserScriptWindow extends Window {
     userScript: {
         getActiveContent(): UserScriptActiveContent | undefined;
         getActiveSubscription(): UserScriptActiveSubscription | undefined;
+        trigger(keys: string, action?: string): void;
     };
 }
 
 export interface UserScriptContainerProps {
+    shortcutKey: ShortcutKeyContainer | null;
     subscriptionContents: SubscriptionContentsState;
     subscriptionList: SubscriptionListState;
 }
@@ -76,10 +79,18 @@ export class UserScriptContainer extends React.Component<UserScriptContainerProp
         };
     };
 
+    trigger = (keys: string, action?: string) => {
+        const shortcutKey = this.props.shortcutKey;
+        if (shortcutKey) {
+            shortcutKey.trigger(keys, action);
+        }
+    };
+
     componentDidMount() {
         (window as UserScriptWindow).userScript = {
             getActiveContent: this.getActiveContent,
-            getActiveSubscription: this.getActiveSubscription
+            getActiveSubscription: this.getActiveSubscription,
+            trigger: this.trigger
         };
     }
 

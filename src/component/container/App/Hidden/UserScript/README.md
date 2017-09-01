@@ -31,3 +31,7 @@ interface UserScriptActiveSubscription {
     htmlUrl: string;
 }
 ```
+
+## `trigger(keys: string, action?: string): void`
+
+trigger exist shortcut key.
