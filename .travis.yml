@@ -1,6 +1,5 @@
 language: node_js
 node_js: stable
-script: yarn run build
 after_success:
   - |
 
@@ -10,6 +9,6 @@ after_success:
 
         $(npm bin)/update-branch --commands "yarn run build" \
                                  --commit-message "Update website [skip ci]" \
-                                 --directory "./public" \
+                                 --directory "./build" \
                                  --distribution-branch "gh-pages" \
                                  --source-branch "master"
