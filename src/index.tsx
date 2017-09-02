@@ -34,7 +34,7 @@ if (process.env.NODE_ENV !== "production") {
 if (location.search.includes("?code")) {
     saveTokenFromCallbackURL(location.href).then(token => {
         console.log(token);
-        history.replaceState("", "", "/");
+        history.replaceState("", "", location.pathname);
     });
 }
 
