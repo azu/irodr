@@ -55,6 +55,8 @@ export const getToken = () => {
         accessTokenUri: process.env.REACT_APP_INOREADER_ACCESS_TOKEN_URL,
         redirectUri: process.env.PUBLIC_URL
     });
+    const parsed = require("uri").parse(process.env.PUBLIC_URL);
+    console.log("parsed", parsed);
     const savedTokenJSON = loadToken();
     if (!savedTokenJSON) {
         return Promise.reject(new Error("Token is not found"));
