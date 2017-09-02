@@ -7,8 +7,14 @@ import { Subscription } from "../../domain/Subscriptions/Subscription";
 import { StreamContentsResponse } from "./StreamContentsResponse";
 import { stringify } from "querystring";
 
+const baseURL = process.env.REACT_APP_INOREADER_API_BASE_URL;
+
 export class InoreaderAPI {
-    private basePath = process.env.REACT_APP_INOREADER_API_BASE_URL || "";
+    baseURL: string;
+
+    constructor() {
+        this.baseURL = baseURL || "";
+    }
 
     private getToken(): Promise<Token> {
         return getToken().catch(error => {
@@ -26,7 +32,7 @@ export class InoreaderAPI {
             const query = stringify ? `?${stringify(parameters)}` : "";
             const requestObject = token.sign({
                 method: "get",
-                url: this.basePath + apiPath + query
+                url: this.baseURL + apiPath + query
             });
             const headers = new Headers();
             Object.keys((requestObject as any).headers).forEach(key => {
@@ -44,7 +50,7 @@ export class InoreaderAPI {
             // Sign API requests on behalf of the current user.
             const requestObject = token.sign({
                 method: "post",
-                url: this.basePath + apiPath
+                url: this.baseURL + apiPath
             });
             const headers = new Headers();
             Object.keys((requestObject as any).headers).forEach(key => {
