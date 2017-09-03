@@ -19,7 +19,8 @@ import { Subscription } from "../../../../../domain/Subscriptions/Subscription";
 export interface SubscriptionContentsStateProps {
     isContentsLoadings: boolean;
     subscription?: Subscription;
-    contents?: SubscriptionContents;
+    rawContents?: SubscriptionContents;
+    filteredContents?: SubscriptionContents;
     focusContentId?: SubscriptionContentIdentifier;
     // if exist it, scroll to ths id at once
     scrollContentId?: SubscriptionContentIdentifier;
@@ -28,20 +29,47 @@ export interface SubscriptionContentsStateProps {
 export class SubscriptionContentsState {
     isContentsLoadings: boolean;
     subscription?: Subscription;
-    contents?: SubscriptionContents;
+    rawContents?: SubscriptionContents;
+    filteredContents?: SubscriptionContents;
     focusContentId?: SubscriptionContentIdentifier;
     scrollContentId?: SubscriptionContentIdentifier;
 
     constructor(props: SubscriptionContentsStateProps) {
         this.isContentsLoadings = props.isContentsLoadings;
         this.subscription = props.subscription;
-        this.contents = props.contents;
+        this.rawContents = props.rawContents;
+        this.filteredContents = props.filteredContents;
         this.focusContentId = props.focusContentId;
         this.scrollContentId = props.scrollContentId;
     }
 
     get hasContents(): boolean {
-        return this.contents !== undefined && this.contents.hasContent;
+        return this.filteredContents !== undefined && this.filteredContents.hasContent;
+    }
+
+    get contents(): SubscriptionContents | undefined {
+        return this.filteredContents;
+    }
+
+    get contentsCount() {
+        if (!this.contents) {
+            return 0;
+        }
+        return this.contents.contents.length;
+    }
+
+    get unreadContentsCount() {
+        if (!this.subscription) {
+            return 0;
+        }
+        return this.subscription.unread.count;
+    }
+
+    get updatedContentsCount() {
+        if (!this.subscription) {
+            return 0;
+        }
+        return this.contentsCount - this.unreadContentsCount;
     }
 
     getContentId(id: string): SubscriptionContentIdentifier {
@@ -49,10 +77,10 @@ export class SubscriptionContentsState {
     }
 
     getContent(id: SubscriptionContentIdentifier): SubscriptionContent | undefined {
-        if (!this.contents) {
+        if (!this.filteredContents) {
             return;
         }
-        const subscriptionContent = this.contents.findContentById(id);
+        const subscriptionContent = this.filteredContents.findContentById(id);
         if (!subscriptionContent) {
             return;
         }
@@ -62,34 +90,34 @@ export class SubscriptionContentsState {
     getPrevContent(
         contentIdentifier: SubscriptionContentIdentifier | undefined = this.focusContentId
     ): SubscriptionContent | undefined {
-        if (!this.contents) {
+        if (!this.filteredContents) {
             return;
         }
 
         if (!contentIdentifier) {
             return;
         }
-        const subscriptionContent = this.contents.findContentById(contentIdentifier);
+        const subscriptionContent = this.filteredContents.findContentById(contentIdentifier);
         if (!subscriptionContent) {
             return;
         }
-        return this.contents.prevContentOf(subscriptionContent);
+        return this.filteredContents.prevContentOf(subscriptionContent);
     }
 
     getNextContent(
         contentIdentifier: SubscriptionContentIdentifier | undefined = this.focusContentId
     ): SubscriptionContent | undefined {
-        if (!this.contents) {
+        if (!this.filteredContents) {
             return;
         }
         if (!contentIdentifier) {
             return;
         }
-        const subscriptionContent = this.contents.findContentById(contentIdentifier);
+        const subscriptionContent = this.filteredContents.findContentById(contentIdentifier);
         if (!subscriptionContent) {
             return;
         }
-        return this.contents.nextContentOf(subscriptionContent);
+        return this.filteredContents.nextContentOf(subscriptionContent);
     }
 
     isFocusContent(content: SubscriptionContent): boolean {
@@ -98,13 +126,25 @@ export class SubscriptionContentsState {
 
     update(subscription: Subscription) {
         const contents = subscription.contents;
-        if (this.contents === contents) {
+        if (this.rawContents === contents) {
             return this;
         }
+        const filteredContents = contents.getContentsWithPredicate(content => {
+            console.log(
+                content.updatedDate,
+                "\n",
+                subscription.lastUpdated.date,
+                "\n",
+                subscription.unread.readTimestamp.date
+            );
+            return content.updatedDate >= subscription.lastUpdated.date;
+        });
+        console.log(filteredContents);
         return new SubscriptionContentsState({
             ...this as SubscriptionContentsStateProps,
             subscription,
-            contents
+            rawContents: contents,
+            filteredContents
         });
     }
 

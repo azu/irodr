@@ -7,11 +7,7 @@ import {
     SubscriptionContentsJSON,
     SubscriptionContentsSerializer
 } from "./SubscriptionContent/SubscriptionContents";
-import {
-    SubscriptionLastUpdated,
-    SubscriptionLastUpdatedJSON,
-    SubscriptionLastUpdatedSerializer
-} from "./SubscriptionLastUpdated";
+import { TimeStamp, TimeStampJSON, TimeStampSerializer } from "./TimeStamp";
 
 export const SubscriptionSerializer: Serializer<Subscription, SubscriptionJSON> = {
     toJSON(entity) {
@@ -24,7 +20,7 @@ export const SubscriptionSerializer: Serializer<Subscription, SubscriptionJSON> 
             categories: entity.categories,
             contents: SubscriptionContentsSerializer.toJSON(entity.contents),
             unread: SubscriptionUnreadSerializer.toJSON(entity.unread),
-            lastUpdated: SubscriptionLastUpdatedSerializer.toJSON(entity.lastUpdated)
+            lastUpdated: TimeStampSerializer.toJSON(entity.lastUpdated)
         };
     },
     fromJSON(json) {
@@ -38,7 +34,7 @@ export const SubscriptionSerializer: Serializer<Subscription, SubscriptionJSON> 
             order: new SubscriptionOrder(),
             contents: SubscriptionContentsSerializer.fromJSON(json.contents),
             unread: SubscriptionUnreadSerializer.fromJSON(json.unread),
-            lastUpdated: SubscriptionLastUpdatedSerializer.fromJSON(json.lastUpdated),
+            lastUpdated: TimeStampSerializer.fromJSON(json.lastUpdated),
             isContentsUpdating: false
         });
     }
@@ -54,7 +50,7 @@ export interface SubscriptionJSON {
     contents: SubscriptionContentsJSON;
     // order: SubscriptionOrder;
     unread: SubscriptionUnreadJSON;
-    lastUpdated: SubscriptionLastUpdatedJSON;
+    lastUpdated: TimeStampJSON;
 }
 
 export class SubscriptionIdentifier extends Identifier<string> {}
@@ -69,7 +65,7 @@ export interface SubscriptionArgs {
     contents: SubscriptionContents;
     order: SubscriptionOrder;
     unread: SubscriptionUnread;
-    lastUpdated: SubscriptionLastUpdated;
+    lastUpdated: TimeStamp;
     isContentsUpdating: boolean;
 }
 
@@ -82,7 +78,7 @@ export class Subscription extends Entity<SubscriptionIdentifier> {
     contents: SubscriptionContents;
     order: SubscriptionOrder;
     unread: SubscriptionUnread;
-    lastUpdated: SubscriptionLastUpdated;
+    lastUpdated: TimeStamp;
     isContentsUpdating: boolean;
 
     constructor(args: SubscriptionArgs) {

@@ -32,6 +32,14 @@ export class TimeStamp {
         this.value = millisecond;
     }
 
+    get date(): Date {
+        return new Date(this.value / 1000);
+    }
+
+    get isoString(): string {
+        return new Date(this.value / 1000).toISOString();
+    }
+
     get second() {
         return this.value / 1000;
     }

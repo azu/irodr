@@ -47,8 +47,8 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
                     useCase.execute(prevSubscriptionId)
                 );
             }
-            // prefetch next 3 items
-            await this.fetchSubscriptions(currentSubscriptionId, 3);
+            // prefetch next items
+            await this.fetchSubscriptions(currentSubscriptionId, this.props.subscriptionList.prefetchSubscriptionCount);
             // complete
             if (prevSubscriptionId) {
                 await this.useCase(createMarkAsReadToServerUseCase()).executor(useCase =>

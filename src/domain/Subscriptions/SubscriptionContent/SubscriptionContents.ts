@@ -65,12 +65,16 @@ export class SubscriptionContents {
         });
     }
 
-    getContents() {
+    getContentList() {
         return this.contents;
     }
 
     getContentsWithPredicate(predicate: ((content: SubscriptionContent) => boolean)) {
-        return this.contents.filter(predicate);
+        const filteredContents = this.contents.filter(predicate);
+        return new SubscriptionContents({
+            ...this as SubscriptionContentsArgs,
+            contents: filteredContents
+        });
     }
 
     findContentById(id: SubscriptionContentIdentifier) {

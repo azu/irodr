@@ -4,7 +4,6 @@ import { Subscription, SubscriptionIdentifier } from "./Subscription";
 import { SubscriptionContents } from "./SubscriptionContent/SubscriptionContents";
 import { SubscriptionOrder } from "./SubscriptionOrder";
 import { SubscriptionUnread } from "./SubscriptionUnread";
-import { SubscriptionLastUpdated } from "./SubscriptionLastUpdated";
 import { UnreadCountResponse, UnreadCountsResponse } from "../../infra/api/UnreadCountResponse";
 import keyBy from "lodash.keyby";
 import { TimeStamp } from "./TimeStamp";
@@ -36,7 +35,7 @@ export function createSubscriptionFromResponse(
         url: subscriptionResponse.url,
         iconUrl: subscriptionResponse.iconUrl,
         htmlUrl: subscriptionResponse.htmlUrl,
-        lastUpdated: new SubscriptionLastUpdated(new Date(subscriptionResponse.firstitemmsec)),
+        lastUpdated: TimeStamp.createTimeStampFromMillisecond(subscriptionResponse.firstitemmsec),
         categories: subscriptionResponse.categories.map(category => category.label),
         contents: new SubscriptionContents({
             contents: [],
@@ -47,7 +46,7 @@ export function createSubscriptionFromResponse(
             count: Number(unreadResponse.count),
             maxCount: 1000,
             // last read time
-            readTimestamp: TimeStamp.createTimeStampFromSecond(subscriptionResponse.firstitemmsec)
+            readTimestamp: TimeStamp.createTimeStampFromMillisecond(subscriptionResponse.firstitemmsec)
         }),
         isContentsUpdating: false
     });

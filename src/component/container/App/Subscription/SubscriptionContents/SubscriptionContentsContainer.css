@@ -8,6 +8,8 @@
     display: flex;
     margin: 0;
     padding: 8px;
+    font-size: 16px;
+    line-height: 16px;
 }
 
 .SubscriptionContentsContainer-subscriptionImage {
@@ -18,7 +20,9 @@
 .SubscriptionContentsContainer-subscriptionLink {
     font-size: 16px;
     line-height: 16px;
-    margin-right: 8px;
+}
+
+.SubscriptionContentsContainer-subscriptionUnreadCount {
 }
 
 .SubscriptionContentsContainer-subscriptionEditLink {
@@ -26,6 +30,13 @@
     height: 16px;
     font-size: 16px;
     line-height: 16px;
+    margin-left: 8px;
+    margin-right: 8px;
+}
+
+.SubscriptionContentsContainer-subscriptionUpdatedDate {
+    font-size: 12px;
+    color: #999;
 }
 
 .SubscriptionContentsContainer-body {

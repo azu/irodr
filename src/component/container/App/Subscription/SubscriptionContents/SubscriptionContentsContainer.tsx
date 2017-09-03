@@ -14,6 +14,7 @@ import format from "date-fns/format";
 import isEqual from "date-fns/is_equal";
 import { ProgressColorBar } from "../../../../project/ProgressColorBar/ProgressColorBar";
 import { Subscription } from "../../../../../domain/Subscriptions/Subscription";
+import { Time } from "../../../../ui-kit/Time/Time";
 
 export interface SubscriptionContentsContainerProps {
     subscriptionContents: SubscriptionContentsState;
@@ -92,7 +93,7 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
         const header = this.makeHeaderContent(this.props.subscriptionContents.subscription);
         const contents = this.props.subscriptionContents.contents
             ? this.props.subscriptionContents.contents
-                  .getContents()
+                  .getContentList()
                   .map((content, index) => this.makeContent(content, index))
             : "No contents";
         return (
@@ -161,7 +162,16 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
                     <Link className="SubscriptionContentsContainer-subscriptionLink" href={subscription.htmlUrl}>
                         {subscription.title}
                     </Link>
+                    <span className="SubscriptionContentsContainer-subscriptionUnreadCount">
+                        ({subscription.unread.formatString} + {this.props.subscriptionContents.updatedContentsCount})
+                    </span>
                     {editLink}
+                    <span className="SubscriptionContentsContainer-subscriptionUpdatedDate">
+                        First Item:
+                        <Time dateTime={subscription.lastUpdated.isoString}>
+                            {format(subscription.lastUpdated.second, "YYYY-MM-DD mm:ss")}
+                        </Time>
+                    </span>
                 </h2>
             </header>
         );

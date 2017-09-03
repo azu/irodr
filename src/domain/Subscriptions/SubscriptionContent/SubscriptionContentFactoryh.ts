@@ -13,7 +13,7 @@ export const createSubscriptionContentsFromResponse = (
     });
     return new SubscriptionContents({
         contents: contentList,
-        lastUpdatedTimestamp: TimeStamp.createTimeStampFromMillisecond(streamContentResponse.updated)
+        lastUpdatedTimestamp: TimeStamp.createTimeStampFromSecond(streamContentResponse.updated)
     });
 };
 

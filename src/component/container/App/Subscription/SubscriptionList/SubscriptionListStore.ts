@@ -8,6 +8,7 @@ import { splice } from "@immutable-array/prototype";
 import { AppRepository } from "../../../../../infra/repository/AppRepository";
 import { AppSubscriptionActivityItem } from "../../../../../domain/App/User/AppSubscriptionActivityItem";
 import { AppSubscriptionActivity } from "../../../../../domain/App/User/AppSubscriptionActivity";
+import { AppPreferences } from "../../../../../domain/App/Preferences/AppPreferences";
 
 export interface SubscriptionListStateProps {
     currentSubscriptionId?: SubscriptionIdentifier;
@@ -17,6 +18,8 @@ export interface SubscriptionListStateProps {
     groupIsCollapsed: {
         [index: string]: boolean;
     };
+    // preference
+    prefetchSubscriptionCount: number;
     // cache
     categoryMap: {
         [index: string]: Subscription[];
@@ -30,6 +33,8 @@ export class SubscriptionListState {
     groupIsCollapsed: {
         [index: string]: boolean;
     };
+    prefetchSubscriptionCount: number;
+
     categoryMap: {
         [index: string]: Subscription[];
     };
@@ -39,6 +44,7 @@ export class SubscriptionListState {
         this.groups = props.groups;
         this.groupSubscriptions = props.groupSubscriptions;
         this.groupIsCollapsed = props.groupIsCollapsed;
+        this.prefetchSubscriptionCount = props.prefetchSubscriptionCount;
         this.categoryMap = props.categoryMap;
     }
 
@@ -66,8 +72,21 @@ export class SubscriptionListState {
         return this.groupSubscriptions[index + 1];
     }
 
+    updateAppPreferences(appPreferences: AppPreferences) {
+        if (appPreferences.prefetchSubscriptionCount === this.prefetchSubscriptionCount) {
+            return this;
+        }
+        return new SubscriptionListState({
+            ...this as SubscriptionListStateProps,
+            prefetchSubscriptionCount: appPreferences.prefetchSubscriptionCount
+        });
+    }
+
     updateCurrentSubscriptionId(currentActivityItem: AppSubscriptionActivityItem | undefined) {
         const currentSubscriptionId = currentActivityItem ? currentActivityItem.id : undefined;
+        if (currentSubscriptionId === this.currentSubscriptionId) {
+            return this;
+        }
         return new SubscriptionListState({
             ...this as SubscriptionListStateProps,
             currentSubscriptionId
@@ -154,7 +173,9 @@ export class SubscriptionListStore extends Store<SubscriptionListState> {
         }
     ) {
         super();
+        const app = this.repo.appRepository.get();
         this.state = new SubscriptionListState({
+            prefetchSubscriptionCount: app.preferences.prefetchSubscriptionCount,
             categoryMap: {},
             groups: [],
             groupSubscriptions: [],
@@ -169,6 +190,7 @@ export class SubscriptionListStore extends Store<SubscriptionListState> {
         this.setState(
             this.state
                 .updateCategoryMap(subscriptionGroupByCategory, subscriptionActivity)
+                .updateAppPreferences(app.preferences)
                 .updateCurrentSubscriptionId(app.user.subscriptionActivity.current)
                 .reduce(payload)
         );
