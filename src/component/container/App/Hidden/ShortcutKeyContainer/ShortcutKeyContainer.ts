@@ -98,7 +98,12 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
                         );
                     }
                 }
+                const currentContent = this.props.subscriptionContents.focusContentId;
                 const nextContent = this.props.subscriptionContents.getNextContent();
+                if (currentContent && !nextContent) {
+                    // last item and next
+                    return;
+                }
                 if (!nextContent) {
                     return;
                 }

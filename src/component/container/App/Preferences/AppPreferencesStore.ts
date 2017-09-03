@@ -23,6 +23,7 @@ export class AppPreferencesState {
         this.prefetchSubscriptionCount = props.prefetchSubscriptionCount;
         this.enableAutoRefreshSubscription = props.enableAutoRefreshSubscription;
         this.autoRefreshSubscriptionSec = props.autoRefreshSubscriptionSec;
+        this.fetchContentsCount = props.fetchContentsCount;
     }
 
     asJSON(): AppPreferencesJSON {

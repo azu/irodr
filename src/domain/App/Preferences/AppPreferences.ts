@@ -48,6 +48,7 @@ export class AppPreferences {
         this.prefetchSubscriptionCount = args.prefetchSubscriptionCount;
         this.enableAutoRefreshSubscription = args.enableAutoRefreshSubscription;
         this.autoRefreshSubscriptionSec = args.autoRefreshSubscriptionSec;
+        this.fetchContentsCount = args.fetchContentsCount;
     }
 
     update(newArgs: Partial<AppPreferencesJSON>): AppPreferences {

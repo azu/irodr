@@ -35,7 +35,7 @@ export class PrefetchSubscriptContentsUseCase extends UseCase {
         }
         const app = this.repo.appRepository.get();
         const client = new InoreaderAPI();
-        return client.streamContents(subscription, app.preferences.prefetchSubscriptionCount).then(response => {
+        return client.streamContents(subscription, app.preferences.fetchContentsCount).then(response => {
             // get again, because async
             const oldSubscription = this.repo.subscriptionRepository.findById(subscriptionId);
             if (!oldSubscription) {

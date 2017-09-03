@@ -11,8 +11,8 @@ It aim to work on browser/electron.
 - Fast read
     - [x] Prefetch contents
     - [x] Mark as "read" at idle time
-- Customizable for user
-    - [ ] We will provide some API like `window.getActiveItem` for UserScript.
+- Customizable by UserScript
+    - [x] We will provide some API like `window.getActiveItem` for UserScript.
 - Allow of other RSS reader API like Feedly
     - Domain model should not depended on Inoreader
 - Welcome to Pull Request
