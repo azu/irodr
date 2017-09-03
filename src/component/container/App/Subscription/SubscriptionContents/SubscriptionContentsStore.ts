@@ -89,6 +89,13 @@ export class SubscriptionContentsState {
         return subscriptionContent;
     }
 
+    getFirstContent(): SubscriptionContent | undefined {
+        if (!this.filteredContents) {
+            return;
+        }
+        return this.filteredContents.contents[0];
+    }
+
     getPrevContent(
         contentIdentifier: SubscriptionContentIdentifier | undefined = this.focusContentId
     ): SubscriptionContent | undefined {

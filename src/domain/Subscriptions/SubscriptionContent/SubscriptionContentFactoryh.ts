@@ -22,7 +22,6 @@ export const createSubscriptionContentFromResponse = (
 ): SubscriptionContent => {
     // Inoreader response updated: 0
     const hasUpdate = streamContentResponse.updated !== undefined && streamContentResponse.updated !== 0;
-    console.log(hasUpdate, "streamContentResponse", streamContentResponse);
     return new SubscriptionContent({
         id: new SubscriptionContentIdentifier(streamContentResponse.id),
         url: streamContentResponse.canonical[0].href,

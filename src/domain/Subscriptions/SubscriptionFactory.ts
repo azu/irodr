@@ -29,7 +29,6 @@ export function createSubscriptionFromResponse(
     subscriptionResponse: SubscriptionResponse,
     unreadResponse: UnreadCountResponse
 ): Subscription {
-    console.log("subscriptionResponse", subscriptionResponse);
     return new Subscription({
         id: new SubscriptionIdentifier(subscriptionResponse.id),
         title: subscriptionResponse.title,

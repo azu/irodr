@@ -86,11 +86,25 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
                 );
             }, DEBOUNCE_TIME),
             "move-next-content-item": (_event: Event) => {
+                const body = document.querySelector(".SubscriptionContentsContainer");
+                if (!body) {
+                    return;
+                }
+                if (body.scrollTop === 0) {
+                    const firstContent = this.props.subscriptionContents.getFirstContent();
+                    if (firstContent) {
+                        return this.useCase(new ScrollToNextContentUseCase()).executor(useCase =>
+                            useCase.execute(firstContent.id)
+                        );
+                    }
+                }
                 const nextContent = this.props.subscriptionContents.getNextContent();
                 if (!nextContent) {
                     return;
                 }
-                this.useCase(new ScrollToNextContentUseCase()).executor(useCase => useCase.execute(nextContent.id));
+                return this.useCase(new ScrollToNextContentUseCase()).executor(useCase =>
+                    useCase.execute(nextContent.id)
+                );
             },
             "move-prev-content-item": (_event: Event) => {
                 const prevContent = this.props.subscriptionContents.getPrevContent();
