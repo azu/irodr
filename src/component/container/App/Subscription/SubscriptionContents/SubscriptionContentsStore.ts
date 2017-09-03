@@ -139,14 +139,6 @@ export class SubscriptionContentsState {
             return this;
         }
         const filteredContents = contents.getContentsWithPredicate(content => {
-            console.log(
-                content.updatedDate.date,
-                "\n",
-                subscription.lastUpdated.date,
-                "\n",
-                content.updatedDate,
-                subscription.lastUpdated
-            );
             return content.updatedDate.millSecond >= subscription.lastUpdated.millSecond;
         });
         return new SubscriptionContentsState({
