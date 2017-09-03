@@ -11,7 +11,6 @@ import { FocusContentUseCase } from "./use-case/FocusContentUseCase";
 import { HTMLContent } from "../../../../ui-kit/HTMLContent";
 import distanceInWordsToNow from "date-fns/distance_in_words_to_now";
 import format from "date-fns/format";
-import isEqual from "date-fns/is_equal";
 import { ProgressColorBar } from "../../../../project/ProgressColorBar/ProgressColorBar";
 import { Subscription } from "../../../../../domain/Subscriptions/Subscription";
 import { Time } from "../../../../ui-kit/Time/Time";
@@ -149,6 +148,10 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
                 <i className="ms-Icon ms-Icon--Settings" aria-hidden="true" />
             </Link>
         );
+        const updatedCount =
+            this.props.subscriptionContents.updatedContentsCount !== 0
+                ? this.props.subscriptionContents.updatedContentsCount
+                : undefined;
         return (
             <header className="SubscriptionContentsContainer-header">
                 <h2 className="SubscriptionContentsContainer-subscriptionTitle">
@@ -163,13 +166,14 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
                         {subscription.title}
                     </Link>
                     <span className="SubscriptionContentsContainer-subscriptionUnreadCount">
-                        ({subscription.unread.formatString} + {this.props.subscriptionContents.updatedContentsCount})
+                        ({subscription.unread.formatString + (updatedCount ? `+ ${updatedCount}` : "")}
+                        )
                     </span>
                     {editLink}
                     <span className="SubscriptionContentsContainer-subscriptionUpdatedDate">
                         First Item:
                         <Time dateTime={subscription.lastUpdated.isoString}>
-                            {format(subscription.lastUpdated.second, "YYYY-MM-DD mm:ss")}
+                            {format(subscription.lastUpdated.date, "YYYY-MM-DD mm:ss")}
                         </Time>
                     </span>
                 </h2>
@@ -213,15 +217,15 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
                 <span className="SubscriptionContentsContainer-contentAuthor">{content.author}</span>
             </span>
         ) : null;
-        const updatedFooter = isEqual(content.publishedDate, content.updatedDate) ? null : (
+        const updatedFooter = content.publishedDate.equals(content.updatedDate) ? null : (
             <span>
                 <span> | </span>
                 <label>Updated: </label>
                 <time
                     className="SubscriptionContentsContainer-contentUpdatedTime"
-                    dateTime={content.updatedDate.toISOString()}
+                    dateTime={content.updatedDate.isoString}
                 >
-                    {format(content.updatedDate, "YYYY-MM-DD mm:ss")}
+                    {format(content.updatedDate.date, "YYYY-MM-DD mm:ss")}
                 </time>
             </span>
         );
@@ -256,9 +260,9 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
                         <span> | </span>
                         <time
                             className="SubscriptionContentsContainer-contentUpdatedTime"
-                            dateTime={content.updatedDate.toISOString()}
+                            dateTime={content.updatedDate.isoString}
                         >
-                            {distanceInWordsToNow(content.updatedDate)}
+                            {distanceInWordsToNow(content.updatedDate.date)}
                         </time>
                         {author}
                     </div>
@@ -270,9 +274,9 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
                     <label>Posted: </label>
                     <time
                         className="SubscriptionContentsContainer-contentPostedTime"
-                        dateTime={content.publishedDate.toISOString()}
+                        dateTime={content.publishedDate.isoString}
                     >
-                        {format(content.publishedDate, "YYYY-MM-DD mm:ss")}
+                        {format(content.publishedDate.date, "YYYY-MM-DD mm:ss")}
                     </time>
                     {updatedFooter}
                 </footer>

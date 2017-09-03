@@ -29,13 +29,14 @@ export function createSubscriptionFromResponse(
     subscriptionResponse: SubscriptionResponse,
     unreadResponse: UnreadCountResponse
 ): Subscription {
+    console.log("subscriptionResponse", subscriptionResponse);
     return new Subscription({
         id: new SubscriptionIdentifier(subscriptionResponse.id),
         title: subscriptionResponse.title,
         url: subscriptionResponse.url,
         iconUrl: subscriptionResponse.iconUrl,
         htmlUrl: subscriptionResponse.htmlUrl,
-        lastUpdated: TimeStamp.createTimeStampFromMillisecond(subscriptionResponse.firstitemmsec),
+        lastUpdated: TimeStamp.createTimeStampFromMicrosecond(subscriptionResponse.firstitemmsec),
         categories: subscriptionResponse.categories.map(category => category.label),
         contents: new SubscriptionContents({
             contents: [],
@@ -46,7 +47,7 @@ export function createSubscriptionFromResponse(
             count: Number(unreadResponse.count),
             maxCount: 1000,
             // last read time
-            readTimestamp: TimeStamp.createTimeStampFromMillisecond(subscriptionResponse.firstitemmsec)
+            readTimestamp: TimeStamp.createTimeStampFromMicrosecond(subscriptionResponse.firstitemmsec)
         }),
         isContentsUpdating: false
     });

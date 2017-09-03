@@ -1,6 +1,6 @@
 // MIT © 2017 azu
 
-import { Serializer } from "ddd-base";
+import { Serializer, ValueObject } from "ddd-base";
 
 export const TimeStampSerializer: Serializer<TimeStamp, TimeStampJSON> = {
     fromJSON(json) {
@@ -13,7 +13,8 @@ export const TimeStampSerializer: Serializer<TimeStamp, TimeStampJSON> = {
 // unix-time
 export type TimeStampJSON = number;
 
-export class TimeStamp {
+export class TimeStamp extends ValueObject {
+    // millsecond
     value: number;
 
     static createTimeStampFromSecond(second: number) {
@@ -24,20 +25,25 @@ export class TimeStamp {
         return new TimeStamp(millisecond);
     }
 
+    static createTimeStampFromMicrosecond(microsecond: number) {
+        return new TimeStamp(microsecond / 1000);
+    }
+
     static now() {
         return new TimeStamp(Date.now());
     }
 
     constructor(millisecond: number) {
+        super();
         this.value = millisecond;
     }
 
     get date(): Date {
-        return new Date(this.value / 1000);
+        return new Date(this.value);
     }
 
     get isoString(): string {
-        return new Date(this.value / 1000).toISOString();
+        return this.date.toISOString();
     }
 
     get second() {

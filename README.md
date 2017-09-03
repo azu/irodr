@@ -20,6 +20,7 @@ It aim to work on browser/electron.
 ## Usage
 
     npm start
+    open http://localhost:13245/
 
 This server is also proxy server.
 

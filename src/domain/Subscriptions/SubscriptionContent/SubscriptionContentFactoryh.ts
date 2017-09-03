@@ -22,15 +22,16 @@ export const createSubscriptionContentFromResponse = (
 ): SubscriptionContent => {
     // Inoreader response updated: 0
     const hasUpdate = streamContentResponse.updated !== undefined && streamContentResponse.updated !== 0;
+    console.log(hasUpdate, "streamContentResponse", streamContentResponse);
     return new SubscriptionContent({
         id: new SubscriptionContentIdentifier(streamContentResponse.id),
         url: streamContentResponse.canonical[0].href,
         title: streamContentResponse.title,
         author: streamContentResponse.author,
         body: new SubscriptionContentBody(streamContentResponse.summary.content),
-        publishedDate: new Date(streamContentResponse.published * 1000),
+        publishedDate: TimeStamp.createTimeStampFromSecond(streamContentResponse.published),
         updatedDate: hasUpdate
-            ? new Date(streamContentResponse.updated * 1000)
-            : new Date(streamContentResponse.published * 1000)
+            ? TimeStamp.createTimeStampFromSecond(streamContentResponse.updated)
+            : TimeStamp.createTimeStampFromSecond(streamContentResponse.published)
     });
 };

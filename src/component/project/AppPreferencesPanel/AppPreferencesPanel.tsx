@@ -82,6 +82,21 @@ export class AppPreferencesPanel extends React.Component<AppPreferencesPanelProp
                         });
                     }}
                 />
+
+                <TextField
+                    className="AppPreferencesPanel-fetchContentsCount"
+                    label="Fetch subscription contents Count"
+                    value={String(this.state.fetchContentsCount)}
+                    onChanged={newValue => {
+                        const fetchContentsCount = Number(newValue);
+                        if (Number.isNaN(fetchContentsCount)) {
+                            return;
+                        }
+                        this.setState({
+                            fetchContentsCount: fetchContentsCount
+                        });
+                    }}
+                />
                 <div className="GitHubSettingPanel-footer">
                     <PrimaryButton
                         onClick={this.onSubmit}

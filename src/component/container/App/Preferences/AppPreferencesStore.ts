@@ -16,6 +16,7 @@ export class AppPreferencesState {
     prefetchSubscriptionCount: number;
     enableAutoRefreshSubscription: boolean;
     autoRefreshSubscriptionSec: number;
+    fetchContentsCount: number;
 
     constructor(props: AppPreferencesProps) {
         this.isPanelOpened = props.isPanelOpened;
@@ -28,7 +29,8 @@ export class AppPreferencesState {
         return {
             prefetchSubscriptionCount: this.prefetchSubscriptionCount,
             enableAutoRefreshSubscription: this.enableAutoRefreshSubscription,
-            autoRefreshSubscriptionSec: this.autoRefreshSubscriptionSec
+            autoRefreshSubscriptionSec: this.autoRefreshSubscriptionSec,
+            fetchContentsCount: this.fetchContentsCount
         };
     }
 

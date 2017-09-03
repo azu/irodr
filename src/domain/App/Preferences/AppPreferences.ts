@@ -9,13 +9,18 @@ export const AppPreferencesSerializer: Serializer<AppPreferences, AppPreferences
         };
     },
     fromJSON(json) {
-        return new AppPreferences(json);
+        return new AppPreferences({
+            ...DefaultAppPreferences,
+            ...json
+        });
     }
 };
 
 export interface AppPreferencesJSON {
-    // Number of prefetch subscription contents
+    // Number of prefetch subscription
     prefetchSubscriptionCount: number;
+    // Number of fetch subscription contents(items)
+    fetchContentsCount: number;
     // Is enable auto refresh?
     enableAutoRefreshSubscription: boolean;
     // Time of auto refresh subscription(second)
@@ -23,14 +28,17 @@ export interface AppPreferencesJSON {
 }
 
 export const DefaultAppPreferences: AppPreferencesJSON = {
+    fetchContentsCount: 20,
     prefetchSubscriptionCount: 5,
     enableAutoRefreshSubscription: true,
     autoRefreshSubscriptionSec: 120
 };
 
 export class AppPreferences {
-    // Number of prefetch subscription contents
+    // Number of prefetch subscription
     prefetchSubscriptionCount: number;
+    // Number of fetch subscription contents(items)
+    fetchContentsCount: number;
     // Is enable auto refresh?
     enableAutoRefreshSubscription: boolean;
     // Time of auto refresh subscription(second)

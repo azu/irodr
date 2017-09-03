@@ -2,13 +2,14 @@
 
 import * as ClientOAuth2 from "client-oauth2";
 import { Token } from "client-oauth2";
-
+// TODO: use env insteadof magic value
+const redirectUri = process.env.PUBLIC_URL ? `${process.env.PUBLIC_URL}/` : `http://localhost:13245/`;
 const inoreaderAuth = new ClientOAuth2({
     clientId: process.env.REACT_APP_INOREADER_CLIENT_ID,
     clientSecret: process.env.REACT_APP_INOREADER_CLIENT_KEY,
     accessTokenUri: process.env.REACT_APP_INOREADER_ACCESS_TOKEN_URL,
     authorizationUri: "https://www.inoreader.com/oauth2/auth",
-    redirectUri: `${process.env.PUBLIC_URL}/`,
+    redirectUri: redirectUri,
     scopes: ["read", "write"],
     state: "inoreader"
 });

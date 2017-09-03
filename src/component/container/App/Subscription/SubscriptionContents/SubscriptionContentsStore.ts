@@ -69,7 +69,9 @@ export class SubscriptionContentsState {
         if (!this.subscription) {
             return 0;
         }
-        return this.contentsCount - this.unreadContentsCount;
+        const updatedCount = this.contentsCount - this.unreadContentsCount;
+        if (updatedCount <= 0) return 0;
+        return updatedCount;
     }
 
     getContentId(id: string): SubscriptionContentIdentifier {
@@ -131,15 +133,15 @@ export class SubscriptionContentsState {
         }
         const filteredContents = contents.getContentsWithPredicate(content => {
             console.log(
-                content.updatedDate,
+                content.updatedDate.date,
                 "\n",
                 subscription.lastUpdated.date,
                 "\n",
-                subscription.unread.readTimestamp.date
+                content.updatedDate,
+                subscription.lastUpdated
             );
-            return content.updatedDate >= subscription.lastUpdated.date;
+            return content.updatedDate.millSecond >= subscription.lastUpdated.millSecond;
         });
-        console.log(filteredContents);
         return new SubscriptionContentsState({
             ...this as SubscriptionContentsStateProps,
             subscription,
