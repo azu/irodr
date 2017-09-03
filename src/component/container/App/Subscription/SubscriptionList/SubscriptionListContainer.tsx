@@ -11,6 +11,7 @@ import { createToggleListGroupUseCase } from "./use-case/ToggleListGroupUseCase"
 import { createPrefetchSubscriptContentsUseCase } from "../../../../../use-case/subscription/PrefetchSubscriptContentsUseCase";
 import { createMarkAsReadToClientUseCase } from "../../../../../use-case/subscription/MarkAsReadToClientUseCase";
 import { createMarkAsReadToServerUseCase } from "../../../../../use-case/subscription/MarkAsReadToServerUseCase";
+import { createUpdateHeaderMessageUseCase } from "../../../../../use-case/app/UpdateHeaderMessageUseCase";
 
 export interface SubscriptionListContainerProps {
     subscriptionList: SubscriptionListState;
@@ -22,7 +23,7 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
         await this.useCase(createShowSubscriptionContentsUseCase()).executor(useCase => useCase.execute(item.id));
     };
 
-    private fetchSubscriptions = async (
+    private prefetchSubscriptions = async (
         currentSubscriptionId: SubscriptionIdentifier,
         count: number
     ): Promise<void> => {
@@ -34,7 +35,7 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
             return;
         }
         await this.useCase(createPrefetchSubscriptContentsUseCase()).executor(useCase => useCase.execute(nextItem.id));
-        return this.fetchSubscriptions(nextItem.id, count - 1);
+        return this.prefetchSubscriptions(nextItem.id, count - 1);
     };
 
     async componentDidUpdate(prevProp: SubscriptionListContainerProps) {
@@ -48,7 +49,13 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
                 );
             }
             // prefetch next items
-            await this.fetchSubscriptions(currentSubscriptionId, this.props.subscriptionList.prefetchSubscriptionCount);
+            await this.prefetchSubscriptions(
+                currentSubscriptionId,
+                this.props.subscriptionList.prefetchSubscriptionCount
+            );
+            await this.useCase(createUpdateHeaderMessageUseCase()).executor(useCase =>
+                useCase.execute(`Complete prefetch ${this.props.subscriptionList.prefetchSubscriptionCount} items`)
+            );
             // complete
             if (prevSubscriptionId) {
                 await this.useCase(createMarkAsReadToServerUseCase()).executor(useCase =>

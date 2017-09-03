@@ -6,6 +6,7 @@ import { InoreaderAPI } from "../../infra/api/InoreaderAPI";
 import { createSubscriptionContentsFromResponse } from "../../domain/Subscriptions/SubscriptionContent/SubscriptionContentFactoryh";
 import { isSatisfiedSubscriptionContentsFetchSpec } from "./spec/SubscriptionContentsFetchSpec";
 import { appRepository, AppRepository } from "../../infra/repository/AppRepository";
+import { createUpdateHeaderMessageUseCase } from "../app/UpdateHeaderMessageUseCase";
 
 export class StartLoadingPayload extends Payload {
     constructor() {
@@ -35,7 +36,7 @@ export class ShowSubscriptionContentsUseCase extends UseCase {
         super();
     }
 
-    execute(subscriptionId: SubscriptionIdentifier) {
+    async execute(subscriptionId: SubscriptionIdentifier) {
         const subscription = this.repo.subscriptionRepository.findById(subscriptionId);
         if (!subscription) {
             throw new Error(`Not found subscription: ${subscriptionId}`);
@@ -45,6 +46,9 @@ export class ShowSubscriptionContentsUseCase extends UseCase {
             return;
         }
         this.dispatch(new StartLoadingPayload());
+        await this.context
+            .useCase(createUpdateHeaderMessageUseCase())
+            .executor(useCase => useCase.execute("Start loading contents..."));
         const specResult = isSatisfiedSubscriptionContentsFetchSpec(subscription);
         const app = this.repo.appRepository.get();
         if (!specResult.ok) {
@@ -67,6 +71,9 @@ export class ShowSubscriptionContentsUseCase extends UseCase {
             })
             .then(() => {
                 this.dispatch(new FinishLoadingPayload());
+                return this.context
+                    .useCase(createUpdateHeaderMessageUseCase())
+                    .executor(useCase => useCase.execute("Finish loading contents"));
             });
     }
 }

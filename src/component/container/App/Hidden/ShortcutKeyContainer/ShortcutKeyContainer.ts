@@ -9,6 +9,7 @@ import { ScrollToNextContentUseCase } from "../../Subscription/SubscriptionConte
 import { ScrollToPrevContentUseCase } from "../../Subscription/SubscriptionContents/use-case/ScrollToPrevContentUseCase";
 import { createMarkAsReadToServerUseCase } from "../../../../../use-case/subscription/MarkAsReadToServerUseCase";
 import { createOpenSubscriptionContentInNewTabUseCase } from "../../../../../use-case/subscription/OpenSubscriptionContentInNewTabUseCase";
+import { createUpdateHeaderMessageUseCase } from "../../../../../use-case/app/UpdateHeaderMessageUseCase";
 
 const DEBOUNCE_TIME = 32;
 const IGNORE_NODE_NAME_PATTERN = /webview/i;
@@ -102,7 +103,9 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
                 const nextContent = this.props.subscriptionContents.getNextContent();
                 if (currentContent && !nextContent) {
                     // last item and next
-                    return;
+                    return this.useCase(createUpdateHeaderMessageUseCase()).executor(useCase =>
+                        useCase.execute("End of contents")
+                    );
                 }
                 if (!nextContent) {
                     return;

@@ -11,6 +11,10 @@
     display: flex;
 }
 
+.AppHeaderContainer-center {
+    display: flex;
+}
+
 .AppHeaderContainer-title {
     font-size: 20px;
     padding: 0;
@@ -24,7 +28,6 @@
 
 .AppHeaderContainer-right {
     display: flex;
-    margin-left: auto;
 }
 
 .AppHeaderContainer-totalUnreadCount {

@@ -34,6 +34,9 @@ export class AppHeaderContainer extends BaseContainer<AppHeaderContainerProps, {
                         />
                     </div>
                 </div>
+                <div className="AppHeaderContainer-center">
+                    <span className="AppHeaderContainer-message">{this.props.appHeader.message}</span>
+                </div>
                 <div className="AppHeaderContainer-right">
                     <span className="AppHeaderContainer-totalUnreadCount">
                         Unread: {this.props.appHeader.totalUnread}
