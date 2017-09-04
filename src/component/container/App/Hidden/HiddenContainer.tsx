@@ -3,10 +3,13 @@ import { ShortcutKeyContainer } from "./ShortcutKeyContainer/ShortcutKeyContaine
 import { UserScriptContainer } from "./UserScript/UserScriptContainer";
 import { SubscriptionListState } from "../Subscription/SubscriptionList/SubscriptionListStore";
 import { SubscriptionContentsState } from "../Subscription/SubscriptionContents/SubscriptionContentsStore";
+import { ObserverContainer } from "./ObserverContainer/ObserverContainer";
+import { AppPreferences } from "../../../../domain/App/Preferences/AppPreferences";
 
 export interface HiddenContainerProps {
-    subscriptionContents: SubscriptionContentsState;
+    appPreferences: AppPreferences;
     subscriptionList: SubscriptionListState;
+    subscriptionContents: SubscriptionContentsState;
 }
 
 export class HiddenContainer extends React.Component<HiddenContainerProps, {}> {
@@ -15,6 +18,7 @@ export class HiddenContainer extends React.Component<HiddenContainerProps, {}> {
     render() {
         return (
             <div hidden className="HiddenContainer">
+                <ObserverContainer appPreferences={this.props.appPreferences} />
                 <UserScriptContainer
                     shortcutKey={this.shortcutKey}
                     subscriptionList={this.props.subscriptionList}

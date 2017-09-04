@@ -13,6 +13,7 @@ export class AppContainer extends BaseContainer<typeof appStoreGroup.state, {}> 
             <div className="AppContainer">
                 <AppPreferencesContainer appPreferences={this.props.appPreferences} />
                 <HiddenContainer
+                    appPreferences={this.props.appPreferences}
                     subscriptionContents={this.props.subscriptionContents}
                     subscriptionList={this.props.subscriptionList}
                 />
