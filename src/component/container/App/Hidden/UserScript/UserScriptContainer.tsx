@@ -28,7 +28,8 @@ export interface UserScriptWindow extends Window {
     userScript: {
         getActiveContent(): UserScriptActiveContent | undefined;
         getActiveSubscription(): UserScriptActiveSubscription | undefined;
-        trigger(keys: string, action?: string): void;
+        triggerKey(keys: string, action?: string): void;
+        registerKey(keys: string, handler: (event?: Event) => void): void;
     };
 }
 
@@ -79,10 +80,17 @@ export class UserScriptContainer extends React.Component<UserScriptContainerProp
         };
     };
 
-    trigger = (keys: string, action?: string) => {
+    triggerKey = (key: string, action?: string) => {
         const shortcutKey = this.props.shortcutKey;
         if (shortcutKey) {
-            shortcutKey.trigger(keys, action);
+            shortcutKey.triggerKey(key, action);
+        }
+    };
+
+    registerKey = (key: string, handler: (event?: Event) => void) => {
+        const shortcutKey = this.props.shortcutKey;
+        if (shortcutKey) {
+            shortcutKey.registerKey(key, handler);
         }
     };
 
@@ -90,7 +98,8 @@ export class UserScriptContainer extends React.Component<UserScriptContainerProp
         (window as UserScriptWindow).userScript = {
             getActiveContent: this.getActiveContent,
             getActiveSubscription: this.getActiveSubscription,
-            trigger: this.trigger
+            triggerKey: this.triggerKey,
+            registerKey: this.registerKey
         };
     }
 

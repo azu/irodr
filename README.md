@@ -28,8 +28,9 @@ It aim to work on browser/electron.
 
 Irodr provide some UserScript API for UserScript like Greasemonkey.
  
-- `window.userScript.getActiveContent()`
-- `window.userScript.getActiveSubscription()`
+- `window.userScript.getActiveContent(): UserScriptActiveContent | undefined`
+- `window.userScript.getActiveSubscription(): UserScriptActiveSubscription | undefined`
+- `window.userScript.triggerKey(keys: string, action?: string): void`
 
 For more details, see [UserScript API document](src/component/container/App/Hidden/UserScript).
 

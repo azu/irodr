@@ -32,6 +32,12 @@ interface UserScriptActiveSubscription {
 }
 ```
 
+## `registerKey(keys: string, handler: (event?: Event) => void): void;`
+
+Register shortcut key.
+
+
 ## `trigger(keys: string, action?: string): void`
 
-trigger exist shortcut key.
+Trigger exist shortcut key.
+

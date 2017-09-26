@@ -45,9 +45,15 @@ export interface ShortcutKeyContainerProps {
 export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProps, {}> {
     combokeys: any;
 
-    trigger(keys: string, action?: string): void {
+    triggerKey(keys: string, action?: string): void {
         if (this.combokeys) {
-            this.combokeys.trigger(keys, action);
+            this.combokeys.triggerKey(keys, action);
+        }
+    }
+
+    registerKey(key: string, handler: (event?: Event) => void): void {
+        if (this.combokeys) {
+            this.combokeys.bind(key, handler);
         }
     }
 
