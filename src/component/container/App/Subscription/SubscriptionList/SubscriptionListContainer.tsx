@@ -19,7 +19,6 @@ export interface SubscriptionListContainerProps {
 
 export class SubscriptionListContainer extends BaseContainer<SubscriptionListContainerProps, {}> {
     private onClickSubscription = async (item: Subscription) => {
-        console.log("click");
         await this.useCase(createShowSubscriptionContentsUseCase()).executor(useCase => useCase.execute(item.id));
     };
 
@@ -66,6 +65,8 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
     }
 
     render() {
+        // TODO: empty group should shown as empty group.
+        // Current, empty element
         return (
             <div className={classnames("SubscriptionListContainer", this.props.className)}>
                 <GroupedList
