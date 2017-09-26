@@ -15,14 +15,14 @@ It aim to work on browser/electron.
     - [x] We will provide some API like `window.getActiveItem` for UserScript.
 - Allow of other RSS reader API like Feedly
     - Domain model should not depended on Inoreader
-- Welcome to Pull Request
+- Welcome to Pull Request!
 
 ## Usage
 
-    npm start
-    open http://localhost:13245/
-
-This server is also proxy server.
+1. Open http://irodr.netlify.com/
+2. Redirect to Inoreader auth page
+3. Authorize if you want to use inoreader
+4. Load your feed!
 
 ## UserScript API
 
@@ -38,25 +38,35 @@ See [UserScript API document](src/component/container/App/Hidden/UserScript) for
 - Currently, We need CORS proxy in `package.json`
     - In other word, require proxy or proxy server
 
-## CORS workaound
+## Development
 
-### Local server
+### Usage
+
+Run following command and open local server.
+
+    npm start
+    open http://localhost:13245/
+
+
+### :memo: CORS workaound
+
+#### Production
+
+http://irodr.netlify.com/ work on [Netlify](https://www.netlify.com/ "Netlify").
+Netlify support CORS proxy
+
+- [Redirect & Rewrite rules | Netlify](https://www.netlify.com/docs/redirects/ "Redirect &amp; Rewrite rules | Netlify")
+
+#### Local server
 
 This project use the server that avoid CORS for Inoreader.
 
     npm start
 
-### Browser extension
+#### Browser extension
 
 - [ ] Chrome/Firefox browser extension for avoiding CORS
 - [ ] <https://github.com/azu/irodr/issues/11>
-- [ ] Blocking: <https://github.com/azu/irodr/issues/16>
-
-## Develop
-
-### Build config
-
-See [.env.production](.env.netlify)
 
 ## Changelog
 
