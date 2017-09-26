@@ -1,7 +1,6 @@
 import * as React from "react";
 import { SubscriptionListState } from "../../Subscription/SubscriptionList/SubscriptionListStore";
 import { SubscriptionContentsState } from "../../Subscription/SubscriptionContents/SubscriptionContentsStore";
-import { getActiveContentIdString } from "../../Subscription/SubscriptionContents/SubscriptionContentsContainer";
 import { SubscriptionContentSerializer } from "../../../../../domain/Subscriptions/SubscriptionContent/SubscriptionContent";
 import { SubscriptionSerializer } from "../../../../../domain/Subscriptions/Subscription";
 import { ShortcutKeyContainer } from "../ShortcutKeyContainer/ShortcutKeyContainer";
@@ -41,12 +40,11 @@ export interface UserScriptContainerProps {
 
 export class UserScriptContainer extends React.Component<UserScriptContainerProps, {}> {
     getActiveContent = () => {
-        const activeContentIdString = getActiveContentIdString();
-        if (!activeContentIdString) {
+        const activeContentId = this.props.subscriptionContents.focusContentId;
+        if (!activeContentId) {
             return;
         }
-        const activeContentId = this.props.subscriptionContents.getContentId(activeContentIdString);
-        const activeContent = this.props.subscriptionContents.getNextContent(activeContentId);
+        const activeContent = this.props.subscriptionContents.getContent(activeContentId);
         if (!activeContent) {
             return;
         }
