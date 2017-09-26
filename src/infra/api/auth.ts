@@ -3,7 +3,7 @@
 import * as ClientOAuth2 from "client-oauth2";
 import { Token } from "client-oauth2";
 // TODO: use env insteadof magic value
-const DynamicURL = process.env.PUBLIC_URL_IS_DYNAMIC ? location.href : undefined;
+const DynamicURL = process.env.REACT_APP_PUBLIC_URL_IS_DYNAMIC === "true" ? location.href : undefined;
 const redirectUri =
     DynamicURL !== undefined
         ? DynamicURL
