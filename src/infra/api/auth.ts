@@ -2,12 +2,16 @@
 
 import * as ClientOAuth2 from "client-oauth2";
 import { Token } from "client-oauth2";
+
+const addLasSlash = (str: string) => {
+    if (str[str.length - 1] === "/") return str;
+    return `${str}/`;
+};
 // TODO: use env insteadof magic value
-const DynamicURL = process.env.REACT_APP_PUBLIC_URL_IS_DYNAMIC === "true" ? location.href : undefined;
+const DynamicURL = process.env.REACT_APP_PUBLIC_URL_IS_DYNAMIC === "true" ? addLasSlash(location.href) : undefined;
+const publicurl = process.env.PUBLIC_URL;
 const redirectUri =
-    DynamicURL !== undefined
-        ? DynamicURL
-        : process.env.PUBLIC_URL ? `${process.env.PUBLIC_URL}/` : `http://localhost:13245/`;
+    DynamicURL !== undefined ? DynamicURL : publicurl ? addLasSlash(publicurl) : `http://localhost:13245/`;
 const inoreaderAuth = new ClientOAuth2({
     clientId: process.env.REACT_APP_INOREADER_CLIENT_ID,
     clientSecret: process.env.REACT_APP_INOREADER_CLIENT_KEY,
