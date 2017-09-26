@@ -8,7 +8,7 @@ const addLasSlash = (str: string) => {
     return `${str}/`;
 };
 // TODO: use env insteadof magic value
-const DynamicURL = process.env.REACT_APP_PUBLIC_URL_IS_DYNAMIC === "true" ? addLasSlash(location.href) : undefined;
+const DynamicURL = process.env.REACT_APP_PUBLIC_URL_IS_DYNAMIC === "true" ? addLasSlash(location.origin) : undefined;
 const publicurl = process.env.PUBLIC_URL;
 const redirectUri =
     DynamicURL !== undefined ? DynamicURL : publicurl ? addLasSlash(publicurl) : `http://localhost:13245/`;
