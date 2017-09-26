@@ -9,16 +9,25 @@
 
 .AppHeaderContainer-left {
     display: flex;
+    align-items: center;
+    align-content: center;
+}
+
+.AppHeaderContainer-title {
+    font-size: 24px;
+    padding: 0 0.2rem;
+    margin: 0 0.5rem 0 0;
+    display: flex;
+    align-items: center;
+    align-content: center;
+}
+
+.AppHeaderContainer-favicon {
+    flex: 1;
 }
 
 .AppHeaderContainer-center {
     display: flex;
-}
-
-.AppHeaderContainer-title {
-    font-size: 20px;
-    padding: 0;
-    margin: 0 1rem 0 0;
 }
 
 .AppHeaderContainer-reloadButton {
@@ -28,6 +37,8 @@
 
 .AppHeaderContainer-right {
     display: flex;
+    align-items: center;
+    align-content: center;
 }
 
 .AppHeaderContainer-totalUnreadCount {

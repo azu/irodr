@@ -4,8 +4,10 @@ import { createUpdateSubscriptionsUseCase } from "../../../../use-case/subscript
 import { BaseContainer } from "../../BaseContainer";
 import { AppHeaderState } from "./AppHeaderStore";
 import classnames from "classnames";
-import { IconButton } from "office-ui-fabric-react";
+import { IconButton, Image, ImageFit, Link } from "office-ui-fabric-react";
 import { ShowAppPreferenceUseCase } from "../Preferences/use-case/ToggleAppPreferenceUseCase";
+
+const GitHubIcon = require("react-icons/lib/ti/social-github");
 
 export interface AppHeaderContainerProps {
     appHeader: AppHeaderState;
@@ -24,7 +26,15 @@ export class AppHeaderContainer extends BaseContainer<AppHeaderContainerProps, {
         return (
             <header className={classnames("AppHeaderContainer", this.props.className)}>
                 <div className="AppHeaderContainer-left">
-                    <h1 className="AppHeaderContainer-title">Irodr</h1>
+                    <h1 className="AppHeaderContainer-title" title="Irodr">
+                        <Image
+                            className="AppHeaderContainer-favicon"
+                            src={`${process.env.PUBLIC_URL}/favicon.png`}
+                            width={20}
+                            height={20}
+                            imageFit={ImageFit.cover}
+                        />rodr
+                    </h1>
                     <div className="AppHeaderContainer-menu">
                         <IconButton
                             className="AppHeaderContainer-reloadButton"
@@ -50,6 +60,9 @@ export class AppHeaderContainer extends BaseContainer<AppHeaderContainerProps, {
                         title="Setting"
                         onClick={this.onClickPreferences}
                     />
+                    <Link title="Irodr on GitHub" href="https://github.com/azu/irodr">
+                        <GitHubIcon size="24" />
+                    </Link>
                 </div>
             </header>
         );

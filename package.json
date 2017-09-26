@@ -49,6 +49,7 @@
     "popsicle": "^9.1.0",
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
+    "react-icons": "^2.2.5",
     "react-render-html": "^0.5.0",
     "ulid": "^0.2.0"
   },
