@@ -68,6 +68,13 @@ This project use the server that avoid CORS for Inoreader.
 - [ ] Chrome/Firefox browser extension for avoiding CORS
 - [ ] <https://github.com/azu/irodr/issues/11>
 
+### :memo: Mixed-content
+
+http://irodr.netlify.com/ is also https://irodr.netlify.com/ 
+But, `https` can not embed http content by mixed-content rule.
+
+- [Mixed content - Web security | MDN](https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content "Mixed content - Web security | MDN")
+
 ## Changelog
 
 See [Releases page](https://github.com/azu/irodr/releases).
