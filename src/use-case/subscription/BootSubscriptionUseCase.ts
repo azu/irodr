@@ -23,18 +23,5 @@ export class BootSubscriptionUseCase extends UseCase {
 
     async execute() {
         await appRepository.ready();
-        if (process.env.NODE_ENV !== "production") {
-            try {
-                const subscriptions = createSubscriptionsFromResponses(
-                    require("./__fixtures__/subscriptions.json"),
-                    require("./__fixtures__/unread.json")
-                );
-                subscriptions.forEach(subscription => {
-                    this.repo.subscriptionRepository.save(subscription);
-                });
-            } catch (error) {
-                console.info("No fixtures data");
-            }
-        }
     }
 }
