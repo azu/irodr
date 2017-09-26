@@ -31,12 +31,13 @@ if (process.env.NODE_ENV !== "production") {
         }
     };
 }
-if (location.search.includes("?code")) {
-    saveTokenFromCallbackURL(location.href).then(token => {
-        console.log(token);
-        history.replaceState("", "", location.pathname);
-    });
-}
+
+const bootPromise = location.search.includes("?code")
+    ? saveTokenFromCallbackURL(location.href).then(token => {
+          console.log(token);
+          history.replaceState("", "", location.pathname);
+      })
+    : Promise.resolve();
 
 const context = new Context({
     store: appStoreGroup,
@@ -51,13 +52,19 @@ if (process.env.NODE_ENV !== "production") {
     logger.startLogging(context);
 }
 const App = AlminReactContainer.create(AppContainer, context);
-context
-    .useCase(createBootSubscriptionUseCase())
-    .execute()
-    .then(() => {
-        ReactDOM.render(<App />, document.getElementById("root") as HTMLElement);
-    })
-    .then(() => {
-        return context.useCase(createUpdateSubscriptionsUseCase()).execute();
-    });
 // registerServiceWorker();
+bootPromise
+    .then(() => {
+        return context
+            .useCase(createBootSubscriptionUseCase())
+            .execute()
+            .then(() => {
+                ReactDOM.render(<App />, document.getElementById("root") as HTMLElement);
+            })
+            .then(() => {
+                return context.useCase(createUpdateSubscriptionsUseCase()).execute();
+            });
+    })
+    .catch(error => {
+        console.error(error);
+    });
