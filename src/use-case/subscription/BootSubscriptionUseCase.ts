@@ -1,7 +1,6 @@
 // MIT © 2017 azu
 import { UseCase } from "almin";
 import { subscriptionRepository, SubscriptionRepository } from "../../infra/repository/SubscriptionRepository";
-import { createSubscriptionsFromResponses } from "../../domain/Subscriptions/SubscriptionFactory";
 import { appRepository, AppRepository } from "../../infra/repository/AppRepository";
 
 export const createBootSubscriptionUseCase = () => {
@@ -22,6 +21,6 @@ export class BootSubscriptionUseCase extends UseCase {
     }
 
     async execute() {
-        await appRepository.ready();
+        await this.repo.appRepository.ready();
     }
 }
