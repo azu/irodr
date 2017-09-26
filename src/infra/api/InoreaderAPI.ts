@@ -90,8 +90,9 @@ export class InoreaderAPI {
         // use SubscriptionIdentifiers
         // http://www.inoreader.com/developers/stream-contents
         // /api/0/stream/contents/feed%2Fhttps%3A%2F%2Faddons.mozilla.org%2Fja%2Ffirefox%2Fextensions%2Fweb-development%2Fformat%3Arss%3Fsort%3Dnewest?n=20
+        // http://irodr.netlify.com/api/0/stream/contents/feed/http://b.hatena.ne.jp/keyword/JavaScript?mode=rss&sort=hot&threshold=5?n=20
+        const feedId = encodeURIComponent(subscription.id.toValue());
 
-        const feedId = encodeURIComponent(subscription.id.toValue().replace(/&amp;/g, "&"));
         return this.getRequest(`/api/0/stream/contents/${feedId}`, {
             n: prefetchSubscriptionCount
         })
