@@ -101,21 +101,21 @@ export class Subscription extends Entity<SubscriptionIdentifier> {
 
     readAll() {
         return new Subscription({
-            ...this as SubscriptionArgs,
+            ...(this as SubscriptionArgs),
             unread: this.unread.read()
         });
     }
 
     refreshSubscription(subscriptionArgs: Partial<SubscriptionArgs>) {
         return new Subscription({
-            ...this as SubscriptionArgs,
+            ...(this as SubscriptionArgs),
             ...subscriptionArgs
         });
     }
 
     updateContents(subscriptionContents: SubscriptionContents) {
         return new Subscription({
-            ...this as SubscriptionArgs,
+            ...(this as SubscriptionArgs),
             contents: subscriptionContents
         });
     }

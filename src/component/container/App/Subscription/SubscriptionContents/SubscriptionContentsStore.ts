@@ -142,7 +142,7 @@ export class SubscriptionContentsState {
             return content.updatedDate.millSecond >= subscription.lastUpdated.millSecond;
         });
         return new SubscriptionContentsState({
-            ...this as SubscriptionContentsStateProps,
+            ...(this as SubscriptionContentsStateProps),
             subscription,
             rawContents: contents,
             filteredContents
@@ -159,27 +159,27 @@ export class SubscriptionContentsState {
     ) {
         if (payload instanceof FocusContentUseCasePayload) {
             return new SubscriptionContentsState({
-                ...this as SubscriptionContentsStateProps,
+                ...(this as SubscriptionContentsStateProps),
                 focusContentId: payload.contentId
             });
         } else if (payload instanceof ScrollToNextContentUseCasePayload) {
             return new SubscriptionContentsState({
-                ...this as SubscriptionContentsStateProps,
+                ...(this as SubscriptionContentsStateProps),
                 scrollContentId: payload.subscriptionContentId
             });
         } else if (payload instanceof ScrollToPrevContentUseCasePayload) {
             return new SubscriptionContentsState({
-                ...this as SubscriptionContentsStateProps,
+                ...(this as SubscriptionContentsStateProps),
                 scrollContentId: payload.subscriptionContentId
             });
         } else if (payload instanceof StartLoadingPayload) {
             return new SubscriptionContentsState({
-                ...this as SubscriptionContentsStateProps,
+                ...(this as SubscriptionContentsStateProps),
                 isContentsLoadings: true
             });
         } else if (payload instanceof FinishLoadingPayload) {
             return new SubscriptionContentsState({
-                ...this as SubscriptionContentsStateProps,
+                ...(this as SubscriptionContentsStateProps),
                 isContentsLoadings: false
             });
         } else {

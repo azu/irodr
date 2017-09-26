@@ -53,7 +53,7 @@ export class AppPreferences {
 
     update(newArgs: Partial<AppPreferencesJSON>): AppPreferences {
         return new AppPreferences({
-            ...this as AppPreferencesJSON,
+            ...(this as AppPreferencesJSON),
             ...newArgs
         });
     }

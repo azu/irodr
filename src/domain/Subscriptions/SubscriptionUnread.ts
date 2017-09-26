@@ -45,7 +45,7 @@ export class SubscriptionUnread extends ValueObject {
 
     read(timeStamp?: TimeStamp) {
         return new SubscriptionUnread({
-            ...this as SubscriptionUnreadArgs,
+            ...(this as SubscriptionUnreadArgs),
             count: 0,
             readTimestamp: timeStamp ? timeStamp : TimeStamp.now()
         });

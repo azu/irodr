@@ -60,7 +60,7 @@ export class SubscriptionContents {
 
     updateContents(contents: SubscriptionContent[]) {
         return new SubscriptionContents({
-            ...this as SubscriptionContentsArgs,
+            ...(this as SubscriptionContentsArgs),
             contents
         });
     }
@@ -72,7 +72,7 @@ export class SubscriptionContents {
     getContentsWithPredicate(predicate: ((content: SubscriptionContent) => boolean)) {
         const filteredContents = this.contents.filter(predicate);
         return new SubscriptionContents({
-            ...this as SubscriptionContentsArgs,
+            ...(this as SubscriptionContentsArgs),
             contents: filteredContents
         });
     }

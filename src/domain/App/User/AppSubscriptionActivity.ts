@@ -28,7 +28,7 @@ export class AppSubscriptionActivity {
 
     addItem(item: AppSubscriptionActivityItem) {
         return new AppSubscriptionActivity({
-            ...this as AppSubscriptionActivityArgs,
+            ...(this as AppSubscriptionActivityArgs),
             items: this.items.concat(item)
         });
     }

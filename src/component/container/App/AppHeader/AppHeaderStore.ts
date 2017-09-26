@@ -33,7 +33,7 @@ export class AppHeaderState {
 
     update(subscriptions: Subscription[]) {
         return new AppHeaderState({
-            ...this as AppHeaderStateProps,
+            ...(this as AppHeaderStateProps),
             totalUnread: this.computeTotalUnread(subscriptions),
             totalSubscriptionCount: this.computeTotalSubscriptionCount(subscriptions)
         });
@@ -42,7 +42,7 @@ export class AppHeaderState {
     reduce(payload: UpdateHeaderMessageUseCasePayload) {
         if (payload instanceof UpdateHeaderMessageUseCasePayload) {
             return new AppHeaderState({
-                ...this as AppHeaderStateProps,
+                ...(this as AppHeaderStateProps),
                 message: payload.message
             });
         }

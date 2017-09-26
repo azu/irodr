@@ -77,7 +77,7 @@ export class SubscriptionListState {
             return this;
         }
         return new SubscriptionListState({
-            ...this as SubscriptionListStateProps,
+            ...(this as SubscriptionListStateProps),
             prefetchSubscriptionCount: appPreferences.prefetchSubscriptionCount
         });
     }
@@ -88,7 +88,7 @@ export class SubscriptionListState {
             return this;
         }
         return new SubscriptionListState({
-            ...this as SubscriptionListStateProps,
+            ...(this as SubscriptionListStateProps),
             currentSubscriptionId
         });
     }
@@ -130,7 +130,7 @@ export class SubscriptionListState {
             return group;
         });
         return new SubscriptionListState({
-            ...this as SubscriptionListStateProps,
+            ...(this as SubscriptionListStateProps),
             categoryMap,
             groups,
             groupSubscriptions
@@ -154,7 +154,7 @@ export class SubscriptionListState {
     reduce(payload: ToggleListGroupUseCasePayload) {
         if (payload instanceof ToggleListGroupUseCasePayload) {
             return new SubscriptionListState({
-                ...this as SubscriptionListStateProps,
+                ...(this as SubscriptionListStateProps),
                 groups: this.toggleGroup(payload.categoryKey)
             });
         } else {

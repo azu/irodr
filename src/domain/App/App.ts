@@ -47,7 +47,7 @@ export class App extends Entity<AppIdentifier> {
 
     updatePreferences(preferences: Partial<AppPreferences>): App {
         return new App({
-            ...this as AppArgs,
+            ...(this as AppArgs),
             preferences: this.preferences.update(preferences)
         });
     }

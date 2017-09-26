@@ -37,7 +37,7 @@ export class AppPreferencesState {
 
     update(preferences: AppPreferences) {
         return new AppPreferencesState({
-            ...this as AppPreferencesProps,
+            ...(this as AppPreferencesProps),
             ...preferences
         });
     }
@@ -45,12 +45,12 @@ export class AppPreferencesState {
     reduce(payload: ShowAppPreferenceUseCasePayload | DismissAppPreferenceUseCasePayload) {
         if (payload instanceof ShowAppPreferenceUseCasePayload) {
             return new AppPreferencesState({
-                ...this as AppPreferencesProps,
+                ...(this as AppPreferencesProps),
                 isPanelOpened: true
             });
         } else if (payload instanceof DismissAppPreferenceUseCasePayload) {
             return new AppPreferencesState({
-                ...this as AppPreferencesProps,
+                ...(this as AppPreferencesProps),
                 isPanelOpened: false
             });
         } else {
