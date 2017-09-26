@@ -56,7 +56,7 @@ This project use the server that avoid CORS for Inoreader.
 
 ### Build config
 
-See [.env.production](./.env.production)
+See [.env.production](.env.netlify)
 
 ## Changelog
 
