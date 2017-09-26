@@ -3,9 +3,11 @@
 import * as ClientOAuth2 from "client-oauth2";
 import { Token } from "client-oauth2";
 // TODO: use env insteadof magic value
-const redirectUri = process.env.PUBLIC_URL
-    ? process.env.PUBLIC_URL === "/" ? location.href : `${process.env.PUBLIC_URL}/`
-    : `http://localhost:13245/`;
+const DynamicURL = process.env.PUBLIC_URL_IS_DYNAMIC ? location.href : undefined;
+const redirectUri =
+    DynamicURL !== undefined
+        ? DynamicURL
+        : process.env.PUBLIC_URL ? `${process.env.PUBLIC_URL}/` : `http://localhost:13245/`;
 const inoreaderAuth = new ClientOAuth2({
     clientId: process.env.REACT_APP_INOREADER_CLIENT_ID,
     clientSecret: process.env.REACT_APP_INOREADER_CLIENT_KEY,
