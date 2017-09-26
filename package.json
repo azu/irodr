@@ -60,8 +60,7 @@
     "build": "react-scripts-ts build",
     "test": "react-scripts-ts test",
     "eject": "react-scripts-ts eject",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "netlify": "dotenv -e .env.netlify react-scripts-ts build"
   },
   "lint-staged": {
     "*.{js,ts,tsx,css}": [
@@ -84,7 +83,7 @@
   },
   "devDependencies": {
     "@alrra/travis-scripts": "^3.0.1",
-    "gh-pages": "^1.0.0",
+    "dotenv-cli": "^1.4.0",
     "husky": "^0.14.3",
     "jest": "^20.0.4",
     "lint-staged": "^4.0.4",
