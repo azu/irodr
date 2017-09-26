@@ -87,8 +87,9 @@ export class InoreaderAPI {
     }
 
     streamContents(subscription: Subscription, prefetchSubscriptionCount: number): Promise<StreamContentsResponse> {
-        // use SubscriptionIdentifier
+        // use SubscriptionIdentifiers
         // http://www.inoreader.com/developers/stream-contents
+        // /api/0/stream/contents/feed%2Fhttps%3A%2F%2Faddons.mozilla.org%2Fja%2Ffirefox%2Fextensions%2Fweb-development%2Fformat%3Arss%3Fsort%3Dnewest?n=20
         return this.getRequest(`/api/0/stream/contents/${encodeURIComponent(subscription.id.toValue())}`, {
             n: prefetchSubscriptionCount
         })
