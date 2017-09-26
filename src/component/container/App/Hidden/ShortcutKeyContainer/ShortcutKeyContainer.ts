@@ -47,7 +47,7 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
 
     triggerKey(keys: string, action?: string): void {
         if (this.combokeys) {
-            this.combokeys.triggerKey(keys, action);
+            this.combokeys.trigger(keys, action);
         }
     }
 
