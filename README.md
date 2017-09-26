@@ -4,7 +4,7 @@ RSS reader client for [Inoreader](http://www.inoreader.com/ "Inoreader").
 
 It aim to work on browser/electron.
 
-![screenshot](https://media.giphy.com/media/3o7aD1E8CZAirML9WE/giphy.gif)
+![screenshot](https://media.giphy.com/media/3ohhwrVKv3HfkVlAAg/giphy.gif)
 
 ## Purpose
 
