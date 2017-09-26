@@ -1,7 +1,7 @@
 // MIT © 2017 azu
 import * as React from "react";
 import { SubscriptionListState } from "./SubscriptionListStore";
-import { GroupedList, IGroupDividerProps, Image, ImageFit, Link } from "office-ui-fabric-react";
+import { GroupedList, IGroupDividerProps, Link } from "office-ui-fabric-react";
 import { Subscription, SubscriptionIdentifier } from "../../../../../domain/Subscriptions/Subscription";
 import { BaseContainer } from "../../../BaseContainer";
 
@@ -94,13 +94,7 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
                 })}
                 onClick={onClick}
             >
-                <Image
-                    className="SubscriptionListContainer-itemImage"
-                    src={item.iconUrl}
-                    width={16}
-                    height={16}
-                    imageFit={ImageFit.cover}
-                />
+                <img className="SubscriptionListContainer-itemImage" src={item.iconUrl} width={16} height={16} />
                 <Link className="SubscriptionListContainer-itemLink">
                     {item.title} ({item.unread.count})
                 </Link>
