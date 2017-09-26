@@ -93,7 +93,7 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
                     "is-currentItem": isCurrentItem
                 })}
                 onClick={onClick}
-                data-feedId={item.id.toString()}
+                data-feedId={item.id.toValue()}
             >
                 <img className="SubscriptionListContainer-itemImage" src={item.iconUrl} width={16} height={16} />
                 <Link className="SubscriptionListContainer-itemLink">
