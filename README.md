@@ -26,9 +26,12 @@ It aim to work on browser/electron.
 
 ## UserScript API
 
-You can get current content/subscription data from `window.userScript.getActiveContent()` and `window.userScript.getActiveSubscription()`.
+Irodr provide some UserScript API for UserScript like Greasemonkey.
+ 
+- `window.userScript.getActiveContent()`
+- `window.userScript.getActiveSubscription()`
 
-See [UserScript API document](src/component/container/App/Hidden/UserScript) for more details.
+For more details, see [UserScript API document](src/component/container/App/Hidden/UserScript).
 
 ## :memo: Notes
 
