@@ -1,2 +1,2 @@
-/api/*  https://inoreader.com/reader/api/:splat  200
+/api/*  https://jp.inoreader.com/reader/api/:splat  200
 /token  https://www.inoreader.com/oauth2/token  200

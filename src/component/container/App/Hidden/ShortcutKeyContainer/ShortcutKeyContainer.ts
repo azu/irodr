@@ -10,6 +10,7 @@ import { ScrollToPrevContentUseCase } from "../../Subscription/SubscriptionConte
 import { createMarkAsReadToServerUseCase } from "../../../../../use-case/subscription/MarkAsReadToServerUseCase";
 import { createOpenSubscriptionContentInNewTabUseCase } from "../../../../../use-case/subscription/OpenSubscriptionContentInNewTabUseCase";
 import { createUpdateHeaderMessageUseCase } from "../../../../../use-case/app/UpdateHeaderMessageUseCase";
+import { SubscriptionIdentifier } from "../../../../../domain/Subscriptions/Subscription";
 
 const DEBOUNCE_TIME = 32;
 const IGNORE_NODE_NAME_PATTERN = /webview/i;
@@ -52,26 +53,35 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
 
     componentDidMount() {
         this.combokeys = new Combokeys(document.documentElement);
+        const loadNext = async (currentSubscriptionId?: SubscriptionIdentifier) => {
+            if (!currentSubscriptionId) {
+                const firstItem = this.props.subscriptionList.getFirstItem();
+                if (!firstItem) {
+                    return console.info("Not found first item");
+                }
+                await this.useCase(createShowSubscriptionContentsUseCase()).executor(useCase =>
+                    useCase.execute(firstItem.id)
+                );
+                return;
+            }
+            const nextItem = this.props.subscriptionList.getNextItem(currentSubscriptionId);
+            if (!nextItem) {
+                return console.info("Not found next item");
+            }
+            this.useCase(createShowSubscriptionContentsUseCase())
+                .executor(useCase => useCase.execute(nextItem.id))
+                .catch(error => {
+                    return this.useCase(createUpdateHeaderMessageUseCase())
+                        .executor(useCase => useCase.execute(`Can't load... Skip ${nextItem.title}.`))
+                        .then(() => {
+                            return loadNext(nextItem.id);
+                        });
+                });
+        };
         const actionMap = {
             "move-next-subscription-feed": debounce(async (_event: Event) => {
                 const currentSubscriptionId = this.props.subscriptionList.currentSubscriptionId;
-                if (!currentSubscriptionId) {
-                    const firstItem = this.props.subscriptionList.getFirstItem();
-                    if (!firstItem) {
-                        return console.info("Not found first item");
-                    }
-                    await this.useCase(createShowSubscriptionContentsUseCase()).executor(useCase =>
-                        useCase.execute(firstItem.id)
-                    );
-                    return;
-                }
-                const nextItem = this.props.subscriptionList.getNextItem(currentSubscriptionId);
-                if (!nextItem) {
-                    return console.info("Not found next item");
-                }
-                await this.useCase(createShowSubscriptionContentsUseCase()).executor(useCase =>
-                    useCase.execute(nextItem.id)
-                );
+                await loadNext(currentSubscriptionId);
             }, DEBOUNCE_TIME),
             "move-prev-subscription-feed": debounce(async (_event: Event) => {
                 const currentSubscriptionId = this.props.subscriptionList.currentSubscriptionId;
