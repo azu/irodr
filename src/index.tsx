@@ -20,17 +20,15 @@ function requireAll(r: any) {
 
 requireAll((require as any).context("./", true, /\.css$/));
 
-if (process.env.NODE_ENV !== "production") {
-    (window as any).irodr = {
-        get debugClient() {
-            return new InoreaderAPI();
-        },
-        debugGetRequest(api: string) {
-            const client = new InoreaderAPI();
-            client.getRequest(api).then(response => console.log(response), error => console.error(error));
-        }
-    };
-}
+(window as any).irodr = {
+    get debugClient() {
+        return new InoreaderAPI();
+    },
+    debugGetRequest(api: string) {
+        const client = new InoreaderAPI();
+        client.getRequest(api).then(response => console.log(response), error => console.error(error));
+    }
+};
 
 const bootPromise = location.search.includes("?code")
     ? saveTokenFromCallbackURL(location.href).then(token => {
