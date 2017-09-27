@@ -3,15 +3,16 @@ import { Store } from "almin";
 import { SubscriptionRepository } from "../../../../infra/repository/SubscriptionRepository";
 import { Subscription } from "../../../../domain/Subscriptions/Subscription";
 import { UpdateHeaderMessageUseCasePayload } from "../../../../use-case/app/UpdateHeaderMessageUseCase";
+import * as React from "react";
 
 export interface AppHeaderStateProps {
-    message: string;
+    message: string | React.ReactChild;
     totalUnread: number;
     totalSubscriptionCount: number;
 }
 
 export class AppHeaderState {
-    message: string;
+    message: string | React.ReactChild;
     totalUnread: number;
     totalSubscriptionCount: number;
 

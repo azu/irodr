@@ -6,13 +6,13 @@ export const createUpdateHeaderMessageUseCase = () => {
 };
 
 export class UpdateHeaderMessageUseCasePayload extends Payload {
-    constructor(public message: string) {
+    constructor(public message: string | React.ReactChild) {
         super({ type: "UpdateHeaderMessageUseCase" });
     }
 }
 
 export class UpdateHeaderMessageUseCase extends UseCase {
-    execute(message: string) {
+    execute(message: string | React.ReactChild) {
         this.dispatch(new UpdateHeaderMessageUseCasePayload(message));
     }
 }
