@@ -1,3 +1,5 @@
+@import "../node_modules/office-ui-fabric-react/dist/css/fabric.css";
+
 * {
     box-sizing: border-box;
 }
