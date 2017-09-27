@@ -37,7 +37,11 @@ const bootPromise = location.search.includes("?code")
 
 const context = new Context({
     store: appStoreGroup,
-    dispatcher: new Dispatcher()
+    dispatcher: new Dispatcher(),
+    options: {
+        strict: true,
+        performanceProfile: /[?&]almin_perf\b/.test(location.href)
+    }
 });
 appLocator.context = context;
 if (process.env.NODE_ENV !== "production") {

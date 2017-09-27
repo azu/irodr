@@ -4,8 +4,9 @@ import { createUpdateSubscriptionsUseCase } from "../../../../use-case/subscript
 import { BaseContainer } from "../../BaseContainer";
 import { AppHeaderState } from "./AppHeaderStore";
 import classnames from "classnames";
-import { IconButton, Image, ImageFit, Link } from "office-ui-fabric-react";
+import { CommandBar, IconButton, Image, ImageFit, Link } from "office-ui-fabric-react";
 import { ShowAppPreferenceUseCase } from "../Preferences/use-case/ToggleAppPreferenceUseCase";
+import { createGoToOAuthPageUseCase } from "../../../../use-case/app/GoToOAuthPageUseCase";
 
 const GitHubIcon = require("react-icons/lib/ti/social-github");
 
@@ -14,12 +15,15 @@ export interface AppHeaderContainerProps {
 }
 
 export class AppHeaderContainer extends BaseContainer<AppHeaderContainerProps, {}> {
-    fetchList = () => {
+    private fetchList = () => {
         this.useCase(createUpdateSubscriptionsUseCase()).executor(useCase => useCase.execute());
     };
 
-    onClickPreferences = () => {
+    private onClickPreferences = () => {
         this.useCase(new ShowAppPreferenceUseCase()).executor(useCase => useCase.execute());
+    };
+    private authorizeAPI = () => {
+        this.useCase(createGoToOAuthPageUseCase()).executor(useCase => useCase.execute());
     };
 
     render() {
@@ -36,11 +40,31 @@ export class AppHeaderContainer extends BaseContainer<AppHeaderContainerProps, {
                         />rodr
                     </h1>
                     <div className="AppHeaderContainer-menu">
-                        <IconButton
-                            className="AppHeaderContainer-reloadButton"
-                            iconProps={{ iconName: "Refresh" }}
-                            title="Reload subscriptions"
-                            onClick={this.fetchList}
+                        <CommandBar
+                            isSearchBoxVisible={false}
+                            items={[
+                                {
+                                    key: "reload-list",
+                                    name: "Refresh",
+                                    icon: "Refresh",
+                                    ariaLabel: "Refresh Subscription list",
+                                    onClick: this.fetchList
+                                },
+                                {
+                                    key: "inoreader",
+                                    name: "Inoreader",
+                                    subMenuProps: {
+                                        items: [
+                                            {
+                                                key: "auth",
+                                                name: "Authorize",
+                                                icon: "Rocket",
+                                                onClick: this.authorizeAPI
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]}
                         />
                     </div>
                 </div>

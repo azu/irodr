@@ -26,6 +26,10 @@ export class InoreaderAPI {
         });
     }
 
+    getAuthorizeUrl() {
+        return getNewTokenUrl();
+    }
+
     getRequest(apiPath: string, parameters?: object): Promise<Response> {
         return this.getToken().then(token => {
             // Sign API requests on behalf of the current user.
