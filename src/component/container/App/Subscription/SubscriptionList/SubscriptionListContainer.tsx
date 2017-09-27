@@ -42,6 +42,8 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
         const prevSubscriptionId = prevProp.subscriptionList.currentSubscriptionId;
         const isChangedCurrentSubscriptionId = prevSubscriptionId !== currentSubscriptionId;
         if (currentSubscriptionId && isChangedCurrentSubscriptionId) {
+            // scroll list
+            this.scrollToSubscriptionId(currentSubscriptionId);
             if (prevSubscriptionId) {
                 await this.useCase(createMarkAsReadToClientUseCase()).executor(useCase =>
                     useCase.execute(prevSubscriptionId)
@@ -128,4 +130,13 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
             </div>
         );
     };
+
+    private scrollToSubscriptionId(subscriptionId: SubscriptionIdentifier) {
+        const targetElement = document.querySelector(
+            `.SubscriptionListContainer-item[data-feedId="${subscriptionId.toValue()}"]`
+        );
+        if (targetElement) {
+            targetElement.scrollIntoView();
+        }
+    }
 }
