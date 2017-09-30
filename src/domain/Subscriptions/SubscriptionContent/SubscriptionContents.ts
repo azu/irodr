@@ -69,6 +69,35 @@ export class SubscriptionContents {
         return this.contents;
     }
 
+    /**
+     * 1. oldest content that are newer than `timeStamp`
+     * 2. slice (0, oldest content index)
+     *
+     * @param {TimeStamp} timeStamp
+     * @returns {SubscriptionContents}
+     */
+    getContentsNewerThanTheTime(timeStamp: TimeStamp) {
+        let lastContentIndex: number = -1;
+        for (let i = this.contents.length - 1; i >= 0; i--) {
+            const content = this.contents[i];
+            if (content.updatedDate.millSecond >= timeStamp.millSecond) {
+                lastContentIndex = i + 1;
+                break;
+            }
+        }
+        if (lastContentIndex === -1) {
+            return new SubscriptionContents({
+                ...(this as SubscriptionContentsArgs),
+                contents: []
+            });
+        }
+        const newerContents = this.contents.slice(0, lastContentIndex);
+        return new SubscriptionContents({
+            ...(this as SubscriptionContentsArgs),
+            contents: newerContents
+        });
+    }
+
     getContentsWithPredicate(predicate: ((content: SubscriptionContent) => boolean)) {
         const filteredContents = this.contents.filter(predicate);
         return new SubscriptionContents({

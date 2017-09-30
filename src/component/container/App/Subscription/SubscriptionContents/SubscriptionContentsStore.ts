@@ -138,9 +138,12 @@ export class SubscriptionContentsState {
         if (this.rawContents === contents) {
             return this;
         }
-        const filteredContents = contents.getContentsWithPredicate(content => {
-            return content.updatedDate.millSecond >= subscription.lastUpdated.millSecond;
-        });
+        // Notes: Define: Want to display time point A
+        // 1. Search  Last Article that updateTime is larger than point A. (start index 0) - article index
+        // 2. slice(0, articleIndex)
+        // 3. the display list contains that the article updated time older than point A!
+        const filteredContents = contents.getContentsNewerThanTheTime(subscription.unread.readTimestamp);
+        console.log("filteredContents", filteredContents);
         return new SubscriptionContentsState({
             ...(this as SubscriptionContentsStateProps),
             subscription,
