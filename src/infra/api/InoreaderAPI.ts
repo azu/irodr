@@ -97,11 +97,12 @@ export class InoreaderAPI {
         // http://irodr.netlify.com/api/0/stream/contents/feed/http://b.hatena.ne.jp/keyword/JavaScript?mode=rss&sort=hot&threshold=5?n=20
 
         const isNetlify = process.env.REACT_APP_IS_NETLIFY === "true";
-        const feedId = encodeURIComponent(subscription.id.toValue());
         // Netlify proxy can't treat escaped ?
         // We want to fix this: encodeURIComponent(encodeURIComponent("?"))
-        const fixedFeedId = isNetlify ? feedId.replace(/%3F/g, "%253F").replace(/%26/g, "%2526") : feedId;
-        return this.getRequest(`/api/0/stream/contents/${fixedFeedId}`, {
+        const feedId = isNetlify
+            ? encodeURIComponent(`/api/0/stream/contents/${subscription.id.toValue()}`)
+            : encodeURIComponent(subscription.id.toValue());
+        return this.getRequest(`/api/0/stream/contents/${feedId}`, {
             n: prefetchSubscriptionCount
         })
             .then(res => res.json())
