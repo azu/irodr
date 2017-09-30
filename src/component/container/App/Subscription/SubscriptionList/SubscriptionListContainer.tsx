@@ -12,6 +12,18 @@ import { createPrefetchSubscriptContentsUseCase } from "../../../../../use-case/
 import { createMarkAsReadToClientUseCase } from "../../../../../use-case/subscription/MarkAsReadToClientUseCase";
 import { createMarkAsReadToServerUseCase } from "../../../../../use-case/subscription/MarkAsReadToServerUseCase";
 import { createUpdateHeaderMessageUseCase } from "../../../../../use-case/app/UpdateHeaderMessageUseCase";
+import { debounce } from "lodash";
+
+function scrollToSubscriptionId(subscriptionId: SubscriptionIdentifier) {
+    const targetElement = document.querySelector(
+        `.SubscriptionListContainer-item[data-feedId="${subscriptionId.toValue()}"]`
+    );
+    if (targetElement) {
+        targetElement.scrollIntoView();
+    }
+}
+
+const debounceScrollToSubscriptionId = debounce(scrollToSubscriptionId, 16);
 
 export interface SubscriptionListContainerProps {
     subscriptionList: SubscriptionListState;
@@ -47,7 +59,7 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
                     useCase.execute(prevSubscriptionId)
                 );
             }
-            this.scrollToSubscriptionId(currentSubscriptionId);
+            debounceScrollToSubscriptionId(currentSubscriptionId);
             // prefetch next items
             await this.prefetchSubscriptions(
                 currentSubscriptionId,
@@ -130,14 +142,4 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
             </div>
         );
     };
-
-    private scrollToSubscriptionId(subscriptionId: SubscriptionIdentifier) {
-        const targetElement = document.querySelector(
-            `.SubscriptionListContainer-item[data-feedId="${subscriptionId.toValue()}"]`
-        );
-        if (targetElement) {
-            console.log(targetElement);
-            targetElement.scrollIntoView();
-        }
-    }
 }
