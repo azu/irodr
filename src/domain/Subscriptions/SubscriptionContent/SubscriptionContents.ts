@@ -81,7 +81,7 @@ export class SubscriptionContents {
         let lastContentIndex: number = -1;
         for (let i = this.contents.length - 1; i >= 0; i--) {
             const content = this.contents[i];
-            if (content.updatedDate.millSecond >= timeStamp.millSecond) {
+            if (content.updatedDate.compare(">=", timeStamp)) {
                 lastContentIndex = i + 1;
                 break;
             }
