@@ -143,7 +143,6 @@ export class SubscriptionContentsState {
         // 2. slice(0, articleIndex)
         // 3. the display list contains that the article updated time older than point A!
         const filteredContents = contents.getContentsNewerThanTheTime(subscription.unread.readTimestamp);
-        console.log("filteredContents", filteredContents);
         return new SubscriptionContentsState({
             ...(this as SubscriptionContentsStateProps),
             subscription,
