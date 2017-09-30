@@ -71,6 +71,8 @@
     color: #747474;
     padding: 6px;
     border-top: 1px dotted #cbcbcb;
+    /* some content use float: left */
+    clear: both;
 }
 
 /*
