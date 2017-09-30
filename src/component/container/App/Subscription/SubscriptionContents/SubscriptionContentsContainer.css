@@ -64,6 +64,12 @@
     padding: 0.5rem 1rem;
 }
 
+.SubscriptionContentsContainer-contentBody pre {
+    padding: 1em;
+    background: rgb(244, 242, 239) none repeat scroll 0 0;
+    border: 1px solid rgb(128, 128, 128);
+}
+
 .SubscriptionContentsContainer-contentBody img {
     max-width: 650px;
     height: auto;
