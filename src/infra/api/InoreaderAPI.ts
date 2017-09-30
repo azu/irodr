@@ -100,7 +100,7 @@ export class InoreaderAPI {
         // Netlify proxy can't treat escaped ?
         // We want to fix this: encodeURIComponent(encodeURIComponent("?"))
         const feedId = isNetlify
-            ? `/api/0/stream/contents/${encodeURIComponent(encodeURIComponent(subscription.id.toValue()))}`
+            ? encodeURIComponent(encodeURIComponent(subscription.id.toValue()))
             : encodeURIComponent(subscription.id.toValue());
         return this.getRequest(`/api/0/stream/contents/${feedId}`, {
             n: prefetchSubscriptionCount
