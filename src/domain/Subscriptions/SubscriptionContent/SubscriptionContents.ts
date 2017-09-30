@@ -48,7 +48,7 @@ export class SubscriptionContents {
     }
 
     get debounceDelayTimeMs() {
-        return 60 * 1000;
+        return 120 * 1000;
     }
 
     isNeededToUpdate(currentTimeStampMs: number) {

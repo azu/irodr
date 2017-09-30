@@ -1,6 +1,6 @@
 :root {
     --SubscriptionListContainer-listHeader--height: 24px;
-    --SubscriptionListContainer-item--height: 28px;
+    --SubscriptionListContainer-item--height: 36px;
 }
 
 .SubscriptionListContainer {
@@ -27,7 +27,9 @@
     min-height: var(--SubscriptionListContainer-item--height);
     padding: 4px;
     cursor: pointer;
+    /* middle */
     display: flex;
+    align-items: center;
 }
 
 .SubscriptionListContainer-item:hover {
@@ -35,7 +37,9 @@
 }
 
 .SubscriptionListContainer-itemImage {
-    flex-shrink: 1;
+    flex-grow: 1;
+    width: 16px;
+    height: 16px;
 }
 
 .SubscriptionListContainer-itemLink {

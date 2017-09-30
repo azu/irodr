@@ -104,7 +104,8 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
             <div
                 data-selection-index={itemIndex}
                 className={classnames("SubscriptionListContainer-item", {
-                    "is-currentItem": isCurrentItem
+                    "is-currentItem": isCurrentItem,
+                    "has-contents": item.contents.hasContent
                 })}
                 onClick={onClick}
                 data-feedId={item.id.toValue()}
