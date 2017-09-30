@@ -26,6 +26,12 @@ export interface SubscriptionContentsStateProps {
     scrollContentId?: SubscriptionContentIdentifier;
 }
 
+export enum SubscriptionContentType {
+    UNKNOWN,
+    NEW,
+    UPDATED
+}
+
 export class SubscriptionContentsState {
     isContentsLoadings: boolean;
     subscription?: Subscription;
@@ -127,6 +133,20 @@ export class SubscriptionContentsState {
             return;
         }
         return this.filteredContents.nextContentOf(subscriptionContent);
+    }
+
+    getTypeOfContent(content: SubscriptionContent): SubscriptionContentType {
+        const subscription = this.subscription;
+        if (!subscription) {
+            return SubscriptionContentType.UNKNOWN;
+        }
+        if (
+            content.publishedDate.compare("<=", subscription.unread.readTimestamp) &&
+            content.updatedDate.compare(">=", subscription.unread.readTimestamp)
+        ) {
+            return SubscriptionContentType.UPDATED;
+        }
+        return SubscriptionContentType.NEW;
     }
 
     isFocusContent(content: SubscriptionContent): boolean {

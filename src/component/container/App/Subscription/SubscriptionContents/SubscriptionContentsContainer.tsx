@@ -1,7 +1,7 @@
 import * as React from "react";
 import { BaseContainer } from "../../../BaseContainer";
 import classnames from "classnames";
-import { SubscriptionContentsState } from "./SubscriptionContentsStore";
+import { SubscriptionContentsState, SubscriptionContentType } from "./SubscriptionContentsStore";
 import {
     SubscriptionContent,
     SubscriptionContentIdentifier
@@ -210,6 +210,7 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
 
     private makeContent(content: SubscriptionContent, index: number) {
         const isFocus = this.props.subscriptionContents.isFocusContent(content);
+        const updateType = this.props.subscriptionContents.getTypeOfContent(content);
         const contentIdString = content.id.toValue();
         const author = content.author ? (
             <span>
@@ -232,7 +233,9 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
         return (
             <div
                 className={classnames("SubscriptionContentsContainer-content", {
-                    "is-focus": isFocus
+                    "is-focus": isFocus,
+                    "is-new": updateType === SubscriptionContentType.NEW,
+                    "is-updated": updateType === SubscriptionContentType.UPDATED
                 })}
                 key={`${contentIdString}-${index}`}
                 data-content-id={contentIdString}

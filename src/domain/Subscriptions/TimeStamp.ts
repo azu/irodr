@@ -12,6 +12,7 @@ export const TimeStampSerializer: Serializer<TimeStamp, TimeStampJSON> = {
 };
 // unix-time
 export type TimeStampJSON = number;
+export type TimeStampOperator = "==" | ">=" | "<=" | ">" | "<";
 
 export class TimeStamp extends ValueObject {
     // millsecond
@@ -36,6 +37,23 @@ export class TimeStamp extends ValueObject {
     constructor(millisecond: number) {
         super();
         this.value = millisecond;
+    }
+
+    compare(operator: TimeStampOperator, other: TimeStamp): boolean {
+        switch (operator) {
+            case "==":
+                return this.millSecond === other.millSecond;
+            case ">=":
+                return this.millSecond >= other.millSecond;
+            case "<=":
+                return this.millSecond <= other.millSecond;
+            case "<":
+                return this.millSecond < other.millSecond;
+            case ">":
+                return this.millSecond > other.millSecond;
+            default:
+                throw new Error(`operator(${operator}} not supported`);
+        }
     }
 
     get date(): Date {
