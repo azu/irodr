@@ -60,5 +60,3 @@ export class SubscriptionRepository extends NullableRepository<Subscription> {
         });
     }
 }
-
-export const subscriptionRepository = new SubscriptionRepository();

@@ -1,12 +1,11 @@
 // MIT © 2017 azu
 import { UseCase } from "almin";
-import { appRepository, AppRepository } from "../../infra/repository/AppRepository";
+import { AppRepository } from "../../infra/repository/AppRepository";
 import { AppPreferences } from "../../domain/App/Preferences/AppPreferences";
+import { repositoryContainer } from "../../infra/repository/RepositoryContainer";
 
 export const createUpdatePreferencesUseCase = () => {
-    return new UpdatePreferencesUseCase({
-        appRepository
-    });
+    return new UpdatePreferencesUseCase(repositoryContainer.get());
 };
 
 export class UpdatePreferencesUseCase extends UseCase {

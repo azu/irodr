@@ -1,25 +1,13 @@
 // MIT © 2017 azu
 import { StoreGroup } from "almin";
 import { SubscriptionListStore } from "./Subscription/SubscriptionList/SubscriptionListStore";
-import { subscriptionRepository } from "../../../infra/repository/SubscriptionRepository";
 import { SubscriptionContentsStore } from "./Subscription/SubscriptionContents/SubscriptionContentsStore";
 import { AppHeaderStore } from "./AppHeader/AppHeaderStore";
-import { appRepository } from "../../../infra/repository/AppRepository";
 import { AppPreferencesStore } from "./Preferences/AppPreferencesStore";
-
+import { repositoryContainer } from "../../../infra/repository/RepositoryContainer";
 export const appStoreGroup = new StoreGroup({
-    subscriptionList: new SubscriptionListStore({
-        appRepository,
-        subscriptionRepository
-    }),
-    subscriptionContents: new SubscriptionContentsStore({
-        appRepository,
-        subscriptionRepository
-    }),
-    appHeader: new AppHeaderStore({
-        subscriptionRepository
-    }),
-    appPreferences: new AppPreferencesStore({
-        appRepository
-    })
+    subscriptionList: new SubscriptionListStore(repositoryContainer.get()),
+    subscriptionContents: new SubscriptionContentsStore(repositoryContainer.get()),
+    appHeader: new AppHeaderStore(repositoryContainer.get()),
+    appPreferences: new AppPreferencesStore(repositoryContainer.get())
 });
