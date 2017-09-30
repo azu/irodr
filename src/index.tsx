@@ -10,6 +10,7 @@ import { appLocator } from "./AppLocator";
 import AlminReactContainer from "almin-react-container";
 import { createBootSubscriptionUseCase } from "./use-case/subscription/BootSubscriptionUseCase";
 import { createUpdateSubscriptionsUseCase } from "./use-case/subscription/UpdateSubscriptionsUseCase";
+import { repositoryContainer } from "./infra/repository/RepositoryContainer";
 
 // require all css files
 function requireAll(r: any) {
@@ -25,6 +26,10 @@ requireAll((require as any).context("./", true, /\.css$/));
     debugGetRequest(api: string) {
         const client = new InoreaderAPI();
         client.getRequest(api).then(response => console.log(response), error => console.error(error));
+    },
+    appStoreGroup,
+    get repository() {
+        return repositoryContainer.get();
     }
 };
 

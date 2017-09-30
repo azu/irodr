@@ -1,15 +1,14 @@
 // MIT © 2017 azu
 import { UseCase } from "almin";
-import { subscriptionRepository, SubscriptionRepository } from "../../infra/repository/SubscriptionRepository";
+import { SubscriptionRepository } from "../../infra/repository/SubscriptionRepository";
 import { InoreaderAPI } from "../../infra/api/InoreaderAPI";
 import { SubscriptionsResponse } from "../../infra/api/SubscriptionResponse";
 import { UnreadCountsResponse } from "../../infra/api/UnreadCountResponse";
 import { createSubscriptionsFromResponses } from "../../domain/Subscriptions/SubscriptionFactory";
+import { repositoryContainer } from "../../infra/repository/RepositoryContainer";
 
 export const createUpdateSubscriptionsUseCase = () => {
-    return new UpdateSubscriptionsUseCase({
-        subscriptionRepository
-    });
+    return new UpdateSubscriptionsUseCase(repositoryContainer.get());
 };
 
 export class UpdateSubscriptionsUseCase extends UseCase {

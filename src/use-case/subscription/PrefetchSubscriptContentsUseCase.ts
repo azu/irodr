@@ -1,17 +1,15 @@
 // MIT © 2017 azu
 import { UseCase } from "almin";
-import { subscriptionRepository, SubscriptionRepository } from "../../infra/repository/SubscriptionRepository";
+import { SubscriptionRepository } from "../../infra/repository/SubscriptionRepository";
 import { SubscriptionIdentifier } from "../../domain/Subscriptions/Subscription";
 import { InoreaderAPI } from "../../infra/api/InoreaderAPI";
 import { createSubscriptionContentsFromResponse } from "../../domain/Subscriptions/SubscriptionContent/SubscriptionContentFactoryh";
 import { isSatisfiedSubscriptionContentsFetchSpec } from "./spec/SubscriptionContentsFetchSpec";
-import { AppRepository, appRepository } from "../../infra/repository/AppRepository";
+import { AppRepository } from "../../infra/repository/AppRepository";
+import { repositoryContainer } from "../../infra/repository/RepositoryContainer";
 
 export const createPrefetchSubscriptContentsUseCase = () => {
-    return new PrefetchSubscriptContentsUseCase({
-        appRepository,
-        subscriptionRepository
-    });
+    return new PrefetchSubscriptContentsUseCase(repositoryContainer.get());
 };
 
 export class PrefetchSubscriptContentsUseCase extends UseCase {

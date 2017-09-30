@@ -1,12 +1,11 @@
 // MIT © 2017 azu
 import { UseCase } from "almin";
-import { subscriptionRepository, SubscriptionRepository } from "../../infra/repository/SubscriptionRepository";
+import { SubscriptionRepository } from "../../infra/repository/SubscriptionRepository";
 import { SubscriptionIdentifier } from "../../domain/Subscriptions/Subscription";
+import { repositoryContainer } from "../../infra/repository/RepositoryContainer";
 
 export const createMarkAsReadToClientUseCase = () => {
-    return new MarkAsReadToClientUseCase({
-        subscriptionRepository
-    });
+    return new MarkAsReadToClientUseCase(repositoryContainer.get());
 };
 
 /**

@@ -1,13 +1,11 @@
 // MIT © 2017 azu
 import { UseCase } from "almin";
-import { subscriptionRepository, SubscriptionRepository } from "../../infra/repository/SubscriptionRepository";
-import { appRepository, AppRepository } from "../../infra/repository/AppRepository";
+import { SubscriptionRepository } from "../../infra/repository/SubscriptionRepository";
+import { AppRepository } from "../../infra/repository/AppRepository";
+import { repositoryContainer } from "../../infra/repository/RepositoryContainer";
 
 export const createBootSubscriptionUseCase = () => {
-    return new BootSubscriptionUseCase({
-        appRepository,
-        subscriptionRepository
-    });
+    return new BootSubscriptionUseCase(repositoryContainer.get());
 };
 
 export class BootSubscriptionUseCase extends UseCase {

@@ -1,12 +1,13 @@
 // MIT © 2017 azu
 import { Payload, UseCase } from "almin";
-import { subscriptionRepository, SubscriptionRepository } from "../../infra/repository/SubscriptionRepository";
+import { SubscriptionRepository } from "../../infra/repository/SubscriptionRepository";
 import { SubscriptionIdentifier } from "../../domain/Subscriptions/Subscription";
 import { InoreaderAPI } from "../../infra/api/InoreaderAPI";
 import { createSubscriptionContentsFromResponse } from "../../domain/Subscriptions/SubscriptionContent/SubscriptionContentFactoryh";
 import { isSatisfiedSubscriptionContentsFetchSpec } from "./spec/SubscriptionContentsFetchSpec";
-import { appRepository, AppRepository } from "../../infra/repository/AppRepository";
+import { AppRepository } from "../../infra/repository/AppRepository";
 import { createUpdateHeaderMessageUseCase } from "../app/UpdateHeaderMessageUseCase";
+import { repositoryContainer } from "../../infra/repository/RepositoryContainer";
 
 export class StartLoadingPayload extends Payload {
     constructor() {
@@ -20,10 +21,7 @@ export class FinishLoadingPayload extends Payload {
 }
 
 export const createShowSubscriptionContentsUseCase = () => {
-    return new ShowSubscriptionContentsUseCase({
-        appRepository,
-        subscriptionRepository
-    });
+    return new ShowSubscriptionContentsUseCase(repositoryContainer.get());
 };
 
 export class ShowSubscriptionContentsUseCase extends UseCase {

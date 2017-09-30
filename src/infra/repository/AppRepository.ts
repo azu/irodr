@@ -1,7 +1,6 @@
 // MIT © 2017 azu
 import { NonNullableRepository } from "ddd-base";
 import { App, AppJSON, AppSerializer } from "../../domain/App/App";
-import { createApp } from "../../domain/App/AppFactory";
 import { createStorageInstance } from "./Storage";
 
 export class AppRepository extends NonNullableRepository<App> {
@@ -48,5 +47,3 @@ export class AppRepository extends NonNullableRepository<App> {
         return this.storage.clear();
     }
 }
-
-export const appRepository = new AppRepository(createApp());
