@@ -74,9 +74,10 @@ export class SubscriptionContents {
      * 2. slice (0, oldest content index)
      *
      * @param {TimeStamp} timeStamp
+     * @param {number} minCount if not found match items, return minCount items
      * @returns {SubscriptionContents}
      */
-    getContentsNewerThanTheTime(timeStamp: TimeStamp) {
+    getContentsNewerThanTheTime(timeStamp: TimeStamp, minCount: number) {
         let lastContentIndex: number = -1;
         for (let i = this.contents.length - 1; i >= 0; i--) {
             const content = this.contents[i];
@@ -85,16 +86,23 @@ export class SubscriptionContents {
                 break;
             }
         }
-        if (lastContentIndex === -1) {
+        if (lastContentIndex !== -1) {
+            const newerContents = this.contents.slice(0, lastContentIndex);
             return new SubscriptionContents({
                 ...(this as SubscriptionContentsArgs),
-                contents: []
+                contents: newerContents
             });
         }
-        const newerContents = this.contents.slice(0, lastContentIndex);
+        // fallback
+        if (minCount !== undefined) {
+            return new SubscriptionContents({
+                ...(this as SubscriptionContentsArgs),
+                contents: this.contents.slice(0, minCount)
+            });
+        }
         return new SubscriptionContents({
             ...(this as SubscriptionContentsArgs),
-            contents: newerContents
+            contents: []
         });
     }
 

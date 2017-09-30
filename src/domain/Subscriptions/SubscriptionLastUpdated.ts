@@ -8,7 +8,7 @@ export const SubscriptionLastUpdatedSerializer: Serializer<SubscriptionLastUpdat
         return new SubscriptionLastUpdated(new Date(json));
     }
 };
-// iso-8601
+
 export type SubscriptionLastUpdatedJSON = string;
 
 export class SubscriptionLastUpdated extends ValueObject {
