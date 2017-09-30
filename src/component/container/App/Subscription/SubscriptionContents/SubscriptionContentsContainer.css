@@ -59,8 +59,15 @@
     border-bottom: 2px solid #a5c5ff;
 }
 
+/* Content body*/
 .SubscriptionContentsContainer-contentBody {
     padding: 0.5rem 1rem;
+}
+
+.SubscriptionContentsContainer-contentBody img {
+    max-width: 650px;
+    height: auto;
+    object-fit: contain;
 }
 
 .SubscriptionContentsContainer-content * {
