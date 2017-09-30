@@ -33,7 +33,7 @@ export class InoreaderAPI {
     getRequest(apiPath: string, parameters?: object): Promise<Response> {
         return this.getToken().then(token => {
             // Sign API requests on behalf of the current user.
-            const query = stringify ? `?${stringify(parameters)}` : "";
+            const query = parameters ? `?${stringify(parameters)}` : "";
             const requestObject = token.sign({
                 method: "get",
                 url: this.baseURL + apiPath + query
@@ -95,9 +95,13 @@ export class InoreaderAPI {
         // http://www.inoreader.com/developers/stream-contents
         // /api/0/stream/contents/feed%2Fhttps%3A%2F%2Faddons.mozilla.org%2Fja%2Ffirefox%2Fextensions%2Fweb-development%2Fformat%3Arss%3Fsort%3Dnewest?n=20
         // http://irodr.netlify.com/api/0/stream/contents/feed/http://b.hatena.ne.jp/keyword/JavaScript?mode=rss&sort=hot&threshold=5?n=20
-        const feedId = encodeURIComponent(subscription.id.toValue());
 
-        return this.getRequest(`/api/0/stream/contents/${feedId}`, {
+        const isNetlify = process.env.REACT_APP_IS_NETLIFY === "true";
+        const feedId = encodeURIComponent(subscription.id.toValue());
+        // Netlify proxy can't treat escaped ?
+        // We want to fix this: encodeURIComponent(encodeURIComponent("?"))
+        const fixedFeedId = isNetlify ? feedId.replace("%3F", "%253F") : feedId;
+        return this.getRequest(`/api/0/stream/contents/${fixedFeedId}`, {
             n: prefetchSubscriptionCount
         })
             .then(res => res.json())
