@@ -18,10 +18,10 @@ export interface SubscriptionListContainerProps {
 }
 
 export class SubscriptionListContainer extends BaseContainer<SubscriptionListContainerProps, {}> {
+    private groupList: GroupedList | null;
     private onClickSubscription = async (item: Subscription) => {
         await this.useCase(createShowSubscriptionContentsUseCase()).executor(useCase => useCase.execute(item.id));
     };
-
     private prefetchSubscriptions = async (
         currentSubscriptionId: SubscriptionIdentifier,
         count: number
@@ -42,13 +42,12 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
         const prevSubscriptionId = prevProp.subscriptionList.currentSubscriptionId;
         const isChangedCurrentSubscriptionId = prevSubscriptionId !== currentSubscriptionId;
         if (currentSubscriptionId && isChangedCurrentSubscriptionId) {
-            // scroll list
-            this.scrollToSubscriptionId(currentSubscriptionId);
             if (prevSubscriptionId) {
                 await this.useCase(createMarkAsReadToClientUseCase()).executor(useCase =>
                     useCase.execute(prevSubscriptionId)
                 );
             }
+            this.scrollToSubscriptionId(currentSubscriptionId);
             // prefetch next items
             await this.prefetchSubscriptions(
                 currentSubscriptionId,
@@ -72,6 +71,7 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
         return (
             <div className={classnames("SubscriptionListContainer", this.props.className)}>
                 <GroupedList
+                    ref={c => (this.groupList = c)}
                     items={this.props.subscriptionList.groupSubscriptions}
                     onRenderCell={this._onRenderCell}
                     groupProps={{
@@ -136,6 +136,7 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
             `.SubscriptionListContainer-item[data-feedId="${subscriptionId.toValue()}"]`
         );
         if (targetElement) {
+            console.log(targetElement);
             targetElement.scrollIntoView();
         }
     }
