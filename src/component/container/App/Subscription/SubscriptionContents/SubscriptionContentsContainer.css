@@ -2,14 +2,24 @@
 }
 
 .SubscriptionContentsContainer-header {
+    display: flex;
+    padding: 0 16px;
+}
+
+.SubscriptionContentsContainer-headerLeft {
+    flex-grow: 1;
+}
+
+.SubscriptionContentsContainer-headerRight {
+    right: 0;
 }
 
 .SubscriptionContentsContainer-subscriptionTitle {
     display: flex;
     margin: 0;
-    padding: 8px;
-    font-size: 16px;
-    line-height: 16px;
+    padding: 10px 0;
+    font-size: 18px;
+    line-height: 18px;
 }
 
 .SubscriptionContentsContainer-subscriptionImage {

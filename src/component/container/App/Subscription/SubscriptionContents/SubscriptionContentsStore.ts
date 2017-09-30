@@ -15,9 +15,14 @@ import {
     StartLoadingPayload
 } from "../../../../../use-case/subscription/ShowSubscriptionContentsUseCase";
 import { Subscription } from "../../../../../domain/Subscriptions/Subscription";
+import {
+    TurnOffContentsFilterUseCasePayload,
+    TurnOnContentsFilterUseCasePayload
+} from "./use-case/ToggleFilterContents";
 
 export interface SubscriptionContentsStateProps {
     isContentsLoadings: boolean;
+    enableContentFilter: boolean;
     subscription?: Subscription;
     rawContents?: SubscriptionContents;
     filteredContents?: SubscriptionContents;
@@ -34,6 +39,7 @@ export enum SubscriptionContentType {
 
 export class SubscriptionContentsState {
     isContentsLoadings: boolean;
+    enableContentFilter: boolean;
     subscription?: Subscription;
     rawContents?: SubscriptionContents;
     filteredContents?: SubscriptionContents;
@@ -42,6 +48,7 @@ export class SubscriptionContentsState {
 
     constructor(props: SubscriptionContentsStateProps) {
         this.isContentsLoadings = props.isContentsLoadings;
+        this.enableContentFilter = props.enableContentFilter;
         this.subscription = props.subscription;
         this.rawContents = props.rawContents;
         this.filteredContents = props.filteredContents;
@@ -50,10 +57,13 @@ export class SubscriptionContentsState {
     }
 
     get hasContents(): boolean {
-        return this.filteredContents !== undefined && this.filteredContents.hasContent;
+        return this.contents !== undefined && this.contents.hasContent;
     }
 
     get contents(): SubscriptionContents | undefined {
+        if (!this.enableContentFilter) {
+            return this.rawContents;
+        }
         return this.filteredContents;
     }
 
@@ -85,10 +95,10 @@ export class SubscriptionContentsState {
     }
 
     getContent(id: SubscriptionContentIdentifier): SubscriptionContent | undefined {
-        if (!this.filteredContents) {
+        if (!this.contents) {
             return;
         }
-        const subscriptionContent = this.filteredContents.findContentById(id);
+        const subscriptionContent = this.contents.findContentById(id);
         if (!subscriptionContent) {
             return;
         }
@@ -96,43 +106,43 @@ export class SubscriptionContentsState {
     }
 
     getFirstContent(): SubscriptionContent | undefined {
-        if (!this.filteredContents) {
+        if (!this.contents) {
             return;
         }
-        return this.filteredContents.contents[0];
+        return this.contents.contents[0];
     }
 
     getPrevContent(
         contentIdentifier: SubscriptionContentIdentifier | undefined = this.focusContentId
     ): SubscriptionContent | undefined {
-        if (!this.filteredContents) {
+        if (!this.contents) {
             return;
         }
 
         if (!contentIdentifier) {
             return;
         }
-        const subscriptionContent = this.filteredContents.findContentById(contentIdentifier);
+        const subscriptionContent = this.contents.findContentById(contentIdentifier);
         if (!subscriptionContent) {
             return;
         }
-        return this.filteredContents.prevContentOf(subscriptionContent);
+        return this.contents.prevContentOf(subscriptionContent);
     }
 
     getNextContent(
         contentIdentifier: SubscriptionContentIdentifier | undefined = this.focusContentId
     ): SubscriptionContent | undefined {
-        if (!this.filteredContents) {
+        if (!this.contents) {
             return;
         }
         if (!contentIdentifier) {
             return;
         }
-        const subscriptionContent = this.filteredContents.findContentById(contentIdentifier);
+        const subscriptionContent = this.contents.findContentById(contentIdentifier);
         if (!subscriptionContent) {
             return;
         }
-        return this.filteredContents.nextContentOf(subscriptionContent);
+        return this.contents.nextContentOf(subscriptionContent);
     }
 
     getTypeOfContent(content: SubscriptionContent): SubscriptionContentType {
@@ -181,6 +191,8 @@ export class SubscriptionContentsState {
             | ScrollToPrevContentUseCasePayload
             | StartLoadingPayload
             | FinishLoadingPayload
+            | TurnOffContentsFilterUseCasePayload
+            | TurnOnContentsFilterUseCasePayload
     ) {
         if (payload instanceof FocusContentUseCasePayload) {
             return new SubscriptionContentsState({
@@ -207,6 +219,16 @@ export class SubscriptionContentsState {
                 ...(this as SubscriptionContentsStateProps),
                 isContentsLoadings: false
             });
+        } else if (payload instanceof TurnOnContentsFilterUseCasePayload) {
+            return new SubscriptionContentsState({
+                ...(this as SubscriptionContentsStateProps),
+                enableContentFilter: true
+            });
+        } else if (payload instanceof TurnOffContentsFilterUseCasePayload) {
+            return new SubscriptionContentsState({
+                ...(this as SubscriptionContentsStateProps),
+                enableContentFilter: false
+            });
         } else {
             return this;
         }
@@ -224,6 +246,7 @@ export class SubscriptionContentsStore extends Store<SubscriptionContentsState> 
     ) {
         super();
         this.state = new SubscriptionContentsState({
+            enableContentFilter: true,
             isContentsLoadings: false
         });
     }

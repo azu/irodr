@@ -6,7 +6,7 @@ import {
     SubscriptionContent,
     SubscriptionContentIdentifier
 } from "../../../../../domain/Subscriptions/SubscriptionContent/SubscriptionContent";
-import { Link, ImageFit, Image } from "office-ui-fabric-react";
+import { Link, ImageFit, Image, Toggle } from "office-ui-fabric-react";
 import { FocusContentUseCase } from "./use-case/FocusContentUseCase";
 import { HTMLContent } from "../../../../ui-kit/HTMLContent";
 import distanceInWordsToNow from "date-fns/distance_in_words_to_now";
@@ -14,6 +14,7 @@ import format from "date-fns/format";
 import { ProgressColorBar } from "../../../../project/ProgressColorBar/ProgressColorBar";
 import { Subscription } from "../../../../../domain/Subscriptions/Subscription";
 import { Time } from "../../../../ui-kit/Time/Time";
+import { TurnOffContentsFilterUseCase, TurnOnContentsFilterUseCase } from "./use-case/ToggleFilterContents";
 
 export interface SubscriptionContentsContainerProps {
     subscriptionContents: SubscriptionContentsState;
@@ -87,6 +88,13 @@ export function getActiveContentIdString(): string | undefined {
 
 export class SubscriptionContentsContainer extends BaseContainer<SubscriptionContentsContainerProps, {}> {
     element: HTMLDivElement | null;
+    private onChangedToggleContentsFilter = (checked: boolean) => {
+        if (checked) {
+            this.useCase(new TurnOnContentsFilterUseCase()).executor(useCase => useCase.execute());
+        } else {
+            this.useCase(new TurnOffContentsFilterUseCase()).executor(useCase => useCase.execute());
+        }
+    };
 
     render() {
         const header = this.makeHeaderContent(this.props.subscriptionContents.subscription);
@@ -154,29 +162,41 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
                 : undefined;
         return (
             <header className="SubscriptionContentsContainer-header">
-                <h2 className="SubscriptionContentsContainer-subscriptionTitle">
-                    <Image
-                        className="SubscriptionContentsContainer-subscriptionImage"
-                        src={subscription.iconUrl}
-                        width={18}
-                        height={18}
-                        imageFit={ImageFit.cover}
+                <div className="SubscriptionContentsContainer-headerLeft">
+                    <h2 className="SubscriptionContentsContainer-subscriptionTitle">
+                        <Image
+                            className="SubscriptionContentsContainer-subscriptionImage"
+                            src={subscription.iconUrl}
+                            width={18}
+                            height={18}
+                            imageFit={ImageFit.cover}
+                        />
+                        <Link className="SubscriptionContentsContainer-subscriptionLink" href={subscription.htmlUrl}>
+                            {subscription.title}
+                        </Link>
+                        <span className="SubscriptionContentsContainer-subscriptionUnreadCount">
+                            ({subscription.unread.formatString + (updatedCount ? `+ ${updatedCount}` : "")}
+                            )
+                        </span>
+                        {editLink}
+                        <span className="SubscriptionContentsContainer-subscriptionUpdatedDate">
+                            First Item:
+                            <Time dateTime={subscription.lastUpdated.isoString}>
+                                {format(subscription.lastUpdated.date, "YYYY-MM-DD mm:ss")}
+                            </Time>
+                        </span>
+                    </h2>
+                </div>
+                <div className="SubscriptionContentsContainer-headerRight">
+                    <Toggle
+                        defaultChecked={true}
+                        onAriaLabel="Show all contents"
+                        offAriaLabel="Show only unread contents"
+                        onText="Unread"
+                        offText="All"
+                        onChanged={this.onChangedToggleContentsFilter}
                     />
-                    <Link className="SubscriptionContentsContainer-subscriptionLink" href={subscription.htmlUrl}>
-                        {subscription.title}
-                    </Link>
-                    <span className="SubscriptionContentsContainer-subscriptionUnreadCount">
-                        ({subscription.unread.formatString + (updatedCount ? `+ ${updatedCount}` : "")}
-                        )
-                    </span>
-                    {editLink}
-                    <span className="SubscriptionContentsContainer-subscriptionUpdatedDate">
-                        First Item:
-                        <Time dateTime={subscription.lastUpdated.isoString}>
-                            {format(subscription.lastUpdated.date, "YYYY-MM-DD mm:ss")}
-                        </Time>
-                    </span>
-                </h2>
+                </div>
             </header>
         );
     }
@@ -251,7 +271,7 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
                             {content.title}
                         </Link>
                     </h2>
-                    <div>
+                    <div className="SubscriptionContentsContainer-contentMeta">
                         <Link
                             className="SubscriptionContentsContainer-contentOriginalLink"
                             href={content.url}
