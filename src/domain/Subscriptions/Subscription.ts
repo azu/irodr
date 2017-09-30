@@ -8,6 +8,7 @@ import {
     SubscriptionContentsSerializer
 } from "./SubscriptionContent/SubscriptionContents";
 import { TimeStamp, TimeStampJSON, TimeStampSerializer } from "./TimeStamp";
+import { NullSubscriptionContents } from "./SubscriptionContent/NullSubscriptionContents";
 
 export const SubscriptionSerializer: Serializer<Subscription, SubscriptionJSON> = {
     toJSON(entity) {
@@ -62,7 +63,7 @@ export interface SubscriptionArgs {
     iconUrl: string;
     htmlUrl: string;
     categories: string[];
-    contents: SubscriptionContents;
+    contents: NullSubscriptionContents | SubscriptionContents;
     order: SubscriptionOrder;
     unread: SubscriptionUnread;
     lastUpdated: TimeStamp;
@@ -75,7 +76,7 @@ export class Subscription extends Entity<SubscriptionIdentifier> {
     iconUrl: string;
     htmlUrl: string;
     categories: string[];
-    contents: SubscriptionContents;
+    contents: NullSubscriptionContents | SubscriptionContents;
     order: SubscriptionOrder;
     unread: SubscriptionUnread;
     lastUpdated: TimeStamp;
@@ -107,6 +108,10 @@ export class Subscription extends Entity<SubscriptionIdentifier> {
     }
 
     refreshSubscription(subscriptionArgs: Partial<SubscriptionArgs>) {
+        // no merge NullSubscriptionContents
+        if (subscriptionArgs.contents instanceof NullSubscriptionContents) {
+            delete subscriptionArgs.contents;
+        }
         return new Subscription({
             ...(this as SubscriptionArgs),
             ...subscriptionArgs

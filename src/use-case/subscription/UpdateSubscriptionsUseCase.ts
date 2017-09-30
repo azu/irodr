@@ -28,7 +28,11 @@ export class UpdateSubscriptionsUseCase extends UseCase {
                     newUnreadCountsResponse
                 );
                 subscriptions.forEach(subscription => {
-                    this.repo.subscriptionRepository.save(subscription);
+                    const preSubscription = this.repo.subscriptionRepository.findById(subscription.id);
+                    const saveSubscription = preSubscription
+                        ? preSubscription.refreshSubscription(subscription)
+                        : subscription;
+                    this.repo.subscriptionRepository.save(saveSubscription);
                 });
             }
         );
