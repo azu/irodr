@@ -98,11 +98,12 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
 
     render() {
         const header = this.makeHeaderContent(this.props.subscriptionContents.subscription);
-        const contents = this.props.subscriptionContents.contents
-            ? this.props.subscriptionContents.contents
-                  .getContentList()
-                  .map((content, index) => this.makeContent(content, index))
-            : "No contents";
+        const contents =
+            this.props.subscriptionContents.contents && this.props.subscriptionContents.contents.hasContent
+                ? this.props.subscriptionContents.contents
+                      .getContentList()
+                      .map((content, index) => this.makeContent(content, index))
+                : "No contents";
         return (
             <div
                 ref={c => (this.element = c)}
@@ -121,7 +122,7 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
                     <div
                         className="SubscriptionContentsContainer-footerPadding"
                         style={{
-                            height: 1200
+                            height: 1000
                         }}
                     />
                 </footer>
