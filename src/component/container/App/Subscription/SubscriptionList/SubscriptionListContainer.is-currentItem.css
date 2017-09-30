@@ -1,5 +1,6 @@
 .SubscriptionListContainer-item.is-currentItem {
     background-color: #1f70ff;
+    height: auto;
 }
 
 .SubscriptionListContainer-item.is-currentItem .SubscriptionListContainer-itemLink {
