@@ -79,6 +79,12 @@ But, `https` can not embed http content by mixed-content rule.
 
 - [Mixed content - Web security | MDN](https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content "Mixed content - Web security | MDN")
 
+## Perf
+
+Run [pwmetrics](https://github.com/paulirish/pwmetrics "pwmetrics").
+
+    npm run pwmerics
+
 ## Changelog
 
 See [Releases page](https://github.com/azu/irodr/releases).

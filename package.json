@@ -61,7 +61,9 @@
     "build": "react-scripts-ts build",
     "test": "react-scripts-ts test",
     "eject": "react-scripts-ts eject",
-    "netlify": "dotenv -e .env.netlify react-scripts-ts build"
+    "netlify": "dotenv -e .env.netlify react-scripts-ts build",
+    "pwmerics": "pwmetrics --config ./pwmetrics-config.js",
+    "pwmerics:ci": "CI=true NODE_ENV=production pwmetrics --config ./pwmetrics-config.js"
   },
   "lint-staged": {
     "*.{js,ts,tsx,css}": [
@@ -89,6 +91,7 @@
     "jest": "^20.0.4",
     "lint-staged": "^4.2.3",
     "prettier": "^1.7.0",
+    "pwmetrics": "^3.1.2",
     "react-scripts-ts": "^2.7.0"
   }
 }

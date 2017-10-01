@@ -20,3 +20,4 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 /src/use-case/subscription/__fixtures__/
+/pwmetrics.secret.js
