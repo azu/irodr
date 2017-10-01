@@ -176,7 +176,7 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
                             {subscription.title}
                         </Link>
                         <span className="SubscriptionContentsContainer-subscriptionUnreadCount">
-                            ({subscription.unread.formatString + (updatedCount ? `+ ${updatedCount}` : "")}
+                            ({subscription.unread.formatString + (updatedCount ? ` + ${updatedCount}` : "")}
                             )
                         </span>
                         {editLink}
