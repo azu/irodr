@@ -96,6 +96,10 @@ export class Subscription extends Entity<SubscriptionIdentifier> {
         this.isContentsUpdating = args.isContentsUpdating;
     }
 
+    get name() {
+        return `Subscription(${this.id.toValue()})`;
+    }
+
     get hasUnreadContents(): boolean {
         return this.unread.count > 0;
     }

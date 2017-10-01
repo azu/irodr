@@ -7,6 +7,12 @@ export const isSatisfiedSubscriptionContentsFetchSpec = (
     ok: boolean;
     reason?: string;
 } => {
+    if (subscription.contents.hasContent) {
+        return {
+            ok: false,
+            reason: `No need to update. This ${subscription.name} has content.`
+        };
+    }
     const currentTimeStampMs = Date.now();
     if (!subscription.contents.isNeededToUpdate(currentTimeStampMs)) {
         return {
