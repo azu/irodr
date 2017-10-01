@@ -3,6 +3,7 @@
 
 .SubscriptionContentsContainer-header {
     display: flex;
+    align-items: center;
     padding: 0 16px;
 }
 
@@ -33,6 +34,7 @@
 }
 
 .SubscriptionContentsContainer-subscriptionUnreadCount {
+    padding: 0 4px;
 }
 
 .SubscriptionContentsContainer-subscriptionEditLink {
