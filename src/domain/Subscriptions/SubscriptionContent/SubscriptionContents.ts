@@ -77,7 +77,7 @@ export class SubscriptionContents {
      * @param {number} minCount if not found match items, return minCount items
      * @returns {SubscriptionContents}
      */
-    jsgetContentsNewerThanTheTime(timeStamp: TimeStamp, minCount: number) {
+    getContentsNewerThanTheTime(timeStamp: TimeStamp, minCount: number) {
         let lastContentIndex: number = -1;
         for (let i = this.contents.length - 1; i >= 0; i--) {
             const content = this.contents[i];
