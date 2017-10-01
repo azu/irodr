@@ -57,8 +57,10 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
         }
     }
 
-    componentDidMount() {
-        this.combokeys = new Combokeys(document.documentElement);
+    /**
+     * Default keyMap Object by
+     */
+    defaultActions = (() => {
         const loadNext = async (currentSubscriptionId?: SubscriptionIdentifier) => {
             if (!currentSubscriptionId) {
                 const firstItem = this.props.subscriptionList.getFirstItem();
@@ -84,7 +86,7 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
                         });
                 });
         };
-        const actionMap = {
+        return {
             "move-next-subscription-feed": debounce(async (_event: Event) => {
                 const currentSubscriptionId = this.props.subscriptionList.currentSubscriptionId;
                 await loadNext(currentSubscriptionId);
@@ -174,6 +176,11 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
                 );
             }
         };
+    })();
+
+    componentDidMount() {
+        this.combokeys = new Combokeys(document.documentElement);
+        const actionMap = this.defaultActions;
         const keyMap: { [index: string]: keyof typeof actionMap } = {
             j: "move-next-content-item",
             k: "move-prev-content-item",

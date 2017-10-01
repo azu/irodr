@@ -29,6 +29,7 @@ export interface UserScriptWindow extends Window {
         getActiveSubscription(): UserScriptActiveSubscription | undefined;
         triggerKey(keys: string, action?: string): void;
         registerKey(keys: string, handler: (event?: Event) => void): void;
+        getDefaultActions: () => any;
     };
 }
 
@@ -97,7 +98,10 @@ export class UserScriptContainer extends React.Component<UserScriptContainerProp
             getActiveContent: this.getActiveContent,
             getActiveSubscription: this.getActiveSubscription,
             triggerKey: this.triggerKey,
-            registerKey: this.registerKey
+            registerKey: this.registerKey,
+            getDefaultActions: () => {
+                return this.props.shortcutKey!.defaultActions;
+            }
         };
     }
 
