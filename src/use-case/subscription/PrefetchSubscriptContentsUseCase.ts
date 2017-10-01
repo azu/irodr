@@ -4,9 +4,9 @@ import { SubscriptionRepository } from "../../infra/repository/SubscriptionRepos
 import { SubscriptionIdentifier } from "../../domain/Subscriptions/Subscription";
 import { InoreaderAPI } from "../../infra/api/InoreaderAPI";
 import { createSubscriptionContentsFromResponse } from "../../domain/Subscriptions/SubscriptionContent/SubscriptionContentFactoryh";
-import { isSatisfiedSubscriptionContentsFetchSpec } from "./spec/SubscriptionContentsFetchSpec";
 import { AppRepository } from "../../infra/repository/AppRepository";
 import { repositoryContainer } from "../../infra/repository/RepositoryContainer";
+import { isSatisfiedSubscriptionContentsPrefetchSpec } from "./spec/SubscriptionContentsPrefetchSpec";
 
 export const createPrefetchSubscriptContentsUseCase = () => {
     return new PrefetchSubscriptContentsUseCase(repositoryContainer.get());
@@ -27,7 +27,7 @@ export class PrefetchSubscriptContentsUseCase extends UseCase {
         if (!subscription) {
             throw new Error(`Not found subscription: ${subscriptionId}`);
         }
-        const specResult = isSatisfiedSubscriptionContentsFetchSpec(subscription);
+        const specResult = isSatisfiedSubscriptionContentsPrefetchSpec(subscription);
         if (!specResult.ok) {
             return;
         }
