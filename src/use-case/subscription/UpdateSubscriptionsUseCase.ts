@@ -6,17 +6,27 @@ import { SubscriptionsResponse } from "../../infra/api/SubscriptionResponse";
 import { UnreadCountsResponse } from "../../infra/api/UnreadCountResponse";
 import { createSubscriptionsFromResponses } from "../../domain/Subscriptions/SubscriptionFactory";
 import { repositoryContainer } from "../../infra/repository/RepositoryContainer";
+import { AppRepository } from "../../infra/repository/AppRepository";
 
 export const createUpdateSubscriptionsUseCase = () => {
     return new UpdateSubscriptionsUseCase(repositoryContainer.get());
 };
 
 export class UpdateSubscriptionsUseCase extends UseCase {
-    constructor(private repo: { subscriptionRepository: SubscriptionRepository }) {
+    constructor(
+        private repo: {
+            appRepository: AppRepository;
+            subscriptionRepository: SubscriptionRepository;
+        }
+    ) {
         super();
     }
 
     execute() {
+        const app = this.repo.appRepository.get();
+        if (app.user.isMachine) {
+            return;
+        }
         const client = new InoreaderAPI();
         return Promise.all([
             client.subscriptions(),

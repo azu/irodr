@@ -1,0 +1,30 @@
+{
+  "max": "1000",
+  "unreadcounts": [
+    {
+      "id": "user/1005921515/label/YouTube",
+      "count": 4,
+      "newestItemTimestampUsec": "1415620910006331"
+    },
+    {
+      "id": "feed/http://dom.as/feed/",
+      "count": 5,
+      "newestItemTimestampUsec": "1415620910006331"
+    },
+    {
+      "id": "feed/http://artofdisney.canalblog.com/rss.xml",
+      "count": 10,
+      "newestItemTimestampUsec": "1415620910006331"
+    },
+    {
+      "id": "feed/http://gdata.youtube.com/feeds/base/users/failarmy/uploads?alt=rss&v=2&orderby=published&client=ytapi-youtube-profile",
+      "count": 20,
+      "newestItemTimestampUsec": "1415620910006331"
+    },
+    {
+      "id": "feed/http://gdata.youtube.com/feeds/base/users/gloveandboots/uploads?alt=rss&v=2&orderby=published&client=ytapi-youtube-profile",
+      "count": 1,
+      "newestItemTimestampUsec": "1415620910006331"
+    }
+  ]
+}

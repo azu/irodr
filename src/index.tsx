@@ -62,7 +62,7 @@ bootPromise
     .then(() => {
         return context
             .useCase(createBootSubscriptionUseCase())
-            .execute()
+            .executor(useCase => useCase.execute(location.href))
             .then(() => {
                 ReactDOM.render(<App />, document.getElementById("root") as HTMLElement);
             })

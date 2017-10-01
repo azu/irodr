@@ -20,15 +20,18 @@ export class AppUserIdentifier extends Identifier<string> {}
 
 export interface AppUserArgs {
     id: AppUserIdentifier;
+    isMachine: boolean;
     subscriptionActivity: AppSubscriptionActivity;
 }
 
 export class AppUser extends Entity<AppUserIdentifier> {
     id: AppUserIdentifier;
+    readonly isMachine: boolean;
     subscriptionActivity: AppSubscriptionActivity;
 
     constructor(args: AppUserArgs) {
         super(args.id);
+        this.isMachine = args.isMachine;
         this.subscriptionActivity = args.subscriptionActivity;
     }
 
