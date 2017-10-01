@@ -53,10 +53,20 @@ export class AppHeaderContainer extends BaseContainer<AppHeaderContainerProps, {
                                 {
                                     key: "inoreader",
                                     name: "Inoreader",
+                                    icon: "Cloud",
+                                    ariaLabel: "Inoreader menu",
                                     subMenuProps: {
                                         items: [
                                             {
-                                                key: "auth",
+                                                key: "inoreader.site",
+                                                name: "Open Inoreader",
+                                                icon: "World",
+                                                onClick: () => {
+                                                    window.open("https://www.inoreader.com", "_blank");
+                                                }
+                                            },
+                                            {
+                                                key: "inoreader.auth",
                                                 name: "Authorize",
                                                 icon: "Rocket",
                                                 onClick: this.authorizeAPI
