@@ -52,7 +52,7 @@ Run following command and open local server.
     open http://localhost:13245/
 
 
-### :memo: CORS workaound
+### :memo: CORS workaround
 
 #### Production
 
