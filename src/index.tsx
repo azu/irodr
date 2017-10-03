@@ -3,7 +3,6 @@ import * as ReactDOM from "react-dom";
 import { AppContainer } from "./component/container/App/AppContainer";
 // import registerServiceWorker from "./registerServiceWorker";
 import { InoreaderAPI } from "./infra/api/InoreaderAPI";
-import { saveTokenFromCallbackURL } from "./infra/api/auth";
 import { Context, Dispatcher } from "almin";
 import { appStoreGroup } from "./component/container/App/AppStoreGroup";
 import { appLocator } from "./AppLocator";
@@ -11,6 +10,8 @@ import AlminReactContainer from "almin-react-container";
 import { createBootSubscriptionUseCase } from "./use-case/subscription/BootSubscriptionUseCase";
 import { createUpdateSubscriptionsUseCase } from "./use-case/subscription/UpdateSubscriptionsUseCase";
 import { repositoryContainer } from "./infra/repository/RepositoryContainer";
+import { InoreaderAuthority, InoreaderAuthorityIdentifier } from "./domain/App/Authority/InoreaderAuthority";
+import { createSaveInoreaderTokenUseCase } from "./use-case/inoreader/SaveInoreaderTokenUseCase";
 
 // require all css files
 function requireAll(r: any) {
@@ -20,11 +21,18 @@ function requireAll(r: any) {
 requireAll((require as any).context("./", true, /\.css$/));
 
 (window as any).irodr = {
-    get debugClient() {
-        return new InoreaderAPI();
-    },
     debugGetRequest(api: string) {
-        const client = new InoreaderAPI();
+        const client = new InoreaderAPI(
+            new InoreaderAuthority({
+                id: new InoreaderAuthorityIdentifier(process.env.REACT_APP_INOREADER_CLIENT_ID!),
+                clientId: process.env.REACT_APP_INOREADER_CLIENT_ID!,
+                clientSecret: process.env.REACT_APP_INOREADER_CLIENT_KEY!,
+                accessTokenUri: process.env.REACT_APP_INOREADER_ACCESS_TOKEN_URL!,
+                authorizationUri: "https://www.inoreader.com/oauth2/auth",
+                scopes: ["read", "write"],
+                state: "inoreader"
+            })
+        );
         client.getRequest(api).then(response => console.log(response), error => console.error(error));
     },
     appStoreGroup,
@@ -32,13 +40,6 @@ requireAll((require as any).context("./", true, /\.css$/));
         return repositoryContainer.get();
     }
 };
-
-const bootPromise = location.search.includes("?code")
-    ? saveTokenFromCallbackURL(location.href).then(token => {
-          console.log(token);
-          history.replaceState("", "", location.pathname);
-      })
-    : Promise.resolve();
 
 const context = new Context({
     store: appStoreGroup,
@@ -58,6 +59,15 @@ if (process.env.NODE_ENV !== "production") {
 }
 const App = AlminReactContainer.create(AppContainer, context);
 // registerServiceWorker();
+const bootPromise = location.search.includes("?code")
+    ? context
+          .useCase(createSaveInoreaderTokenUseCase())
+          .executor(useCase => useCase.execute(location.href))
+          .then(token => {
+              console.log(token);
+              history.replaceState("", "", location.pathname);
+          })
+    : Promise.resolve();
 bootPromise
     .then(() => {
         return context

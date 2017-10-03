@@ -4,6 +4,7 @@ import { SubscriptionRepository } from "../../infra/repository/SubscriptionRepos
 import { SubscriptionIdentifier } from "../../domain/Subscriptions/Subscription";
 import { InoreaderAPI } from "../../infra/api/InoreaderAPI";
 import { repositoryContainer } from "../../infra/repository/RepositoryContainer";
+import { AppRepository } from "../../infra/repository/AppRepository";
 
 export const createMarkAsReadToServerUseCase = () => {
     return new MarkAsReadToServerUseCase(repositoryContainer.get());
@@ -15,6 +16,7 @@ export const createMarkAsReadToServerUseCase = () => {
 export class MarkAsReadToServerUseCase extends UseCase {
     constructor(
         private repo: {
+            appRepository: AppRepository;
             subscriptionRepository: SubscriptionRepository;
         }
     ) {
@@ -29,7 +31,8 @@ export class MarkAsReadToServerUseCase extends UseCase {
         const newSubscription = subscription.readAll();
         this.repo.subscriptionRepository.save(newSubscription);
         // send to server
-        const client = new InoreaderAPI();
+        const app = this.repo.appRepository.get();
+        const client = new InoreaderAPI(app.user.authority);
         return client.markAsRead(subscription).catch(error => {
             console.error(error);
             // revert
