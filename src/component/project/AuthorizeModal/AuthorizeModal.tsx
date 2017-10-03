@@ -62,7 +62,7 @@ export class AuthorizeModal extends React.Component<AuthorizePanelProps, Authori
                             Click <b>Connect to Inoreader</b>
                         </li>
                         <li>
-                            Click <b>Authorize </b>
+                            Click <b>Authorize on Inoreader site</b>
                         </li>
                         <li>You can read RSS if success!</li>
                     </ol>
