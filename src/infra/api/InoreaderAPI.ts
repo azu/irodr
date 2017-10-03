@@ -6,16 +6,16 @@ import { Subscription } from "../../domain/Subscriptions/Subscription";
 import { StreamContentsResponse } from "./StreamContentsResponse";
 import { stringify } from "querystring";
 import { InoreaderAuthority } from "../../domain/App/Authority/InoreaderAuthority";
-import { Authority } from "./Authority";
+import { OAuth } from "./OAuth";
 
 const baseURL = process.env.REACT_APP_INOREADER_API_BASE_URL;
 
 export class InoreaderAPI {
     baseURL: string;
-    private auth: Authority;
+    private auth: OAuth;
 
     constructor(private inoreaderAuthority: InoreaderAuthority) {
-        this.auth = new Authority({
+        this.auth = new OAuth({
             clientId: this.inoreaderAuthority.clientId,
             clientSecret: this.inoreaderAuthority.clientSecret,
             accessTokenUri: this.inoreaderAuthority.accessTokenUri,
@@ -28,10 +28,6 @@ export class InoreaderAPI {
 
     getToken(): Promise<Token> {
         return this.auth.getToken();
-    }
-
-    saveTokenFromCallbackURL(url: string) {
-        return this.auth.saveTokenFromCallbackURL(url);
     }
 
     saveTokenFromCallbackURL(url: string) {

@@ -6,7 +6,7 @@ import { AppHeaderState } from "./AppHeaderStore";
 import classnames from "classnames";
 import { CommandBar, IconButton, Image, ImageFit, Link } from "office-ui-fabric-react";
 import { ShowAppPreferenceUseCase } from "../Preferences/use-case/ToggleAppPreferenceUseCase";
-import { createGoToOAuthPageUseCase } from "../../../../use-case/app/GoToOAuthPageUseCase";
+import { ShowAuthorizePanelUseCase } from "../Panel/use-case/ToggleAuthorizePanelUseCase";
 
 const GitHubIcon = require("react-icons/lib/ti/social-github");
 
@@ -22,8 +22,9 @@ export class AppHeaderContainer extends BaseContainer<AppHeaderContainerProps, {
     private onClickPreferences = () => {
         this.useCase(new ShowAppPreferenceUseCase()).executor(useCase => useCase.execute());
     };
-    private authorizeAPI = () => {
-        this.useCase(createGoToOAuthPageUseCase()).executor(useCase => useCase.execute());
+
+    private showAuthorizePanel = () => {
+        this.useCase(new ShowAuthorizePanelUseCase()).executor(useCase => useCase.execute());
     };
 
     render() {
@@ -69,7 +70,7 @@ export class AppHeaderContainer extends BaseContainer<AppHeaderContainerProps, {
                                                 key: "inoreader.auth",
                                                 name: "Authorize",
                                                 icon: "Rocket",
-                                                onClick: this.authorizeAPI
+                                                onClick: this.showAuthorizePanel
                                             }
                                         ]
                                     }

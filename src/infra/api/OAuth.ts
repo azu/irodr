@@ -24,7 +24,7 @@ export interface TokenJSON {
     expires: Date;
 }
 
-export class Authority {
+export class OAuth {
     constructor(public options: GetAuthOptions) {}
 
     getAuth(): ClientOAuth2 {
@@ -93,6 +93,8 @@ export class Authority {
     };
 
     saveTokenFromCallbackURL = (url: string) => {
+        // prune previous cache
+        localStorage.removeItem("inoreader-token");
         return this.getAuth()
             .code.getToken(url)
             .then(token => {

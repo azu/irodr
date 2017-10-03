@@ -1,19 +1,37 @@
 // MIT © 2017 azu
 import * as React from "react";
-import { AuthorizeModal } from "../../../project/AuthorizeModal/AuthorizeModal";
+import { AuthorizeModal, AuthorizeModalState } from "../../../project/AuthorizeModal/AuthorizeModal";
 import { AuthorizePanelState } from "./AuthorizePanelStore";
+import { BaseContainer } from "../../BaseContainer";
+import { createAuthInoreaderUseCase } from "../../../../use-case/inoreader/AuthInoreaderUseCase";
+import { DismissAppPreferenceUseCase } from "../Preferences/use-case/ToggleAppPreferenceUseCase";
+import { createUpdateAuthorizeUseCase } from "../../../../use-case/app/UpdateAuthorityUseCase";
 
 export interface AuthorizePanelContainerProps {
     authorizePanel: AuthorizePanelState;
 }
 
-export class AuthorizePanelContainer extends React.Component<AuthorizePanelContainerProps, {}> {
+export class AuthorizePanelContainer extends BaseContainer<AuthorizePanelContainerProps, {}> {
+    private onClickConnect = async (state: AuthorizeModalState) => {
+        await this.useCase(createUpdateAuthorizeUseCase()).executor(useCase =>
+            useCase.execute({
+                ...state
+            })
+        );
+        await this.useCase(createAuthInoreaderUseCase()).executor(useCase => useCase.execute());
+    };
+
+    private onDismiss = () => {
+        this.useCase(new DismissAppPreferenceUseCase()).executor(useCase => useCase.execute());
+    };
+
     render() {
         return (
             <AuthorizeModal
                 isOpen={this.props.authorizePanel.isShown}
-                onClickAuthorize={() => {}}
-                onDismiss={() => {}}
+                onClickConnect={this.onClickConnect}
+                authority={this.props.authorizePanel.authority}
+                onDismiss={this.onDismiss}
             />
         );
     }

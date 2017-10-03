@@ -8,6 +8,7 @@ import {
     InoreaderAuthorityJSON,
     InoreaderAuthoritySerializer
 } from "../Authority/InoreaderAuthority";
+import { Authority } from "../Authority/Authority";
 
 // Limited Implementation
 export const AppUserSerializer: Serializer<AppUser, AppUserJSON> = {
@@ -35,14 +36,16 @@ export class AppUserIdentifier extends Identifier<string> {}
 
 export interface AppUserArgs {
     id: AppUserIdentifier;
-    authority: InoreaderAuthority;
+    authority: Authority;
     isMachine: boolean;
     subscriptionActivity: AppSubscriptionActivity;
 }
 
 export class AppUser extends Entity<AppUserIdentifier> {
     id: AppUserIdentifier;
-    authority: InoreaderAuthority;
+    // user include authority
+    // It has a limitation that one user has a one authority.
+    authority: Authority;
     readonly isMachine: boolean;
     subscriptionActivity: AppSubscriptionActivity;
 

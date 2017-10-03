@@ -12,5 +12,5 @@ export const appStoreGroup = new StoreGroup({
     subscriptionContents: new SubscriptionContentsStore(repositoryContainer.get()),
     appHeader: new AppHeaderStore(repositoryContainer.get()),
     appPreferences: new AppPreferencesStore(repositoryContainer.get()),
-    authorizePanel: new AuthorizePanelStore()
+    authorizePanel: new AuthorizePanelStore(repositoryContainer.get())
 });

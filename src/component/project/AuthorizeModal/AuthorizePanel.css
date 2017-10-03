@@ -1,4 +1,13 @@
 .AuthorizePanel {
     width: 50vw;
-    height: 50vh;
+    height: 55vh;
+    padding: 1rem;
+}
+
+.AuthorizePanel-panelTitle {
+    margin-top: 0;
+}
+
+.AuthorizePanel-authorizeButton {
+    text-align: center;
 }

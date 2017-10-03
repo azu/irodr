@@ -18,13 +18,10 @@ export class TestInoreaderAuthUseCase extends UseCase {
     }
 
     execute() {
-        if (0 < 1) {
-            return Promise.reject("error");
-        }
         const app = this.repo.appRepository.get();
         const client = new InoreaderAPI(app.user.authority);
         return client.getToken().catch(error => {
-            return Promise.reject(new Error(`Inoreader token is invalid`));
+            return Promise.reject(error);
         });
     }
 }
