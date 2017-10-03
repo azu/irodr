@@ -1,14 +1,14 @@
 // MIT © 2017 azu
 import { UseCase } from "almin";
-import { InoreaderAPI } from "../../infra/api/InoreaderAPI";
 import { repositoryContainer } from "../../infra/repository/RepositoryContainer";
+import { InoreaderAPI } from "../../infra/api/InoreaderAPI";
 import { AppRepository } from "../../infra/repository/AppRepository";
 
-export const createGoToOAuthPageUseCase = () => {
-    return new GoToOAuthPageUseCase(repositoryContainer.get());
+export const createSaveInoreaderTokenUseCase = () => {
+    return new SaveInoreaderTokenUseCase(repositoryContainer.get());
 };
 
-export class GoToOAuthPageUseCase extends UseCase {
+export class SaveInoreaderTokenUseCase extends UseCase {
     constructor(
         private repo: {
             appRepository: AppRepository;
@@ -17,9 +17,9 @@ export class GoToOAuthPageUseCase extends UseCase {
         super();
     }
 
-    execute() {
+    execute(url: string) {
         const app = this.repo.appRepository.get();
         const client = new InoreaderAPI(app.user.authority);
-        location.href = client.getAuthorizeUrl();
+        return client.saveTokenFromCallbackURL(url);
     }
 }

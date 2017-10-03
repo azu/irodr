@@ -7,7 +7,7 @@ export const AppSerializer: Serializer<App, AppJSON> = {
     toJSON(entity) {
         return {
             id: entity.id.toValue(),
-            user: AppUserSerializer.fromJSON(entity.user),
+            user: AppUserSerializer.toJSON(entity.user),
             preferences: AppPreferencesSerializer.toJSON(entity.preferences)
         };
     },

@@ -1,33 +1,47 @@
 // MIT © 2017 azu
 import { Token } from "client-oauth2";
-import { getNewTokenUrl, getToken } from "./auth";
 import { UnreadCountsResponse } from "./UnreadCountResponse";
 import { SubscriptionsResponse } from "./SubscriptionResponse";
 import { Subscription } from "../../domain/Subscriptions/Subscription";
 import { StreamContentsResponse } from "./StreamContentsResponse";
 import { stringify } from "querystring";
+import { InoreaderAuthority } from "../../domain/App/Authority/InoreaderAuthority";
+import { Authority } from "./Authority";
 
 const baseURL = process.env.REACT_APP_INOREADER_API_BASE_URL;
 
 export class InoreaderAPI {
     baseURL: string;
+    private auth: Authority;
 
-    constructor() {
+    constructor(private inoreaderAuthority: InoreaderAuthority) {
+        this.auth = new Authority({
+            clientId: this.inoreaderAuthority.clientId,
+            clientSecret: this.inoreaderAuthority.clientSecret,
+            accessTokenUri: this.inoreaderAuthority.accessTokenUri,
+            authorizationUri: this.inoreaderAuthority.authorizationUri,
+            scopes: this.inoreaderAuthority.scopes,
+            state: this.inoreaderAuthority.state
+        });
         this.baseURL = baseURL || "";
     }
 
     private getToken(): Promise<Token> {
-        return getToken().catch(error => {
+        return this.auth.getToken().catch(error => {
             // TODO: make clear
             if (confirm(`Does you go to Inoreader Auth page? Error:${error.message}`)) {
-                location.href = getNewTokenUrl();
+                location.href = this.auth.getNewTokenUrl();
             }
             return Promise.reject(error);
         });
     }
 
+    saveTokenFromCallbackURL(url: string) {
+        return this.auth.saveTokenFromCallbackURL(url);
+    }
+
     getAuthorizeUrl() {
-        return getNewTokenUrl();
+        return this.auth.getNewTokenUrl();
     }
 
     getRequest(apiPath: string, parameters?: object): Promise<Response> {

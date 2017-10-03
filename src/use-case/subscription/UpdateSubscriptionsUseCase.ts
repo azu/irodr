@@ -27,7 +27,7 @@ export class UpdateSubscriptionsUseCase extends UseCase {
         if (app.user.isMachine) {
             return;
         }
-        const client = new InoreaderAPI();
+        const client = new InoreaderAPI(app.user.authority);
         return Promise.all([
             client.subscriptions(),
             client.unreadCounts()
