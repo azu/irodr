@@ -4,10 +4,10 @@ import { InoreaderAPI } from "../../infra/api/InoreaderAPI";
 import { repositoryContainer } from "../../infra/repository/RepositoryContainer";
 import { AppRepository } from "../../infra/repository/AppRepository";
 
-export const createAuthInoreaderUseCase = () => {
-    return new AuthInoreaderUseCase(repositoryContainer.get());
+export const createAuthorizeInoreaderUseCase = () => {
+    return new AuthorizeInoreaderUseCase(repositoryContainer.get());
 };
-export class AuthInoreaderUseCase extends UseCase {
+export class AuthorizeInoreaderUseCase extends UseCase {
     constructor(
         private repo: {
             appRepository: AppRepository;

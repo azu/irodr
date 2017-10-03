@@ -12,6 +12,8 @@ import { createUpdateSubscriptionsUseCase } from "./use-case/subscription/Update
 import { repositoryContainer } from "./infra/repository/RepositoryContainer";
 import { InoreaderAuthority, InoreaderAuthorityIdentifier } from "./domain/App/Authority/InoreaderAuthority";
 import { createSaveInoreaderTokenUseCase } from "./use-case/inoreader/SaveInoreaderTokenUseCase";
+import { createTestInoreaderAuthUseCase } from "./use-case/inoreader/TestInoreaderAuthUseCase";
+import { ShowAuthorizePanelUseCase } from "./component/container/App/Panel/use-case/ToggleAuthorizePanelUseCase";
 
 // require all css files
 function requireAll(r: any) {
@@ -75,6 +77,15 @@ bootPromise
             .executor(useCase => useCase.execute(location.href))
             .then(() => {
                 ReactDOM.render(<App />, document.getElementById("root") as HTMLElement);
+            })
+            .then(() => {
+                return context
+                    .useCase(createTestInoreaderAuthUseCase())
+                    .executor(useCase => useCase.execute())
+                    .catch(async error => {
+                        await context.useCase(new ShowAuthorizePanelUseCase()).executor(useCase => useCase.execute());
+                        return Promise.reject(error);
+                    });
             })
             .then(() => {
                 return context.useCase(createUpdateSubscriptionsUseCase()).execute();

@@ -6,12 +6,14 @@ import { SubscriptionContainer } from "./Subscription/SubscriptionContainer";
 import { AppHeaderContainer } from "./AppHeader/AppHeaderContainer";
 import { AppPreferencesContainer } from "./Preferences/AppPreferencesContainer";
 import { HiddenContainer } from "./Hidden/HiddenContainer";
+import { AuthorizePanelContainer } from "./Panel/AuthorizePanelContainer";
 
 export class AppContainer extends BaseContainer<typeof appStoreGroup.state, {}> {
     render() {
         return (
             <div className="AppContainer">
                 <AppPreferencesContainer appPreferences={this.props.appPreferences} />
+                <AuthorizePanelContainer authorizePanel={this.props.authorizePanel} />
                 <HiddenContainer
                     appPreferences={this.props.appPreferences}
                     subscriptionContents={this.props.subscriptionContents}
