@@ -26,14 +26,12 @@ export class InoreaderAPI {
         this.baseURL = baseURL || "";
     }
 
-    private getToken(): Promise<Token> {
-        return this.auth.getToken().catch(error => {
-            // TODO: make clear
-            if (confirm(`Does you go to Inoreader Auth page? Error:${error.message}`)) {
-                location.href = this.auth.getNewTokenUrl();
-            }
-            return Promise.reject(error);
-        });
+    getToken(): Promise<Token> {
+        return this.auth.getToken();
+    }
+
+    saveTokenFromCallbackURL(url: string) {
+        return this.auth.saveTokenFromCallbackURL(url);
     }
 
     saveTokenFromCallbackURL(url: string) {
