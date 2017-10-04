@@ -24,6 +24,25 @@ It aim to work on browser/electron.
 3. Authorize if you want to use inoreader
 4. Load your feed!
 
+### Custom OAuth Client Id/Client Secret
+
+If you want to your Client ID/Secret, do following steps
+
+1. Visit https://www.inoreader.com/
+2. Open "Preferences"
+3. Open "Developer" tab
+4. Create new App
+    - "Redirect URL" is not required
+    - "Scoped": Read and Write
+5. Copy Client Id and Client Secret
+
+![Create new App](https://monosnap.com/file/uKYqAHpIjibLkffvfHWXoSys1wVxl7.png)
+
+You paste the Client ID and serect to Irodr Authorization.
+
+![Irodr Authorization](https://monosnap.com/file/ki0yNr9jfRu9TBHvHxrrLOH78w8JyY.png) 
+
+
 ## UserScript API
 
 Irodr provide some UserScript API for UserScript like Greasemonkey.
