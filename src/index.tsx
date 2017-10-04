@@ -12,6 +12,8 @@ import { createUpdateSubscriptionsUseCase } from "./use-case/subscription/Update
 import { repositoryContainer } from "./infra/repository/RepositoryContainer";
 import { InoreaderAuthority, InoreaderAuthorityIdentifier } from "./domain/App/Authority/InoreaderAuthority";
 import { createSaveInoreaderTokenUseCase } from "./use-case/inoreader/SaveInoreaderTokenUseCase";
+import { createTestInoreaderAuthUseCase } from "./use-case/inoreader/TestInoreaderAuthUseCase";
+import { ShowAuthorizePanelUseCase } from "./component/container/App/Panel/use-case/ToggleAuthorizePanelUseCase";
 
 // require all css files
 function requireAll(r: any) {
@@ -59,26 +61,35 @@ if (process.env.NODE_ENV !== "production") {
 }
 const App = AlminReactContainer.create(AppContainer, context);
 // registerServiceWorker();
-const bootPromise = location.search.includes("?code")
-    ? context
-          .useCase(createSaveInoreaderTokenUseCase())
-          .executor(useCase => useCase.execute(location.href))
-          .then(token => {
-              console.log(token);
-              history.replaceState("", "", location.pathname);
-          })
-    : Promise.resolve();
-bootPromise
+context
+    .useCase(createBootSubscriptionUseCase())
+    .executor(useCase => useCase.execute(location.href))
+    .then(() => {
+        const isAuthorizedCallback = location.search.includes("?code");
+        return isAuthorizedCallback
+            ? context
+                  .useCase(createSaveInoreaderTokenUseCase())
+                  .executor(useCase => useCase.execute(location.href))
+                  .then(token => {
+                      console.log(token);
+                      history.replaceState("", "", location.pathname);
+                  })
+            : Promise.resolve();
+    })
+    .then(() => {
+        ReactDOM.render(<App />, document.getElementById("root") as HTMLElement);
+    })
     .then(() => {
         return context
-            .useCase(createBootSubscriptionUseCase())
-            .executor(useCase => useCase.execute(location.href))
-            .then(() => {
-                ReactDOM.render(<App />, document.getElementById("root") as HTMLElement);
-            })
-            .then(() => {
-                return context.useCase(createUpdateSubscriptionsUseCase()).execute();
+            .useCase(createTestInoreaderAuthUseCase())
+            .executor(useCase => useCase.execute())
+            .catch(async error => {
+                await context.useCase(new ShowAuthorizePanelUseCase()).executor(useCase => useCase.execute());
+                return Promise.reject(error);
             });
+    })
+    .then(() => {
+        return context.useCase(createUpdateSubscriptionsUseCase()).executor(useCase => useCase.execute());
     })
     .catch(error => {
         console.error(error);

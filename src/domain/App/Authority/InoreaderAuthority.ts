@@ -61,4 +61,12 @@ export class InoreaderAuthority extends Entity<InoreaderAuthorityIdentifier> {
         this.scopes = args.scopes;
         this.state = args.state;
     }
+
+    update(args: Partial<InoreaderAuthorityArgs>) {
+        const newAuthority = new InoreaderAuthority({
+            ...(this as InoreaderAuthorityArgs),
+            ...args
+        });
+        return newAuthority.equals(this) ? this : newAuthority;
+    }
 }
