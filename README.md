@@ -38,7 +38,7 @@ If you want to your Client ID/Secret, do following steps
 
 ![Create new App](https://monosnap.com/file/uKYqAHpIjibLkffvfHWXoSys1wVxl7.png)
 
-You paste the Client ID and serect to Irodr Authorization.
+You paste the Client ID and secret to Irodr Authorization.
 
 ![Irodr Authorization](https://monosnap.com/file/ki0yNr9jfRu9TBHvHxrrLOH78w8JyY.png) 
 
