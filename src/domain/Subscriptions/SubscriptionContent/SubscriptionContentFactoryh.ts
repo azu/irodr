@@ -13,6 +13,7 @@ export const createSubscriptionContentsFromResponse = (
     });
     return new SubscriptionContents({
         contents: contentList,
+        continuationKey: streamContentResponse.continuation,
         lastUpdatedTimestamp: TimeStamp.createTimeStampFromSecond(streamContentResponse.updated)
     });
 };

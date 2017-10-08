@@ -122,6 +122,13 @@ export class Subscription extends Entity<SubscriptionIdentifier> {
         });
     }
 
+    appendContents(subscriptionContents: SubscriptionContents) {
+        return new Subscription({
+            ...(this as SubscriptionArgs),
+            contents: this.contents.concat(subscriptionContents)
+        });
+    }
+
     updateContents(subscriptionContents: SubscriptionContents) {
         return new Subscription({
             ...(this as SubscriptionArgs),

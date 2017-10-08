@@ -101,6 +101,16 @@
     clear: both;
 }
 
+.SubscriptionContentsContainer-readMore {
+    display: flex;
+    align-content: center;
+}
+
+.SubscriptionContentsContainer-readMoreButton {
+    margin: auto;
+    width: 100%;
+}
+
 /*
 .SubscriptionContentsContainer-contentBody > center:first-of-type > div {
     display: none;

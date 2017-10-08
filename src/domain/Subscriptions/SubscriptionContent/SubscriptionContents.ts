@@ -32,14 +32,17 @@ export interface SubscriptionContentsJSON {
 export interface SubscriptionContentsArgs {
     contents: SubscriptionContent[];
     lastUpdatedTimestamp: TimeStamp;
+    continuationKey?: string;
 }
 
 export class SubscriptionContents {
     contents: SubscriptionContent[];
     lastUpdatedTimestamp: TimeStamp;
+    continuationKey?: string;
 
     constructor(args: SubscriptionContentsArgs) {
         this.contents = args.contents;
+        this.continuationKey = args.continuationKey;
         this.lastUpdatedTimestamp = args.lastUpdatedTimestamp;
     }
 
@@ -132,6 +135,14 @@ export class SubscriptionContents {
             return;
         }
         return this.contents[index + 1];
+    }
+
+    concat(subscriptionContents: SubscriptionContents) {
+        return new SubscriptionContents({
+            ...(this as SubscriptionContentsArgs),
+            ...(subscriptionContents as SubscriptionContentsArgs),
+            contents: this.contents.concat(subscriptionContents.contents)
+        });
     }
 
     add(aContent: SubscriptionContent) {

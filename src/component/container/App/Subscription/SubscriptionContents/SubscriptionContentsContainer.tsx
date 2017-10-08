@@ -6,7 +6,7 @@ import {
     SubscriptionContent,
     SubscriptionContentIdentifier
 } from "../../../../../domain/Subscriptions/SubscriptionContent/SubscriptionContent";
-import { Link, ImageFit, Image, Toggle } from "office-ui-fabric-react";
+import { Link, ImageFit, Image, Toggle, Button } from "office-ui-fabric-react";
 import { FocusContentUseCase } from "./use-case/FocusContentUseCase";
 import { HTMLContent } from "../../../../ui-kit/HTMLContent";
 import distanceInWordsToNow from "date-fns/distance_in_words_to_now";
@@ -15,6 +15,7 @@ import { ProgressColorBar } from "../../../../project/ProgressColorBar/ProgressC
 import { Subscription } from "../../../../../domain/Subscriptions/Subscription";
 import { Time } from "../../../../ui-kit/Time/Time";
 import { TurnOffContentsFilterUseCase, TurnOnContentsFilterUseCase } from "./use-case/ToggleFilterContents";
+import { createFetchMoreSubscriptContentsUseCase } from "../../../../../use-case/subscription/FetchMoreSubscriptContentsUseCase";
 
 export interface SubscriptionContentsContainerProps {
     subscriptionContents: SubscriptionContentsState;
@@ -95,14 +96,28 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
             this.useCase(new TurnOffContentsFilterUseCase()).executor(useCase => useCase.execute());
         }
     };
+    private onClickReadMore = () => {
+        const subscription = this.props.subscriptionContents.subscription;
+        if (!subscription) {
+            return;
+        }
+        this.useCase(createFetchMoreSubscriptContentsUseCase()).executor(useCase => useCase.execute(subscription.id));
+    };
 
     render() {
         const header = this.makeHeaderContent(this.props.subscriptionContents.subscription);
+        if (!this.props.subscriptionContents.contents) {
+            return (
+                <div className="SubscriptionContentsContainer is-noContents">
+                    <div className="SubscriptionContentsContainer-body">
+                        <p className="SubscriptionContentsContainer-bodyMessage">No contents</p>
+                    </div>
+                </div>
+            );
+        }
         const contents = this.props.subscriptionContents.contents
-            ? this.props.subscriptionContents.contents
-                  .getContentList()
-                  .map((content, index) => this.makeContent(content, index))
-            : "No contents";
+            .getContentList()
+            .map((content, index) => this.makeContent(content, index));
         return (
             <div
                 ref={c => (this.element = c)}
@@ -118,6 +133,11 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
                     {contents}
                 </div>
                 <footer className="SubscriptionContentsContainer-footer">
+                    <div className="SubscriptionContentsContainer-readMore">
+                        <Button className="SubscriptionContentsContainer-readMoreButton" onClick={this.onClickReadMore}>
+                            Read More
+                        </Button>
+                    </div>
                     <div
                         className="SubscriptionContentsContainer-footerPadding"
                         style={{
@@ -130,7 +150,10 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
     }
 
     componentDidUpdate(prevProps: SubscriptionContentsContainerProps) {
-        if (prevProps.subscriptionContents.contents !== this.props.subscriptionContents.contents) {
+        if (
+            prevProps.subscriptionContents.subscription &&
+            !prevProps.subscriptionContents.subscription.equals(this.props.subscriptionContents.subscription)
+        ) {
             if (this.element) {
                 this.element.scrollTo(0, 0);
             }
