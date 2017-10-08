@@ -96,11 +96,15 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
             this.useCase(new TurnOffContentsFilterUseCase()).executor(useCase => useCase.execute());
         }
     };
-    private onClickReadMore = () => {
+
+    private onClickReadMore = async () => {
         const subscription = this.props.subscriptionContents.subscription;
         if (!subscription) {
             return;
         }
+        // disable content filter
+        this.useCase(new TurnOffContentsFilterUseCase()).executor(useCase => useCase.execute());
+        // fetch more contents
         this.useCase(createFetchMoreSubscriptContentsUseCase()).executor(useCase => useCase.execute(subscription.id));
     };
 

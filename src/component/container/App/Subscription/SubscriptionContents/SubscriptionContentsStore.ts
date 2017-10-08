@@ -168,6 +168,8 @@ export class SubscriptionContentsState {
         if (this.rawContents === contents) {
             return this;
         }
+
+        const isChangedSubscription = subscription.equals(this.subscription) === false;
         // Notes: Define: Want to display time point A
         // 1. Search  Last Article that updateTime is larger than point A. (start index 0) - article index
         // 2. slice(0, articleIndex)
@@ -182,7 +184,8 @@ export class SubscriptionContentsState {
             ...(this as SubscriptionContentsStateProps),
             subscription,
             rawContents: contents,
-            filteredContents
+            filteredContents,
+            enableContentFilter: isChangedSubscription // Enable filter again when Update contents
         });
     }
 
