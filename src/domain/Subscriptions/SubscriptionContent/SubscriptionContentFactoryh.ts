@@ -5,6 +5,7 @@ import { SubscriptionContentBody } from "./SubscriptionContentBody";
 import { SubscriptionContents } from "./SubscriptionContents";
 import { TimeStamp } from "../TimeStamp";
 
+const he = require("he");
 export const createSubscriptionContentsFromResponse = (
     streamContentResponse: StreamContentsResponse
 ): SubscriptionContents => {
@@ -26,7 +27,8 @@ export const createSubscriptionContentFromResponse = (
     return new SubscriptionContent({
         id: new SubscriptionContentIdentifier(streamContentResponse.id),
         url: streamContentResponse.canonical[0].href,
-        title: streamContentResponse.title,
+        // 2017-10-21~ Inoreader API Response sometimes encode 10 entity
+        title: he.decode(streamContentResponse.title) as string,
         author: streamContentResponse.author,
         body: new SubscriptionContentBody(streamContentResponse.summary.content),
         publishedDate: TimeStamp.createTimeStampFromSecond(streamContentResponse.published),
