@@ -41,3 +41,26 @@ Register shortcut key.
 
 Trigger exist shortcut key.
 
+## event
+
+### Event List
+
+- `SubscriptionContent::componentDidMount`
+- `SubscriptionContent::componentDidUpdate`
+- `SubscriptionContent::componentWillUnmount`
+
+### `event.subscribe(event: string, handler: (...args: any[]) => void):void`
+
+Subscript `event` and register `handler` that is called when the `event` is dispatched.
+
+### Example
+
+```js
+userScript.event.subscribe("SubscriptionContent::componentDidMount", (content) => {
+   const element = document.querySelector(`[data-content-id="${content.contentId}"]`);
+   if(element){
+      element.querySelector(".SubscriptionContentsContainer-contentTitle").classList.add("ng-content");
+      element.querySelector(".SubscriptionContentsContainer-contentBody").setAttribute("hidden", true);
+   } 
+});
+```
