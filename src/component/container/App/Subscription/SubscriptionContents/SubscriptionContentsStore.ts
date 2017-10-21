@@ -86,7 +86,9 @@ export class SubscriptionContentsState {
             return 0;
         }
         const updatedCount = this.contentsCount - this.unreadContentsCount;
-        if (updatedCount <= 0) return 0;
+        if (updatedCount <= 0) {
+            return 0;
+        }
         return updatedCount;
     }
 
@@ -198,6 +200,7 @@ export class SubscriptionContentsState {
             | FinishLoadingPayload
             | TurnOffContentsFilterUseCasePayload
             | TurnOnContentsFilterUseCasePayload
+            | any
     ) {
         if (payload instanceof FocusContentUseCasePayload) {
             return new SubscriptionContentsState({
