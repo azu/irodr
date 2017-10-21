@@ -222,7 +222,7 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
                 </div>
                 <div className="SubscriptionContentsContainer-headerRight">
                     <Toggle
-                        defaultChecked={true}
+                        checked={this.props.subscriptionContents.enableContentFilter}
                         onAriaLabel="Show all contents"
                         offAriaLabel="Show only unread contents"
                         onText="Unread"

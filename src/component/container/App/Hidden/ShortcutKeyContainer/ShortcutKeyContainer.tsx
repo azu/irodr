@@ -1,4 +1,5 @@
 // MIT © 2017 azu
+import * as React from "react";
 import Combokeys from "combokeys";
 import { BaseContainer } from "../../../BaseContainer";
 import { SubscriptionListState } from "../../Subscription/SubscriptionList/SubscriptionListStore";
@@ -11,6 +12,12 @@ import { createMarkAsReadToServerUseCase } from "../../../../../use-case/subscri
 import { createOpenSubscriptionContentInNewTabUseCase } from "../../../../../use-case/subscription/OpenSubscriptionContentInNewTabUseCase";
 import { createUpdateHeaderMessageUseCase } from "../../../../../use-case/app/UpdateHeaderMessageUseCase";
 import { SubscriptionIdentifier } from "../../../../../domain/Subscriptions/Subscription";
+import {
+    TurnOffContentsFilterUseCase,
+    TurnOnContentsFilterUseCase
+} from "../../Subscription/SubscriptionContents/use-case/ToggleFilterContents";
+
+const MapSigns = require("react-icons/lib/fa/map-signs");
 
 const DEBOUNCE_TIME = 32;
 const IGNORE_NODE_NAME_PATTERN = /webview/i;
@@ -122,7 +129,11 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
                 if (currentContent && !nextContent) {
                     // last item and next
                     return this.useCase(createUpdateHeaderMessageUseCase()).executor(useCase =>
-                        useCase.execute("End of contents")
+                        useCase.execute(
+                            <span>
+                                <MapSigns /> End of contents
+                            </span>
+                        )
                     );
                 }
                 if (!nextContent) {
@@ -174,6 +185,13 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
                 this.useCase(createOpenSubscriptionContentInNewTabUseCase()).executor(useCase =>
                     useCase.execute(currentSubscriptionId, focusContentId)
                 );
+            },
+            "toggle-content-filter": (_event: Event) => {
+                if (this.props.subscriptionContents.enableContentFilter) {
+                    this.useCase(new TurnOffContentsFilterUseCase()).executor(useCase => useCase.execute());
+                } else {
+                    this.useCase(new TurnOnContentsFilterUseCase()).executor(useCase => useCase.execute());
+                }
             }
         };
     })();
@@ -183,6 +201,7 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
         const actionMap = this.defaultActions;
         const keyMap: { [index: string]: keyof typeof actionMap } = {
             j: "move-next-content-item",
+            t: "toggle-content-filter",
             k: "move-prev-content-item",
             a: "move-prev-subscription-feed",
             s: "move-next-subscription-feed",

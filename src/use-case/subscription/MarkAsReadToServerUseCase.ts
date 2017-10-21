@@ -28,8 +28,8 @@ export class MarkAsReadToServerUseCase extends UseCase {
         if (!subscription) {
             throw new Error(`Not found subscription:${subscriptionId}`);
         }
-        const newSubscription = subscription.readAll();
-        this.repo.subscriptionRepository.save(newSubscription);
+        const readSubscription = subscription.readAll();
+        this.repo.subscriptionRepository.save(readSubscription);
         // send to server
         const app = this.repo.appRepository.get();
         const client = new InoreaderAPI(app.user.authority);
