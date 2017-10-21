@@ -2,9 +2,11 @@
 // @name        irodir: ng contents
 // @namespace   irodr.netlify.com.ng-contents
 // @description NG content and replace dummy content when match NGList
-// @include     https?://irodr.netlify.com/
+// @include     http://irodr.netlify.com/
+// @include     https://irodr.netlify.com/
 // @include     http://localhost:13245/
 // @version     1
+// @grant       none
 // @run-at      document-end
 // ==/UserScript==
 "use strict";

@@ -2,7 +2,8 @@
 // @name        irodir: open content in background tab
 // @namespace   irodr.netlify.com.background-tab
 // @description Open content url background-Tab by n key
-// @include     https?://irodr.netlify.com/
+// @include     http://irodr.netlify.com/
+// @include     https://irodr.netlify.com/
 // @include     http://localhost:13245/
 // @version     1
 // @grant       GM_openInTab
