@@ -57,7 +57,7 @@
   "scripts": {
     "precommit": "lint-staged",
     "postcommit": "git reset",
-    "prettier": "prettier --write 'src/**/*.{css,ts,tsx}'",
+    "prettier": "prettier --write '{src,resources}/**/*.{css,js,ts,tsx}'",
     "start": "PORT=13245 react-scripts-ts start",
     "build": "react-scripts-ts build",
     "test": "react-scripts-ts test",

@@ -17,6 +17,7 @@ export type TimeStampOperator = "==" | ">=" | "<=" | ">" | "<";
 export class TimeStamp extends ValueObject {
     // millsecond
     value: number;
+    readonly date: Date;
 
     static createTimeStampFromSecond(second: number) {
         return new TimeStamp(second * 1000);
@@ -37,6 +38,7 @@ export class TimeStamp extends ValueObject {
     constructor(millisecond: number) {
         super();
         this.value = millisecond;
+        this.date = new Date(this.value);
     }
 
     compare(operator: TimeStampOperator, other: TimeStamp): boolean {
@@ -54,10 +56,6 @@ export class TimeStamp extends ValueObject {
             default:
                 throw new Error(`operator(${operator}} not supported`);
         }
-    }
-
-    get date(): Date {
-        return new Date(this.value);
     }
 
     get isoString(): string {

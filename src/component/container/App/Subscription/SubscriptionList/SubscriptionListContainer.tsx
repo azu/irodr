@@ -16,7 +16,7 @@ import { debounce } from "lodash";
 
 function scrollToSubscriptionId(subscriptionId: SubscriptionIdentifier) {
     const targetElement = document.querySelector(
-        `.SubscriptionListContainer-item[data-feedId="${subscriptionId.toValue()}"]`
+        `.SubscriptionListContainer-item[data-feedid="${subscriptionId.toValue()}"]`
     );
     if (targetElement) {
         targetElement.scrollIntoView();
@@ -108,7 +108,7 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
                     "has-contents": item.contents.hasContent
                 })}
                 onClick={onClick}
-                data-feedId={item.id.toValue()}
+                data-feedid={item.id.toValue()}
             >
                 <img className="SubscriptionListContainer-itemImage" src={item.iconUrl} width={16} height={16} />
                 <Link className="SubscriptionListContainer-itemLink">

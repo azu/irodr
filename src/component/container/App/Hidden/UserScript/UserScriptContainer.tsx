@@ -4,6 +4,7 @@ import { SubscriptionContentsState } from "../../Subscription/SubscriptionConten
 import { SubscriptionContentSerializer } from "../../../../../domain/Subscriptions/SubscriptionContent/SubscriptionContent";
 import { SubscriptionSerializer } from "../../../../../domain/Subscriptions/Subscription";
 import { ShortcutKeyContainer } from "../ShortcutKeyContainer/ShortcutKeyContainer";
+import { UserScriptEvent } from "./UserScriptEvent";
 
 export interface UserScriptActiveContent {
     id: string;
@@ -30,6 +31,7 @@ export interface UserScriptWindow extends Window {
         triggerKey(keys: string, action?: string): void;
         registerKey(keys: string, handler: (event?: Event) => void): void;
         getDefaultActions: () => any;
+        event: UserScriptEvent;
     };
 }
 
@@ -94,6 +96,7 @@ export class UserScriptContainer extends React.Component<UserScriptContainerProp
     };
 
     componentDidMount() {
+        const userScriptEvent = new UserScriptEvent();
         (window as UserScriptWindow).userScript = {
             getActiveContent: this.getActiveContent,
             getActiveSubscription: this.getActiveSubscription,
@@ -101,7 +104,8 @@ export class UserScriptContainer extends React.Component<UserScriptContainerProp
             registerKey: this.registerKey,
             getDefaultActions: () => {
                 return this.props.shortcutKey!.defaultActions;
-            }
+            },
+            event: userScriptEvent
         };
     }
 

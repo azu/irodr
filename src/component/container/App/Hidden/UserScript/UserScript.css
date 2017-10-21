@@ -1,0 +1,7 @@
+.ng-content > * {
+    display: none;
+}
+
+.ng-content::after {
+    content: "NG Item";
+}
