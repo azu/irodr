@@ -9,8 +9,8 @@ import {
 import { Link, ImageFit, Image, Toggle, Button } from "office-ui-fabric-react";
 import { FocusContentUseCase } from "./use-case/FocusContentUseCase";
 import { HTMLContent } from "../../../../ui-kit/HTMLContent";
-import distanceInWordsToNow from "date-fns/distance_in_words_to_now";
-import format from "date-fns/format";
+const distanceInWordsToNow = require("date-fns/distance_in_words_to_now");
+const format = require("date-fns/format");
 import { ProgressColorBar } from "../../../../project/ProgressColorBar/ProgressColorBar";
 import { Subscription } from "../../../../../domain/Subscriptions/Subscription";
 import { Time } from "../../../../ui-kit/Time/Time";
