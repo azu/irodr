@@ -16,6 +16,7 @@ import {
     TurnOffContentsFilterUseCase,
     TurnOnContentsFilterUseCase
 } from "../../Subscription/SubscriptionContents/use-case/ToggleFilterContents";
+import { createFetchMoreSubscriptContentsUseCase } from "../../../../../use-case/subscription/FetchMoreSubscriptContentsUseCase";
 
 const MapSigns = require("react-icons/lib/fa/map-signs");
 
@@ -93,7 +94,7 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
                         });
                 });
         };
-        return {
+        let actionMap = {
             "move-next-subscription-feed": debounce(async (_event: Event) => {
                 const currentSubscriptionId = this.props.subscriptionList.currentSubscriptionId;
                 await loadNext(currentSubscriptionId);
@@ -192,8 +193,32 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
                 } else {
                     this.useCase(new TurnOnContentsFilterUseCase()).executor(useCase => useCase.execute());
                 }
+            },
+            "load-more-past-contents": async (_event: Event) => {
+                const subscription = this.props.subscriptionContents.subscription;
+                if (!subscription) {
+                    return;
+                }
+                const beforeFocusContendId = this.props.subscriptionContents.focusContentId;
+                // disable content filter
+                this.useCase(new TurnOffContentsFilterUseCase()).executor(useCase => useCase.execute());
+                this.useCase(createUpdateHeaderMessageUseCase()).executor(useCase =>
+                    useCase.execute("Load more past contents")
+                );
+                // fetch more contents
+                await this.useCase(createFetchMoreSubscriptContentsUseCase()).executor(useCase =>
+                    useCase.execute(subscription.id)
+                );
+                // move next content if the user was not moved
+                if (
+                    beforeFocusContendId &&
+                    beforeFocusContendId.equals(this.props.subscriptionContents.focusContentId)
+                ) {
+                    actionMap["move-next-content-item"](_event);
+                }
             }
         };
+        return actionMap;
     })();
 
     componentDidMount() {
@@ -201,6 +226,7 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
         const actionMap = this.defaultActions;
         const keyMap: { [index: string]: keyof typeof actionMap } = {
             j: "move-next-content-item",
+            "shift+j": "load-more-past-contents",
             t: "toggle-content-filter",
             k: "move-prev-content-item",
             a: "move-prev-subscription-feed",
