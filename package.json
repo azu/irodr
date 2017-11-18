@@ -59,10 +59,10 @@
     "postcommit": "git reset",
     "prettier": "prettier --write '{src,resources}/**/*.{css,js,ts,tsx}'",
     "start": "PORT=13245 react-scripts-ts start",
-    "build": "SSR=true react-scripts-ts build && react-snap",
+    "build": "react-scripts-ts build && react-snap",
     "test": "react-scripts-ts test",
     "eject": "react-scripts-ts eject",
-    "netlify": "dotenv -e .env.netlify react-scripts-ts build",
+    "netlify": "dotenv -e .env.netlify react-scripts-ts build && react-snap",
     "pwmerics": "pwmetrics --config ./pwmetrics-config.js",
     "pwmerics:ci": "CI=true NODE_ENV=production pwmetrics --config ./pwmetrics-config.js"
   },

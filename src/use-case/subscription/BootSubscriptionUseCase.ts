@@ -23,7 +23,7 @@ export class BootSubscriptionUseCase extends UseCase {
     async execute(url: string) {
         await this.repo.appRepository.ready();
         const app = this.repo.appRepository.get();
-        if (Boolean(process.env.SSR)) {
+        if (Boolean(process.env.REACT_APP_SSR)) {
             const machineUser = createMachineUser();
             const machineApp = app.updateUser(machineUser);
             this.repo.appRepository.save(machineApp);
