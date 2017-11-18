@@ -31,9 +31,9 @@ export class OAuth {
         // TODO: use env insteadof magic value
         const DynamicURL =
             process.env.REACT_APP_PUBLIC_URL_IS_DYNAMIC === "true" ? addLasSlash(location.origin) : undefined;
-        const publicurl = process.env.PUBLIC_URL;
+        const PUBLIC_URL = process.env.PUBLIC_URL;
         const redirectUri =
-            DynamicURL !== undefined ? DynamicURL : publicurl ? addLasSlash(publicurl) : `http://localhost:13245/`;
+            DynamicURL !== undefined ? DynamicURL : PUBLIC_URL ? addLasSlash(PUBLIC_URL) : `http://localhost:13245/`;
         const { clientId, clientSecret, accessTokenUri, authorizationUri, scopes, state } = this.options;
         return new ClientOAuth2({
             clientId,
