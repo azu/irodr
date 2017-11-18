@@ -48,8 +48,8 @@
     "most-visible": "^1.0.1",
     "office-ui-fabric-react": "^5.11.0",
     "popsicle": "^9.1.0",
-    "react": "^16.0.0",
-    "react-dom": "^16.0.0",
+    "react": "^16.1.1",
+    "react-dom": "^16.1.1",
     "react-icons": "^2.2.7",
     "react-render-html": "^0.5.2",
     "ulid": "^1.0.2"
@@ -59,7 +59,7 @@
     "postcommit": "git reset",
     "prettier": "prettier --write '{src,resources}/**/*.{css,js,ts,tsx}'",
     "start": "PORT=13245 react-scripts-ts start",
-    "build": "react-scripts-ts build",
+    "build": "SSR=true react-scripts-ts build && react-snap",
     "test": "react-scripts-ts test",
     "eject": "react-scripts-ts eject",
     "netlify": "dotenv -e .env.netlify react-scripts-ts build",
@@ -93,6 +93,7 @@
     "lint-staged": "^4.3.0",
     "prettier": "^1.7.4",
     "pwmetrics": "^3.1.2",
-    "react-scripts-ts": "^2.8.0"
+    "react-scripts-ts": "^2.8.0",
+    "react-snap": "^0.10.0"
   }
 }

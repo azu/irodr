@@ -1,5 +1,5 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { hydrate, render } from "react-dom";
 import { AppContainer } from "./component/container/App/AppContainer";
 // import registerServiceWorker from "./registerServiceWorker";
 import { InoreaderAPI } from "./infra/api/InoreaderAPI";
@@ -77,7 +77,12 @@ context
             : Promise.resolve();
     })
     .then(() => {
-        ReactDOM.render(<App />, document.getElementById("root") as HTMLElement);
+        const rootElement = document.getElementById("root");
+        if (rootElement && rootElement.hasChildNodes()) {
+            hydrate(<App />, rootElement);
+        } else {
+            render(<App />, rootElement);
+        }
     })
     .then(() => {
         return context

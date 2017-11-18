@@ -19,6 +19,9 @@ export class TestInoreaderAuthUseCase extends UseCase {
 
     execute() {
         const app = this.repo.appRepository.get();
+        if (app.user.isMachine) {
+            return;
+        }
         const client = new InoreaderAPI(app.user.authority);
         return client.getToken().catch(error => {
             return Promise.reject(error);
