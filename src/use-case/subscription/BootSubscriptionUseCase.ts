@@ -23,6 +23,12 @@ export class BootSubscriptionUseCase extends UseCase {
     async execute(url: string) {
         await this.repo.appRepository.ready();
         const app = this.repo.appRepository.get();
+        if (process.env.SSR === "true") {
+            const machineUser = createMachineUser();
+            const machineApp = app.updateUser(machineUser);
+            this.repo.appRepository.save(machineApp);
+            return;
+        }
         const parsedURL = new URL(url);
         if (parsedURL.searchParams.has("ci")) {
             const machineUser = createMachineUser();
