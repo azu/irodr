@@ -3,7 +3,7 @@ let secret = {};
 try {
     secret = require("./pwmetrics.secret");
 } catch (error) {}
-// pwmerics_url=http://localhost:13245/?ci yarn run  pwmerics
+// pwmerics_url=http://localhost:13245/?ci yarn run pwmerics
 const specificURL = process.env.pwmerics_url;
 const targetURL = specificURL ? specificURL : !isCI ? "http://localhost:13245/?ci" : "http://irodr.netlify.com/?ci";
 module.exports = {
