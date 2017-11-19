@@ -1,3 +1,6 @@
+// polyfill
+require("intersection-observer");
+
 import * as React from "react";
 import { hydrate, render } from "react-dom";
 import { AppContainer } from "./component/container/App/AppContainer";
