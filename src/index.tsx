@@ -18,7 +18,9 @@ import { InoreaderAuthority, InoreaderAuthorityIdentifier } from "./domain/App/A
 import { createSaveInoreaderTokenUseCase } from "./use-case/inoreader/SaveInoreaderTokenUseCase";
 import { createTestInoreaderAuthUseCase } from "./use-case/inoreader/TestInoreaderAuthUseCase";
 import { ShowAuthorizePanelUseCase } from "./component/container/App/Panel/use-case/ToggleAuthorizePanelUseCase";
-
+import { initializeIcons } from "@uifabric/icons";
+// Register icons and pull the fonts from the default SharePoint cdn:
+initializeIcons();
 // require all css files
 function requireAll(r: any) {
     r.keys().forEach(r);

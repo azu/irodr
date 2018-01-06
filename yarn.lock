@@ -56,9 +56,9 @@
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@immutable-array/unshift/-/unshift-1.0.1.tgz#874b7916bc7f8a9f659c658160e2305ca7a83108"
 
-"@microsoft/load-themed-styles@^1.7.2":
-  version "1.7.4"
-  resolved "https://registry.yarnpkg.com/@microsoft/load-themed-styles/-/load-themed-styles-1.7.4.tgz#dd253d80c8220913d27ab06ee56c4b2ec451f3d3"
+"@microsoft/load-themed-styles@^1.7.13":
+  version "1.7.17"
+  resolved "https://registry.yarnpkg.com/@microsoft/load-themed-styles/-/load-themed-styles-1.7.17.tgz#8593e7f7866e7a3ba4966d169671e4e568a6d857"
 
 "@types/classnames@^2.2.3":
   version "2.2.3"
@@ -151,33 +151,34 @@
   version "16.0.16"
   resolved "https://registry.yarnpkg.com/@types/react/-/react-16.0.16.tgz#f0652a5a3acc1706ec729c8fba3976acbf45b827"
 
-"@uifabric/icons@>=5.2.0 <6.0.0":
-  version "5.2.0"
-  resolved "https://registry.yarnpkg.com/@uifabric/icons/-/icons-5.2.0.tgz#8c49ff1802bed9e1a0fac7873a7c831aae54b243"
-  dependencies:
-    "@uifabric/styling" ">=5.3.0 <6.0.0"
-    tslib "^1.6.0"
-
-"@uifabric/merge-styles@>=5.4.2 <6.0.0":
-  version "5.4.2"
-  resolved "https://registry.yarnpkg.com/@uifabric/merge-styles/-/merge-styles-5.4.2.tgz#a744a91f3b4a3bc70bc15009bf6215c60db4eb26"
-  dependencies:
-    tslib "^1.7.1"
-
-"@uifabric/styling@>=5.3.0 <6.0.0", "@uifabric/styling@>=5.4.0 <6.0.0":
+"@uifabric/icons@>=5.4.0 <6.0.0", "@uifabric/icons@^5.4.0":
   version "5.4.0"
-  resolved "https://registry.yarnpkg.com/@uifabric/styling/-/styling-5.4.0.tgz#3a5027790a34d1b66d8c12c564aee8661547447c"
+  resolved "https://registry.yarnpkg.com/@uifabric/icons/-/icons-5.4.0.tgz#549e108653c6845aff9f37a256e0b5da13f15b3c"
   dependencies:
-    "@microsoft/load-themed-styles" "^1.7.2"
-    "@uifabric/merge-styles" ">=5.4.2 <6.0.0"
-    "@uifabric/utilities" ">=5.3.0 <6.0.0"
+    "@uifabric/styling" ">=5.15.1 <6.0.0"
     tslib "^1.7.1"
 
-"@uifabric/utilities@>=5.3.0 <6.0.0":
-  version "5.3.0"
-  resolved "https://registry.yarnpkg.com/@uifabric/utilities/-/utilities-5.3.0.tgz#c30155c9cac891222068e6beb982df71f8cc8fee"
+"@uifabric/merge-styles@>=5.10.0 <6.0.0", "@uifabric/merge-styles@>=5.9.0 <6.0.0":
+  version "5.10.0"
+  resolved "https://registry.yarnpkg.com/@uifabric/merge-styles/-/merge-styles-5.10.0.tgz#e5bd7cbda5e63158546ea70e135b44e3429ade44"
   dependencies:
-    "@microsoft/load-themed-styles" "^1.7.2"
+    tslib "^1.7.1"
+
+"@uifabric/styling@>=5.15.1 <6.0.0":
+  version "5.15.1"
+  resolved "https://registry.yarnpkg.com/@uifabric/styling/-/styling-5.15.1.tgz#2b6487cb781279d5d84a01aa511a573e8274bf3a"
+  dependencies:
+    "@microsoft/load-themed-styles" "^1.7.13"
+    "@uifabric/merge-styles" ">=5.10.0 <6.0.0"
+    "@uifabric/utilities" ">=5.6.1 <6.0.0"
+    tslib "^1.7.1"
+
+"@uifabric/utilities@>=5.6.1 <6.0.0":
+  version "5.6.1"
+  resolved "https://registry.yarnpkg.com/@uifabric/utilities/-/utilities-5.6.1.tgz#bbf5890267815ceee3c568dc20510197b9989387"
+  dependencies:
+    "@microsoft/load-themed-styles" "^1.7.13"
+    "@uifabric/merge-styles" ">=5.9.0 <6.0.0"
     prop-types "^15.5.10"
     tslib "^1.7.1"
 
@@ -3167,9 +3168,9 @@ interpret@^1.0.0:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/interpret/-/interpret-1.0.3.tgz#cbc35c62eeee73f19ab7b10a801511401afc0f90"
 
-intersection-observer@^0.4.3:
-  version "0.4.3"
-  resolved "https://registry.yarnpkg.com/intersection-observer/-/intersection-observer-0.4.3.tgz#22ff07442269d8be694551a782e0b081ecd4adfd"
+intersection-observer@^0.5.0:
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/intersection-observer/-/intersection-observer-0.5.0.tgz#9fe8bee3953c755b1485c38efd9633d535775ea6"
 
 invariant@^2.2.2:
   version "2.2.2"
@@ -4856,15 +4857,15 @@ obuf@^1.0.0, obuf@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/obuf/-/obuf-1.1.1.tgz#104124b6c602c6796881a042541d36db43a5264e"
 
-office-ui-fabric-react@^5.11.0:
-  version "5.11.0"
-  resolved "https://registry.yarnpkg.com/office-ui-fabric-react/-/office-ui-fabric-react-5.11.0.tgz#796d17f5cf9504529434df5997d48e85261ebeaa"
+office-ui-fabric-react@^5.38.0:
+  version "5.38.0"
+  resolved "https://registry.yarnpkg.com/office-ui-fabric-react/-/office-ui-fabric-react-5.38.0.tgz#3489904119c251015e223ec363993cd5afb368c1"
   dependencies:
-    "@microsoft/load-themed-styles" "^1.7.2"
-    "@uifabric/icons" ">=5.2.0 <6.0.0"
-    "@uifabric/merge-styles" ">=5.4.2 <6.0.0"
-    "@uifabric/styling" ">=5.4.0 <6.0.0"
-    "@uifabric/utilities" ">=5.3.0 <6.0.0"
+    "@microsoft/load-themed-styles" "^1.7.13"
+    "@uifabric/icons" ">=5.4.0 <6.0.0"
+    "@uifabric/merge-styles" ">=5.10.0 <6.0.0"
+    "@uifabric/styling" ">=5.15.1 <6.0.0"
+    "@uifabric/utilities" ">=5.6.1 <6.0.0"
     prop-types "^15.5.10"
     tslib "^1.7.1"
 
@@ -5768,9 +5769,9 @@ react-dev-utils@^4.0.1:
     object-assign "^4.1.0"
     prop-types "^15.5.10"
 
-react-dom@^16.1.1:
-  version "16.1.1"
-  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-16.1.1.tgz#b2e331b6d752faf1a2d31399969399a41d8d45f8"
+react-dom@^16.2.0:
+  version "16.2.0"
+  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-16.2.0.tgz#69003178601c0ca19b709b33a83369fe6124c044"
   dependencies:
     fbjs "^0.8.16"
     loose-envify "^1.1.0"
@@ -5800,9 +5801,9 @@ react-icons@^2.2.7:
   dependencies:
     react-icon-base "2.1.0"
 
-react-render-html@^0.5.2:
-  version "0.5.2"
-  resolved "https://registry.yarnpkg.com/react-render-html/-/react-render-html-0.5.2.tgz#de5889ccb447221f8e64ff570bb5f77a8dc4f138"
+react-render-html@^0.6.0:
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/react-render-html/-/react-render-html-0.6.0.tgz#1af51d859ed75474435a1c65c293a48e12c36627"
   dependencies:
     parse5 "^3.0.2"
     react-attr-converter "^0.3.1"
@@ -5867,9 +5868,9 @@ react-snap@^0.10.0:
     object-assign "^4.1.0"
     prop-types "^15.5.10"
 
-react@^16.1.1:
-  version "16.1.1"
-  resolved "https://registry.yarnpkg.com/react/-/react-16.1.1.tgz#d5c4ef795507e3012282dd51261ff9c0e824fe1f"
+react@^16.2.0:
+  version "16.2.0"
+  resolved "https://registry.yarnpkg.com/react/-/react-16.2.0.tgz#a31bd2dab89bff65d42134fa187f24d054c273ba"
   dependencies:
     fbjs "^0.8.16"
     loose-envify "^1.1.0"
@@ -6942,10 +6943,6 @@ ts-loader@^2.3.7:
     enhanced-resolve "^3.0.0"
     loader-utils "^1.0.2"
     semver "^5.0.1"
-
-tslib@^1.6.0:
-  version "1.8.0"
-  resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.8.0.tgz#dc604ebad64bcbf696d613da6c954aa0e7ea1eb6"
 
 tslib@^1.7.1:
   version "1.7.1"
