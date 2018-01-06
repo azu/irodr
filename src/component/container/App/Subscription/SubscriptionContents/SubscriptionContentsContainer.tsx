@@ -159,7 +159,18 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
         );
     }
 
+    componentDidMount() {
+        if (this.element) {
+            this.element.scrollTo(0, 0);
+        }
+    }
+
     componentDidUpdate(prevProps: SubscriptionContentsContainerProps) {
+        if (!prevProps.subscriptionContents.subscription && this.props.subscriptionContents.subscription) {
+            if (this.element) {
+                this.element.scrollTo(0, 0);
+            }
+        }
         if (
             prevProps.subscriptionContents.subscription &&
             !prevProps.subscriptionContents.subscription.equals(this.props.subscriptionContents.subscription)
