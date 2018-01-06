@@ -128,16 +128,12 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
         ) : (
             <i className="ms-Icon ms-Icon--CollapseContentSingle" aria-hidden="true" />
         );
+        const onClickGroupListLink = () => {
+            this.useCase(createToggleListGroupUseCase()).executor(useCase => useCase.execute(props.group!.key));
+        };
         return (
             <div className="SubscriptionListContainer-listHeader">
-                <Link
-                    className="SubscriptionListContainer-listHeaderButton"
-                    onClick={() => {
-                        this.useCase(createToggleListGroupUseCase()).executor(useCase =>
-                            useCase.execute(props.group!.key)
-                        );
-                    }}
-                >
+                <Link className="SubscriptionListContainer-listHeaderButton" onClick={onClickGroupListLink}>
                     {icon} {props.group!.name}
                 </Link>
             </div>

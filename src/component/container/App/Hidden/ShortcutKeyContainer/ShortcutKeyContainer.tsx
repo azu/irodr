@@ -17,6 +17,7 @@ import {
     TurnOnContentsFilterUseCase
 } from "../../Subscription/SubscriptionContents/use-case/ToggleFilterContents";
 import { createFetchMoreSubscriptContentsUseCase } from "../../../../../use-case/subscription/FetchMoreSubscriptContentsUseCase";
+import { ToggleAllListGroupUseCase } from "../../Subscription/SubscriptionList/use-case/ToggleAllListGroupUseCase";
 
 const MapSigns = require("react-icons/lib/fa/map-signs");
 
@@ -194,6 +195,9 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
                     this.useCase(new TurnOnContentsFilterUseCase()).executor(useCase => useCase.execute());
                 }
             },
+            "toggle-subscription-feed-list": (_event: Event) => {
+                this.useCase(new ToggleAllListGroupUseCase()).executor(useCase => useCase.execute());
+            },
             "load-more-past-contents": async (_event: Event) => {
                 const subscription = this.props.subscriptionContents.subscription;
                 if (!subscription) {
@@ -233,6 +237,7 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
             s: "move-next-subscription-feed",
             m: "make-subscription-read",
             v: "open-current-content-url",
+            z: "toggle-subscription-feed-list",
             space: "scroll-down-content",
             "shift+space": "scroll-up-content"
         };

@@ -9,6 +9,7 @@ import { AppRepository } from "../../../../../infra/repository/AppRepository";
 import { AppSubscriptionActivityItem } from "../../../../../domain/App/User/AppSubscriptionActivityItem";
 import { AppSubscriptionActivity } from "../../../../../domain/App/User/AppSubscriptionActivity";
 import { AppPreferences } from "../../../../../domain/App/Preferences/AppPreferences";
+import { ToggleAllListGroupUseCasePayload } from "./use-case/ToggleAllListGroupUseCase";
 
 export interface SubscriptionListStateProps {
     currentSubscriptionId?: SubscriptionIdentifier;
@@ -142,20 +143,51 @@ export class SubscriptionListState {
         if (index === -1) {
             return this.groups;
         }
+        const groupIsCollapsed = this.groupIsCollapsed[categoryKey];
         const targetGroup = this.groups[index];
-        this.groupIsCollapsed[categoryKey] = !this.groupIsCollapsed[categoryKey];
-        const newGroup: IGroup = {
-            ...targetGroup,
-            isCollapsed: this.groupIsCollapsed[categoryKey]
-        };
+        const newGroup = this.updateGroupCollapsedStatus(targetGroup, !groupIsCollapsed);
         return splice(this.groups, index, 1, newGroup);
     }
 
-    reduce(payload: ToggleListGroupUseCasePayload) {
+    private updateGroupCollapsedStatus(targetGroup: IGroup, isCollapsed: boolean): IGroup {
+        this.groupIsCollapsed[targetGroup.key] = isCollapsed;
+        return {
+            ...targetGroup,
+            isCollapsed: isCollapsed
+        };
+    }
+
+    private closeGroups() {
+        return this.groups.map(group => {
+            return this.updateGroupCollapsedStatus(group, false);
+        });
+    }
+
+    private openGroups() {
+        return this.groups.map(group => {
+            return this.updateGroupCollapsedStatus(group, true);
+        });
+    }
+
+    private toggleGroups() {
+        const anyOneOpen = this.groups.some(group => group.isCollapsed === true);
+        if (anyOneOpen) {
+            return this.closeGroups();
+        } else {
+            return this.openGroups();
+        }
+    }
+
+    reduce(payload: any) {
         if (payload instanceof ToggleListGroupUseCasePayload) {
             return new SubscriptionListState({
                 ...(this as SubscriptionListStateProps),
                 groups: this.toggleGroup(payload.categoryKey)
+            });
+        } else if (payload instanceof ToggleAllListGroupUseCasePayload) {
+            return new SubscriptionListState({
+                ...(this as SubscriptionListStateProps),
+                groups: this.toggleGroups()
             });
         } else {
             return this;
