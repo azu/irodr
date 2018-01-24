@@ -77,14 +77,14 @@
   },
   "proxy": {
     "/cors": {
-      "target": "https://jp.inoreader.com",
+      "target": "https://www.inoreader.com",
       "pathRewrite": {
         "^/cors": ""
       },
       "changeOrigin": true
     },
     "/api": {
-      "target": "https://jp.inoreader.com/reader",
+      "target": "https://www.inoreader.com/reader",
       "changeOrigin": true
     }
   },
