@@ -28,10 +28,7 @@ export class UpdateSubscriptionsUseCase extends UseCase {
             return;
         }
         const client = new InoreaderAPI(app.user.authority);
-        return Promise.all([
-            client.subscriptions(),
-            client.unreadCounts()
-        ]).then(
+        return Promise.all([client.subscriptions(), client.unreadCounts()]).then(
             ([newSubscriptionsResponse, newUnreadCountsResponse]: [SubscriptionsResponse, UnreadCountsResponse]) => {
                 const subscriptions = createSubscriptionsFromResponses(
                     newSubscriptionsResponse,
