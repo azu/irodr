@@ -9,15 +9,11 @@ import { AppRepository } from "../../infra/repository/AppRepository";
 import { createUpdateHeaderMessageUseCase } from "../app/UpdateHeaderMessageUseCase";
 import { repositoryContainer } from "../../infra/repository/RepositoryContainer";
 
-export class StartLoadingPayload extends Payload {
-    constructor() {
-        super({ type: "StartLoadingPayload" });
-    }
+export class StartLoadingPayload implements Payload {
+    type = "StartLoadingPayload";
 }
-export class FinishLoadingPayload extends Payload {
-    constructor() {
-        super({ type: "FinishLoadingPayload" });
-    }
+export class FinishLoadingPayload implements Payload {
+    type = "FinishLoadingPayload";
 }
 
 export const createShowSubscriptionContentsUseCase = () => {

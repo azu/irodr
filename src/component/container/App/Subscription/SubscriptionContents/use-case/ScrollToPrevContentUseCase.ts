@@ -2,10 +2,9 @@
 import { Payload, UseCase } from "almin";
 import { SubscriptionContentIdentifier } from "../../../../../../domain/Subscriptions/SubscriptionContent/SubscriptionContent";
 
-export class ScrollToPrevContentUseCasePayload extends Payload {
-    constructor(public subscriptionContentId: SubscriptionContentIdentifier) {
-        super({ type: "ScrollToPrevContentUseCase" });
-    }
+export class ScrollToPrevContentUseCasePayload implements Payload {
+    type = "ScrollToPrevContentUseCase";
+    constructor(public subscriptionContentId: SubscriptionContentIdentifier) {}
 }
 
 export class ScrollToPrevContentUseCase extends UseCase {

@@ -6,7 +6,7 @@ import {
     SubscriptionContent,
     SubscriptionContentIdentifier
 } from "../../../../../domain/Subscriptions/SubscriptionContent/SubscriptionContent";
-import { Button, Image, ImageFit, Link, Toggle } from "office-ui-fabric-react";
+import { PrimaryButton, Image, ImageFit, Link, Toggle } from "office-ui-fabric-react";
 import { FocusContentUseCase } from "./use-case/FocusContentUseCase";
 import { ProgressColorBar } from "../../../../project/ProgressColorBar/ProgressColorBar";
 import { Subscription } from "../../../../../domain/Subscriptions/Subscription";
@@ -82,7 +82,7 @@ export function getActiveContentIdString(): string | undefined {
             const content = contentElements[offset];
             return content.dataset.contentId;
         } else {
-            const max_intersection = Math.max.apply(null, intersections);
+            const max_intersection = Math.max(...intersections);
             const offset = max_intersection === 0 ? contentCount - 1 : intersections.indexOf(max_intersection);
             if (offset === undefined) {
                 return;
@@ -144,9 +144,12 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
                 </div>
                 <footer className="SubscriptionContentsContainer-footer">
                     <div className="SubscriptionContentsContainer-readMore">
-                        <Button className="SubscriptionContentsContainer-readMoreButton" onClick={this.onClickReadMore}>
+                        <PrimaryButton
+                            className="SubscriptionContentsContainer-readMoreButton"
+                            onClick={this.onClickReadMore}
+                        >
                             Read More
-                        </Button>
+                        </PrimaryButton>
                     </div>
                     <div
                         className="SubscriptionContentsContainer-footerPadding"

@@ -5,10 +5,10 @@ export const createToggleListGroupUseCase = () => {
     return new ToggleListGroupUseCase();
 };
 
-export class ToggleListGroupUseCasePayload extends Payload {
-    constructor(public categoryKey: string) {
-        super({ type: "ToggleListGroupUseCasePayload" });
-    }
+export class ToggleListGroupUseCasePayload implements Payload {
+    type = "ToggleListGroupUseCasePayload";
+
+    constructor(public categoryKey: string) {}
 }
 
 export class ToggleListGroupUseCase extends UseCase {

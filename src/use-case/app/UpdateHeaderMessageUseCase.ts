@@ -5,10 +5,10 @@ export const createUpdateHeaderMessageUseCase = () => {
     return new UpdateHeaderMessageUseCase();
 };
 
-export class UpdateHeaderMessageUseCasePayload extends Payload {
-    constructor(public message: string | React.ReactChild) {
-        super({ type: "UpdateHeaderMessageUseCase" });
-    }
+export class UpdateHeaderMessageUseCasePayload implements Payload {
+    type = "UpdateHeaderMessageUseCase";
+
+    constructor(public message: string | React.ReactChild) {}
 }
 
 export class UpdateHeaderMessageUseCase extends UseCase {

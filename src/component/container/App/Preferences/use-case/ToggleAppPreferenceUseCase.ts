@@ -1,16 +1,12 @@
 // MIT © 2017 azu
 import { Payload, UseCase } from "almin";
 
-export class ShowAppPreferenceUseCasePayload extends Payload {
-    constructor() {
-        super({ type: "ShowAppPreferenceUseCasePayload" });
-    }
+export class ShowAppPreferenceUseCasePayload implements Payload {
+    type = "ShowAppPreferenceUseCasePayload";
 }
 
-export class DismissAppPreferenceUseCasePayload extends Payload {
-    constructor() {
-        super({ type: "DismissAppPreferenceUseCasePayload" });
-    }
+export class DismissAppPreferenceUseCasePayload implements Payload {
+    type = "DismissAppPreferenceUseCasePayload";
 }
 
 export class ShowAppPreferenceUseCase extends UseCase {

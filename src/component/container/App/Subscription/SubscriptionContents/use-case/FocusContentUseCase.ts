@@ -2,10 +2,9 @@
 import { Payload, UseCase } from "almin";
 import { SubscriptionContentIdentifier } from "../../../../../../domain/Subscriptions/SubscriptionContent/SubscriptionContent";
 
-export class FocusContentUseCasePayload extends Payload {
-    constructor(public contentId: SubscriptionContentIdentifier) {
-        super({ type: "FocusContentUseCasePayload" });
-    }
+export class FocusContentUseCasePayload implements Payload {
+    type = "FocusContentUseCasePayload";
+    constructor(public contentId: SubscriptionContentIdentifier) {}
 }
 
 export class FocusContentUseCase extends UseCase {
