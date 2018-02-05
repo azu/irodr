@@ -24,8 +24,8 @@ export class ProgressColorBar extends React.Component<ColorBarProps, ColorBarSta
         };
     }
 
-    constructor() {
-        super();
+    constructor(props: ColorBarProps) {
+        super(props);
 
         this.state = {
             progress: 0.1

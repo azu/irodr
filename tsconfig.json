@@ -3,12 +3,13 @@
     "outDir": "build/dist",
     "module": "es2015",
     "target": "es5",
-    "lib": ["es6", "dom"],
+    "lib": ["esnext", "dom"],
     "sourceMap": true,
     "allowJs": true,
     "jsx": "react",
     "moduleResolution": "node",
     "rootDir": "src",
+    "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
@@ -18,6 +19,9 @@
     "noUnusedLocals": true,
     "allowSyntheticDefaultImports":true
   },
+  "include": [
+    "src"
+  ],
   "exclude": [
     "node_modules",
     "build",

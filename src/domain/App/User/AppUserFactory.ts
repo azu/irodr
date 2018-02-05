@@ -1,5 +1,5 @@
 // MIT © 2017 azu
-import ulid from "ulid";
+import { ulid } from "ulid";
 import { AppUser, AppUserArgs, AppUserIdentifier } from "./AppUser";
 import { AppSubscriptionActivity } from "./AppSubscriptionActivity";
 import { InoreaderAuthority, InoreaderAuthorityIdentifier } from "../Authority/InoreaderAuthority";
