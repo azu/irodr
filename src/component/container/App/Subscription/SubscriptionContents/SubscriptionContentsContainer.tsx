@@ -6,7 +6,7 @@ import {
     SubscriptionContent,
     SubscriptionContentIdentifier
 } from "../../../../../domain/Subscriptions/SubscriptionContent/SubscriptionContent";
-import { PrimaryButton, Image, ImageFit, Link, Toggle } from "office-ui-fabric-react";
+import { DefaultButton, Image, ImageFit, Link, Toggle } from "office-ui-fabric-react";
 import { FocusContentUseCase } from "./use-case/FocusContentUseCase";
 import { ProgressColorBar } from "../../../../project/ProgressColorBar/ProgressColorBar";
 import { Subscription } from "../../../../../domain/Subscriptions/Subscription";
@@ -144,12 +144,12 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
                 </div>
                 <footer className="SubscriptionContentsContainer-footer">
                     <div className="SubscriptionContentsContainer-readMore">
-                        <PrimaryButton
+                        <DefaultButton
                             className="SubscriptionContentsContainer-readMoreButton"
                             onClick={this.onClickReadMore}
                         >
                             Read More
-                        </PrimaryButton>
+                        </DefaultButton>
                     </div>
                     <div
                         className="SubscriptionContentsContainer-footerPadding"
