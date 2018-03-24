@@ -256,7 +256,8 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
                 },
                 {
                     root: this.element,
-                    threshold: [0, 0.2, 0.4, 0.6, 0.8, 1.0]
+                    rootMargin: "10px",
+                    threshold: [0, 0.1, 0.2, 0.4, 0.6, 0.8, 0.9, 1.0]
                 }
             );
             Array.from(document.querySelectorAll(".SubscriptionContentsContainer-content")).forEach(element => {
