@@ -56,6 +56,7 @@ export function getActiveContentIdString(): string | undefined {
         }
     });
     const full_contain: number[] = [];
+    debug("getActiveContentIdString:screen", screen);
     debug("getActiveContentIdString:pairs", pairs);
     const intersections = pairs.map(function(pair, i) {
         if (pair[1] < screen[0]) {
