@@ -14,7 +14,7 @@ import { Time } from "../../../../ui-kit/Time/Time";
 import { TurnOffContentsFilterUseCase, TurnOnContentsFilterUseCase } from "./use-case/ToggleFilterContents";
 import { createFetchMoreSubscriptContentsUseCase } from "../../../../../use-case/subscription/FetchMoreSubscriptContentsUseCase";
 import { SubscriptionContentComponent } from "./SubscriptionContent/SubscriptionContentComponent";
-
+const debug = require("debug")("irodr:SubscriptionContentsContainer");
 const format = require("date-fns/format");
 
 export interface SubscriptionContentsContainerProps {
@@ -56,6 +56,7 @@ export function getActiveContentIdString(): string | undefined {
         }
     });
     const full_contain: number[] = [];
+    debug("getActiveContentIdString:pairs", pairs);
     const intersections = pairs.map(function(pair, i) {
         if (pair[1] < screen[0]) {
             return 0;
@@ -70,6 +71,8 @@ export function getActiveContentIdString(): string | undefined {
         }
         return bottom - top;
     });
+    debug("getActiveContentIdString:full_contain", full_contain);
+    debug("getActiveContentIdString:intersections", intersections);
     if (contentCount == 1) {
         const content = contentElements[0];
         return content.dataset.contentId;
