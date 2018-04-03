@@ -31,11 +31,11 @@ export function getActiveContentIdString(): string | undefined {
     const contentElements = document.querySelectorAll(".SubscriptionContentsContainer-content") as NodeListOf<
         HTMLElement
     >;
-    const containerScrollTop = contentContainer.scrollTop;
-    const containerOffsetHeight = contentContainer.offsetHeight;
     // TODO: should be computable
     // AppHeader's height = 32px
     const marginTopOfContentContainer = 32;
+    const containerScrollTop = contentContainer.scrollTop - marginTopOfContentContainer;
+    const containerOffsetHeight = contentContainer.offsetHeight - marginTopOfContentContainer;
     const contentCount = contentElements.length;
     if (!contentCount) {
         return;
