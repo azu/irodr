@@ -34,8 +34,8 @@ export function getActiveContentIdString(): string | undefined {
     // TODO: should be computable
     // AppHeader's height = 32px
     const marginTopOfContentContainer = 32;
-    const containerScrollTop = contentContainer.scrollTop - marginTopOfContentContainer;
-    const containerOffsetHeight = contentContainer.offsetHeight - marginTopOfContentContainer;
+    const containerScrollTop = contentContainer.scrollTop;
+    const containerOffsetHeight = contentContainer.offsetHeight;
     const contentCount = contentElements.length;
     if (!contentCount) {
         return;
@@ -52,7 +52,8 @@ export function getActiveContentIdString(): string | undefined {
         if (element[i + 1]) {
             return [v, element[i + 1]];
         } else {
-            return [v, containerOffsetHeight];
+            // last
+            return [v, screen[1]];
         }
     });
     const full_contain: number[] = [];
