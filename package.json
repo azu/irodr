@@ -26,6 +26,7 @@
     "@types/prop-types": "^15.5.2",
     "@types/react": "^16.0.16",
     "@types/react-dom": "^16.0.2",
+    "@types/sanitize-html": "^1.14.0",
     "@uifabric/icons": "^5.4.0",
     "almin": "^0.16.0",
     "almin-logger": "^6.1.5",
@@ -55,6 +56,7 @@
     "react-icons": "^2.2.7",
     "react-render-html": "^0.6.0",
     "requestidlecallback": "^0.3.0",
+    "sanitize-html": "^1.18.2",
     "ulid": "^2.3.0"
   },
   "scripts": {
