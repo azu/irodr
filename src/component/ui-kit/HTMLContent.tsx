@@ -12,6 +12,9 @@ export class HTMLContent extends React.PureComponent<HTMLContentProps, {}> {
         // remove un-safe tags like iframe
         const senitizedHTML = senitizeHTML(this.props.children, {
             allowedTags: [
+                "img",
+                "h1",
+                "h2",
                 "h3",
                 "h4",
                 "h5",
@@ -27,6 +30,8 @@ export class HTMLContent extends React.PureComponent<HTMLContentProps, {}> {
                 "i",
                 "strong",
                 "em",
+                "del",
+                "span",
                 "strike",
                 "code",
                 "hr",
