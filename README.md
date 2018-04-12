@@ -47,6 +47,7 @@ You paste the Client ID and secret to Irodr Authorization.
 
 Irodr provide some UserScript API for UserScript like Greasemonkey.
  
+- `window.addEventListener("userscript-init", (event) => { /* Initialize UseScript object */ })`
 - `window.userScript.getActiveContent(): UserScriptActiveContent | undefined`
 - `window.userScript.getActiveSubscription(): UserScriptActiveSubscription | undefined`
 - `window.userScript.triggerKey(keys: string, action?: string): void`

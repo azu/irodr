@@ -2,6 +2,18 @@
 
 This handle public API for UserScripts like Greasemonkey, browser's extension.
 
+## `"userscript-init"` event
+
+irodr dispatch `"userscript-init"` event to `window` object when irodr have finished initialized.
+
+You should listen the `"userscript-init"` event before invoke `window.userScript.*` API.
+
+```js
+window.addEventListener("userscript-init", (event) => {
+    // Your userscript code is here
+});
+```
+
 ## `window.userScript.getActiveContent(): UserScriptActiveContent | undefined`
 
 Return active content or undefined.
@@ -56,11 +68,18 @@ Subscript `event` and register `handler` that is called when the `event` is disp
 ### Example
 
 ```js
-userScript.event.subscribe("SubscriptionContent::componentDidMount", (content) => {
-   const element = document.querySelector(`[data-content-id="${content.contentId}"]`);
-   if(element){
-      element.querySelector(".SubscriptionContentsContainer-contentTitle").classList.add("ng-content");
-      element.querySelector(".SubscriptionContentsContainer-contentBody").setAttribute("hidden", true);
-   } 
+window.addEventListener("userscript-init", (event) => {
+    userScript.event.subscribe("SubscriptionContent::componentDidMount", (content) => {
+       const element = document.querySelector(`[data-content-id="${content.contentId}"]`);
+       if(element){
+          element.querySelector(".SubscriptionContentsContainer-contentTitle").classList.add("ng-content");
+          element.querySelector(".SubscriptionContentsContainer-contentBody").setAttribute("hidden", true);
+       } 
+    });
 });
 ```
+
+
+See also other UserScript examples.
+
+- [/resources/userScript](/resources/userScript)

@@ -107,10 +107,19 @@ export class UserScriptContainer extends React.Component<UserScriptContainerProp
             },
             event: userScriptEvent
         };
+        // You can listen the "userscript-init" event by `window.addEventListener("userscript-init", (event) => {})`
+        const UserScriptInit = new CustomEvent("userscript-init", {
+            detail: {
+                userScript: (window as UserScriptWindow).userScript
+            }
+        });
+        window.dispatchEvent(UserScriptInit);
     }
 
     componentWillUnmount() {
         delete (window as UserScriptWindow).userScript;
+        const UserScriptInit = new CustomEvent("userscript-uninit");
+        window.dispatchEvent(UserScriptInit);
     }
 
     render() {

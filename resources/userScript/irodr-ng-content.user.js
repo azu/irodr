@@ -24,23 +24,25 @@ const NGList = [
     //     url: /^http:\/\/block.example.com\//
     // }
 ];
-userScript.event.subscribe("SubscriptionContent::componentDidMount", content => {
-    const isMatchAnyNG = NGList.some(NGItem => {
-        let isNG = false;
-        if (NGItem.title) {
-            isNG = NGItem.title.test(content.title);
+window.addEventListener("userscript-init", () => {
+    userScript.event.subscribe("SubscriptionContent::componentDidMount", content => {
+        const isMatchAnyNG = NGList.some(NGItem => {
+            let isNG = false;
+            if (NGItem.title) {
+                isNG = NGItem.title.test(content.title);
+            }
+            if (NGItem.url) {
+                isNG = NGItem.url.test(content.url);
+            }
+            return isNG;
+        });
+        if (!isMatchAnyNG) {
+            return;
         }
-        if (NGItem.url) {
-            isNG = NGItem.url.test(content.url);
+        const element = document.querySelector(`[data-content-id="${content.contentId}"]`);
+        if (element) {
+            element.querySelector(".SubscriptionContentsContainer-contentTitle").classList.add("ng-content");
+            element.querySelector(".SubscriptionContentsContainer-contentBody").setAttribute("hidden", "");
         }
-        return isNG;
     });
-    if (!isMatchAnyNG) {
-        return;
-    }
-    const element = document.querySelector(`[data-content-id="${content.contentId}"]`);
-    if (element) {
-        element.querySelector(".SubscriptionContentsContainer-contentTitle").classList.add("ng-content");
-        element.querySelector(".SubscriptionContentsContainer-contentBody").setAttribute("hidden", "");
-    }
 });
