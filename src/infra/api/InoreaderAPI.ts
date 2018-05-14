@@ -107,13 +107,7 @@ export class InoreaderAPI {
         // http://www.inoreader.com/developers/stream-contents
         // /api/0/stream/contents/feed%2Fhttps%3A%2F%2Faddons.mozilla.org%2Fja%2Ffirefox%2Fextensions%2Fweb-development%2Fformat%3Arss%3Fsort%3Dnewest?n=20
         // http://irodr.netlify.com/api/0/stream/contents/feed/http://b.hatena.ne.jp/keyword/JavaScript?mode=rss&sort=hot&threshold=5?n=20
-        const isNetlify = process.env.REACT_APP_IS_NETLIFY === "true";
-        // Netlify proxy can't treat escaped ?
-        // See https://github.com/azu/netlify-rewrite-proxy
-        // We avoid this bug by double encoded: encodeURIComponent(encodeURIComponent("?"))
-        const feedId = isNetlify
-            ? encodeURIComponent(encodeURIComponent(subscription.id.toValue()))
-            : encodeURIComponent(subscription.id.toValue());
+        const feedId = encodeURIComponent(subscription.id.toValue());
         return this.getRequest(`/api/0/stream/contents/${feedId}`, {
             n: fetchCount,
             c: isContinuous && subscription.contents.continuationKey ? subscription.contents.continuationKey : undefined
