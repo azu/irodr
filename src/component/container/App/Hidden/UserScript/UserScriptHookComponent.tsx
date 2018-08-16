@@ -26,13 +26,13 @@ export abstract class UserScriptHookComponent<P = {}, S = {}> extends React.Pure
 
     componentDidUpdate() {
         if (this.userScriptEvent) {
-            this.userScriptEvent.dispatch(this.createComponentEventName("componentDidMount"), this.props);
+            this.userScriptEvent.dispatch(this.createComponentEventName("componentDidUpdate"), this.props);
         }
     }
 
     componentWillUnmount() {
         if (this.userScriptEvent) {
-            this.userScriptEvent.dispatch(this.createComponentEventName("componentDidMount"), this.props);
+            this.userScriptEvent.dispatch(this.createComponentEventName("componentWillUnmount"), this.props);
         }
     }
 }
