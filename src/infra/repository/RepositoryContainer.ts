@@ -6,13 +6,17 @@ import { SubscriptionRepository } from "./SubscriptionRepository";
 export type RepositoryMap<T> = { [P in keyof T]: T[P] };
 
 export class RepositoryContainer<T> {
-    constructor(private container: RepositoryMap<T>) {}
+    public repos: RepositoryMap<T>;
+
+    constructor(container: RepositoryMap<T>) {
+        this.repos = container;
+    }
 
     /**
      * Get repository
      */
-    get() {
-        return this.container;
+    get(): RepositoryMap<T> {
+        return this.repos;
     }
 }
 

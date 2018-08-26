@@ -63,4 +63,12 @@ export class AppUser extends Entity<AppUserIdentifier> {
     openNewSubscription(subscription: Subscription) {
         this.subscriptionActivity = this.subscriptionActivity.addItem(subscription);
     }
+
+    /**
+     * pretend (one) didn't see current focus subscription.
+     * This feature remove the subscription from activity
+     */
+    pretendDidNotOpenCurrentSubscription(): void {
+        this.subscriptionActivity = this.subscriptionActivity.removeCurrentItem();
+    }
 }

@@ -30,7 +30,7 @@ export interface SubscriptionListContainerProps {
 }
 
 export class SubscriptionListContainer extends BaseContainer<SubscriptionListContainerProps, {}> {
-    private groupList: GroupedList | null;
+    private groupList: React.Ref<GroupedList> = React.createRef();
     private onClickSubscription = async (item: Subscription) => {
         await this.useCase(createShowSubscriptionContentsUseCase()).execute(item.id);
     };
@@ -50,26 +50,32 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
     };
 
     async componentDidUpdate(prevProp: SubscriptionListContainerProps) {
+        const visiblePrevSubscriptionId = prevProp.subscriptionList.currentSubscriptionId;
         const currentSubscriptionId = this.props.subscriptionList.currentSubscriptionId;
-        const prevSubscriptionId = prevProp.subscriptionList.currentSubscriptionId;
-        const isChangedCurrentSubscriptionId = prevSubscriptionId !== currentSubscriptionId;
-        if (currentSubscriptionId && isChangedCurrentSubscriptionId) {
-            if (prevSubscriptionId) {
-                await this.useCase(createMarkAsReadToClientUseCase()).execute(prevSubscriptionId);
-            }
-            debounceScrollToSubscriptionId(currentSubscriptionId);
-            // prefetch next items
-            await this.prefetchSubscriptions(
-                currentSubscriptionId,
-                this.props.subscriptionList.prefetchSubscriptionCount
-            );
-            await this.useCase(createUpdateHeaderMessageUseCase()).execute(
-                `Complete prefetch ${this.props.subscriptionList.prefetchSubscriptionCount} items`
-            );
-            // complete
-            if (prevSubscriptionId) {
-                await this.useCase(createMarkAsReadToServerUseCase()).execute(prevSubscriptionId);
-            }
+        const isChangedVisibleCurrentSubscriptionId = visiblePrevSubscriptionId !== currentSubscriptionId;
+        // Prevent infinite loop for updating component
+        if (!currentSubscriptionId) {
+            return;
+        }
+        if (!isChangedVisibleCurrentSubscriptionId) {
+            return;
+        }
+        // If visible is changed ===> Try to update domain model ===>
+        // visible prev is not activity prev
+        // We should mark activity id as read
+        const prevSubscriptionId = this.props.subscriptionList.prevSubscriptionId;
+        if (prevSubscriptionId) {
+            await this.useCase(createMarkAsReadToClientUseCase()).execute(prevSubscriptionId);
+        }
+        debounceScrollToSubscriptionId(currentSubscriptionId);
+        // prefetch next items
+        await this.prefetchSubscriptions(currentSubscriptionId, this.props.subscriptionList.prefetchSubscriptionCount);
+        await this.useCase(createUpdateHeaderMessageUseCase()).execute(
+            `Complete prefetch ${this.props.subscriptionList.prefetchSubscriptionCount} items`
+        );
+        // complete
+        if (prevSubscriptionId) {
+            await this.useCase(createMarkAsReadToServerUseCase()).execute(prevSubscriptionId);
         }
     }
 
@@ -79,7 +85,7 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
         return (
             <div className={classnames("SubscriptionListContainer", this.props.className)}>
                 <GroupedList
-                    ref={c => (this.groupList = c)}
+                    ref={this.groupList}
                     items={this.props.subscriptionList.groupSubscriptions}
                     onRenderCell={this._onRenderCell}
                     groupProps={{
