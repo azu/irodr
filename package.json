@@ -94,13 +94,11 @@
     "@alrra/travis-scripts": "^3.0.1",
     "dotenv-cli": "^1.4.0",
     "husky": "^0.14.3",
-    "jest": "^23.5.0",
     "lint-staged": "^7.1.0",
     "prettier": "^1.12.1",
     "pwmetrics": "^3.1.6",
     "react-scripts-ts": "2.17.0",
     "react-snap": "^1.10.1",
-    "ts-jest": "^23.1.4",
     "typescript": "^3.0.1"
   }
 }
