@@ -16,15 +16,15 @@ export interface AppHeaderContainerProps {
 
 export class AppHeaderContainer extends BaseContainer<AppHeaderContainerProps, {}> {
     private fetchList = () => {
-        this.useCase(createUpdateSubscriptionsUseCase()).executor(useCase => useCase.execute());
+        this.useCase(createUpdateSubscriptionsUseCase()).execute();
     };
 
     private onClickPreferences = () => {
-        this.useCase(new ShowAppPreferenceUseCase()).executor(useCase => useCase.execute());
+        this.useCase(new ShowAppPreferenceUseCase()).execute();
     };
 
     private showAuthorizePanel = () => {
-        this.useCase(new ShowAuthorizePanelUseCase()).executor(useCase => useCase.execute());
+        this.useCase(new ShowAuthorizePanelUseCase()).execute();
     };
 
     render() {
@@ -38,7 +38,8 @@ export class AppHeaderContainer extends BaseContainer<AppHeaderContainerProps, {
                             width={20}
                             height={20}
                             imageFit={ImageFit.cover}
-                        />rodr
+                        />
+                        rodr
                     </h1>
                     <div className="AppHeaderContainer-menu">
                         <CommandBar

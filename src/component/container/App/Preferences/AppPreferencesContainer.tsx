@@ -13,12 +13,12 @@ export interface AppPreferencesContainerProps {
 
 export class AppPreferencesContainer extends BaseContainer<AppPreferencesContainerProps, {}> {
     onDismiss = () => {
-        return this.useCase(new DismissAppPreferenceUseCase()).executor(useCase => useCase.execute());
+        return this.useCase(new DismissAppPreferenceUseCase()).execute();
     };
 
     onSubmit = async (preferencesJSON: AppPreferencesJSON) => {
         try {
-            await this.useCase(createUpdatePreferencesUseCase()).executor(useCase => useCase.execute(preferencesJSON));
+            await this.useCase(createUpdatePreferencesUseCase()).execute(preferencesJSON);
         } finally {
             await this.onDismiss();
         }

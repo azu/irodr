@@ -14,7 +14,7 @@ export class ObserverContainer extends BaseContainer<ObserverContainerProps, {}>
     timeScheduler: TimeScheduler;
     onIntervalWork = () => {
         debug("try auto-reload");
-        this.useCase(createUpdateSubscriptionsUseCase()).executor(useCase => useCase.execute());
+        this.useCase(createUpdateSubscriptionsUseCase()).execute();
     };
 
     componentDidMount() {

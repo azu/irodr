@@ -40,9 +40,7 @@ export class ShowSubscriptionContentsUseCase extends UseCase {
             return;
         }
         this.dispatch(new StartLoadingPayload());
-        await this.context
-            .useCase(createUpdateHeaderMessageUseCase())
-            .executor(useCase => useCase.execute("Start loading contents..."));
+        await this.context.useCase(createUpdateHeaderMessageUseCase()).execute("Start loading contents...");
         const specResult = isSatisfiedSubscriptionContentsFetchSpec(subscription);
         const app = this.repo.appRepository.get();
         if (!specResult.ok) {
@@ -65,9 +63,7 @@ export class ShowSubscriptionContentsUseCase extends UseCase {
             })
             .then(() => {
                 this.dispatch(new FinishLoadingPayload());
-                return this.context
-                    .useCase(createUpdateHeaderMessageUseCase())
-                    .executor(useCase => useCase.execute("Finish loading contents"));
+                return this.context.useCase(createUpdateHeaderMessageUseCase()).execute("Finish loading contents");
             });
     }
 }

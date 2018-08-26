@@ -13,16 +13,14 @@ export interface AuthorizePanelContainerProps {
 
 export class AuthorizePanelContainer extends BaseContainer<AuthorizePanelContainerProps, {}> {
     private onClickConnect = async (state: AuthorizeModalState) => {
-        await this.useCase(createUpdateAuthorizeUseCase()).executor(useCase =>
-            useCase.execute({
-                ...state
-            })
-        );
-        await this.useCase(createAuthInoreaderUseCase()).executor(useCase => useCase.execute());
+        await this.useCase(createUpdateAuthorizeUseCase()).execute({
+            ...state
+        });
+        await this.useCase(createAuthInoreaderUseCase()).execute();
     };
 
     private onDismiss = () => {
-        this.useCase(new DismissAppPreferenceUseCase()).executor(useCase => useCase.execute());
+        this.useCase(new DismissAppPreferenceUseCase()).execute();
     };
 
     render() {

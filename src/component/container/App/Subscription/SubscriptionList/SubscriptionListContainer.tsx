@@ -32,7 +32,7 @@ export interface SubscriptionListContainerProps {
 export class SubscriptionListContainer extends BaseContainer<SubscriptionListContainerProps, {}> {
     private groupList: GroupedList | null;
     private onClickSubscription = async (item: Subscription) => {
-        await this.useCase(createShowSubscriptionContentsUseCase()).executor(useCase => useCase.execute(item.id));
+        await this.useCase(createShowSubscriptionContentsUseCase()).execute(item.id);
     };
     private prefetchSubscriptions = async (
         currentSubscriptionId: SubscriptionIdentifier,
@@ -45,7 +45,7 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
         if (!nextItem) {
             return;
         }
-        await this.useCase(createPrefetchSubscriptContentsUseCase()).executor(useCase => useCase.execute(nextItem.id));
+        await this.useCase(createPrefetchSubscriptContentsUseCase()).execute(nextItem.id);
         return this.prefetchSubscriptions(nextItem.id, count - 1);
     };
 
@@ -55,9 +55,7 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
         const isChangedCurrentSubscriptionId = prevSubscriptionId !== currentSubscriptionId;
         if (currentSubscriptionId && isChangedCurrentSubscriptionId) {
             if (prevSubscriptionId) {
-                await this.useCase(createMarkAsReadToClientUseCase()).executor(useCase =>
-                    useCase.execute(prevSubscriptionId)
-                );
+                await this.useCase(createMarkAsReadToClientUseCase()).execute(prevSubscriptionId);
             }
             debounceScrollToSubscriptionId(currentSubscriptionId);
             // prefetch next items
@@ -65,14 +63,12 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
                 currentSubscriptionId,
                 this.props.subscriptionList.prefetchSubscriptionCount
             );
-            await this.useCase(createUpdateHeaderMessageUseCase()).executor(useCase =>
-                useCase.execute(`Complete prefetch ${this.props.subscriptionList.prefetchSubscriptionCount} items`)
+            await this.useCase(createUpdateHeaderMessageUseCase()).execute(
+                `Complete prefetch ${this.props.subscriptionList.prefetchSubscriptionCount} items`
             );
             // complete
             if (prevSubscriptionId) {
-                await this.useCase(createMarkAsReadToServerUseCase()).executor(useCase =>
-                    useCase.execute(prevSubscriptionId)
-                );
+                await this.useCase(createMarkAsReadToServerUseCase()).execute(prevSubscriptionId);
             }
         }
     }
@@ -129,7 +125,7 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
             <i className="ms-Icon ms-Icon--CollapseContentSingle" aria-hidden="true" />
         );
         const onClickGroupListLink = () => {
-            this.useCase(createToggleListGroupUseCase()).executor(useCase => useCase.execute(props.group!.key));
+            this.useCase(createToggleListGroupUseCase()).execute(props.group!.key);
         };
         return (
             <div className="SubscriptionListContainer-listHeader">

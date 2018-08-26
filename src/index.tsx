@@ -69,13 +69,13 @@ const App = AlminReactContainer.create(AppContainer, context);
 // registerServiceWorker();
 context
     .useCase(createBootSubscriptionUseCase())
-    .executor(useCase => useCase.execute(location.href))
+    .execute(location.href)
     .then(() => {
         const isAuthorizedCallback = location.search.includes("?code");
         return isAuthorizedCallback
             ? context
                   .useCase(createSaveInoreaderTokenUseCase())
-                  .executor(useCase => useCase.execute(location.href))
+                  .execute(location.href)
                   .then(token => {
                       console.log(token);
                       history.replaceState("", "", location.pathname);
@@ -93,14 +93,14 @@ context
     .then(() => {
         return context
             .useCase(createTestInoreaderAuthUseCase())
-            .executor(useCase => useCase.execute())
+            .execute()
             .catch(async error => {
-                await context.useCase(new ShowAuthorizePanelUseCase()).executor(useCase => useCase.execute());
+                await context.useCase(new ShowAuthorizePanelUseCase()).execute();
                 return Promise.reject(error);
             });
     })
     .then(() => {
-        return context.useCase(createUpdateSubscriptionsUseCase()).executor(useCase => useCase.execute());
+        return context.useCase(createUpdateSubscriptionsUseCase()).execute();
     })
     .catch(error => {
         console.error(error);

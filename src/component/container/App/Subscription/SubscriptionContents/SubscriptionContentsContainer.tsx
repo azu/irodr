@@ -102,9 +102,9 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
     element: HTMLDivElement | null;
     private onChangedToggleContentsFilter = (checked: boolean) => {
         if (checked) {
-            this.useCase(new TurnOnContentsFilterUseCase()).executor(useCase => useCase.execute());
+            this.useCase(new TurnOnContentsFilterUseCase()).execute();
         } else {
-            this.useCase(new TurnOffContentsFilterUseCase()).executor(useCase => useCase.execute());
+            this.useCase(new TurnOffContentsFilterUseCase()).execute();
         }
     };
 
@@ -114,9 +114,9 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
             return;
         }
         // disable content filter
-        this.useCase(new TurnOffContentsFilterUseCase()).executor(useCase => useCase.execute());
+        this.useCase(new TurnOffContentsFilterUseCase()).execute();
         // fetch more contents
-        this.useCase(createFetchMoreSubscriptContentsUseCase()).executor(useCase => useCase.execute(subscription.id));
+        this.useCase(createFetchMoreSubscriptContentsUseCase()).execute(subscription.id);
     };
 
     render() {
@@ -227,8 +227,7 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
                             {subscription.title}
                         </Link>
                         <span className="SubscriptionContentsContainer-subscriptionUnreadCount">
-                            ({subscription.unread.formatString + (updatedCount ? ` + ${updatedCount}` : "")}
-                            )
+                            ({subscription.unread.formatString + (updatedCount ? ` + ${updatedCount}` : "")})
                         </span>
                         {editLink}
                         <span className="SubscriptionContentsContainer-subscriptionUpdatedDate">
@@ -276,7 +275,7 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
         if (activeItemId) {
             const contentId = this.props.subscriptionContents.getContentId(activeItemId);
             if (!contentId.equals(this.props.subscriptionContents.focusContentId)) {
-                this.useCase(new FocusContentUseCase()).executor(useCase => useCase.execute(contentId));
+                this.useCase(new FocusContentUseCase()).execute(contentId);
             }
         }
     }

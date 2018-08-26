@@ -43,7 +43,7 @@ const isIgnoreNode = (event: Event): boolean => {
 const scrollByScrollSize = (target: HTMLElement, ratio: number, direction: "up" | "down") => {
     const directionOperator = direction === "down" ? 1 : -1;
     ratio = ratio || 1;
-    target.scrollBy(0, window.innerHeight / 2 * directionOperator * ratio);
+    target.scrollBy(0, (window.innerHeight / 2) * directionOperator * ratio);
 };
 
 export interface ShortcutKeyContainerProps {
@@ -76,9 +76,7 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
                 if (!firstItem) {
                     return console.info("Not found first item");
                 }
-                await this.useCase(createShowSubscriptionContentsUseCase()).executor(useCase =>
-                    useCase.execute(firstItem.id)
-                );
+                await this.useCase(createShowSubscriptionContentsUseCase()).execute(firstItem.id);
                 return;
             }
             const nextItem = this.props.subscriptionList.getNextItem(currentSubscriptionId);
@@ -86,10 +84,10 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
                 return console.info("Not found next item");
             }
             this.useCase(createShowSubscriptionContentsUseCase())
-                .executor(useCase => useCase.execute(nextItem.id))
+                .execute(nextItem.id)
                 .catch(error => {
                     return this.useCase(createUpdateHeaderMessageUseCase())
-                        .executor(useCase => useCase.execute(`Can't load... Skip ${nextItem.title}.`))
+                        .execute(`Can't load... Skip ${nextItem.title}.`)
                         .then(() => {
                             return loadNext(nextItem.id);
                         });
@@ -109,9 +107,7 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
                 if (!nextItem) {
                     return console.info("Not found next item");
                 }
-                await this.useCase(createShowSubscriptionContentsUseCase()).executor(useCase =>
-                    useCase.execute(nextItem.id)
-                );
+                await this.useCase(createShowSubscriptionContentsUseCase()).execute(nextItem.id);
             }, DEBOUNCE_TIME),
             "move-next-content-item": (_event: Event) => {
                 const body = document.querySelector(".SubscriptionContentsContainer");
@@ -121,36 +117,30 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
                 if (body.scrollTop === 0) {
                     const firstContent = this.props.subscriptionContents.getFirstContent();
                     if (firstContent) {
-                        return this.useCase(new ScrollToNextContentUseCase()).executor(useCase =>
-                            useCase.execute(firstContent.id)
-                        );
+                        return this.useCase(new ScrollToNextContentUseCase()).execute(firstContent.id);
                     }
                 }
                 const currentContent = this.props.subscriptionContents.focusContentId;
                 const nextContent = this.props.subscriptionContents.getNextContent();
                 if (currentContent && !nextContent) {
                     // last item and next
-                    return this.useCase(createUpdateHeaderMessageUseCase()).executor(useCase =>
-                        useCase.execute(
-                            <span>
-                                <MapSigns /> End of contents
-                            </span>
-                        )
+                    return this.useCase(createUpdateHeaderMessageUseCase()).execute(
+                        <span>
+                            <MapSigns /> End of contents
+                        </span>
                     );
                 }
                 if (!nextContent) {
                     return;
                 }
-                return this.useCase(new ScrollToNextContentUseCase()).executor(useCase =>
-                    useCase.execute(nextContent.id)
-                );
+                return this.useCase(new ScrollToNextContentUseCase()).execute(nextContent.id);
             },
             "move-prev-content-item": (_event: Event) => {
                 const prevContent = this.props.subscriptionContents.getPrevContent();
                 if (!prevContent) {
                     return;
                 }
-                this.useCase(new ScrollToPrevContentUseCase()).executor(useCase => useCase.execute(prevContent.id));
+                this.useCase(new ScrollToPrevContentUseCase()).execute(prevContent.id);
             },
             "scroll-down-content": (event: Event) => {
                 event.preventDefault();
@@ -172,9 +162,7 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
                 event.preventDefault();
                 const currentSubscriptionId = this.props.subscriptionList.currentSubscriptionId;
                 if (currentSubscriptionId) {
-                    this.useCase(createMarkAsReadToServerUseCase()).executor(useCase =>
-                        useCase.execute(currentSubscriptionId)
-                    );
+                    this.useCase(createMarkAsReadToServerUseCase()).execute(currentSubscriptionId);
                 }
             },
             "open-current-content-url": (event: Event) => {
@@ -184,19 +172,20 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
                 if (!currentSubscriptionId || !focusContentId) {
                     return;
                 }
-                this.useCase(createOpenSubscriptionContentInNewTabUseCase()).executor(useCase =>
-                    useCase.execute(currentSubscriptionId, focusContentId)
+                this.useCase(createOpenSubscriptionContentInNewTabUseCase()).execute(
+                    currentSubscriptionId,
+                    focusContentId
                 );
             },
             "toggle-content-filter": (_event: Event) => {
                 if (this.props.subscriptionContents.enableContentFilter) {
-                    this.useCase(new TurnOffContentsFilterUseCase()).executor(useCase => useCase.execute());
+                    this.useCase(new TurnOffContentsFilterUseCase()).execute();
                 } else {
-                    this.useCase(new TurnOnContentsFilterUseCase()).executor(useCase => useCase.execute());
+                    this.useCase(new TurnOnContentsFilterUseCase()).execute();
                 }
             },
             "toggle-subscription-feed-list": (_event: Event) => {
-                this.useCase(new ToggleAllListGroupUseCase()).executor(useCase => useCase.execute());
+                this.useCase(new ToggleAllListGroupUseCase()).execute();
             },
             "load-more-past-contents": async (_event: Event) => {
                 const subscription = this.props.subscriptionContents.subscription;
@@ -205,14 +194,10 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
                 }
                 const beforeFocusContendId = this.props.subscriptionContents.focusContentId;
                 // disable content filter
-                this.useCase(new TurnOffContentsFilterUseCase()).executor(useCase => useCase.execute());
-                this.useCase(createUpdateHeaderMessageUseCase()).executor(useCase =>
-                    useCase.execute("Load more past contents")
-                );
+                this.useCase(new TurnOffContentsFilterUseCase()).execute();
+                this.useCase(createUpdateHeaderMessageUseCase()).execute("Load more past contents");
                 // fetch more contents
-                await this.useCase(createFetchMoreSubscriptContentsUseCase()).executor(useCase =>
-                    useCase.execute(subscription.id)
-                );
+                await this.useCase(createFetchMoreSubscriptContentsUseCase()).execute(subscription.id);
                 // move next content if the user was not moved
                 if (
                     beforeFocusContendId &&
