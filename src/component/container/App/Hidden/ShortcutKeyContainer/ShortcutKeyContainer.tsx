@@ -18,6 +18,7 @@ import {
 } from "../../Subscription/SubscriptionContents/use-case/ToggleFilterContents";
 import { createFetchMoreSubscriptContentsUseCase } from "../../../../../use-case/subscription/FetchMoreSubscriptContentsUseCase";
 import { ToggleAllListGroupUseCase } from "../../Subscription/SubscriptionList/use-case/ToggleAllListGroupUseCase";
+import { createReleaseFocusSubscriptionUseCase } from "../../../../../use-case/subscription/ReleaseFocusSubscriptionUseCase";
 
 const MapSigns = require("react-icons/lib/fa/map-signs");
 
@@ -205,6 +206,15 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
                 ) {
                     actionMap["move-next-content-item"](_event);
                 }
+            },
+            "skip-and-move-next-subscription-feed": async (_event: Event) => {
+                const currentSubscriptionId = this.props.subscriptionList.currentSubscriptionId;
+                if (!currentSubscriptionId) {
+                    return;
+                }
+                await this.useCase(createUpdateHeaderMessageUseCase()).execute("Skip current subscription");
+                await this.useCase(createReleaseFocusSubscriptionUseCase()).execute();
+                await loadNext(currentSubscriptionId);
             }
         };
         return actionMap;
@@ -224,7 +234,8 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
             v: "open-current-content-url",
             z: "toggle-subscription-feed-list",
             space: "scroll-down-content",
-            "shift+space": "scroll-up-content"
+            "shift+space": "scroll-up-content",
+            "shift+s": "skip-and-move-next-subscription-feed"
         };
         Object.keys(keyMap).forEach(key => {
             this.combokeys.bind(key, (event: Event) => {

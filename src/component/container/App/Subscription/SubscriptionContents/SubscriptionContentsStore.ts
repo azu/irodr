@@ -261,7 +261,7 @@ export class SubscriptionContentsStore extends Store<SubscriptionContentsState> 
 
     receivePayload(payload: any) {
         const app = this.repo.appRepository.get();
-        const currentActivityItem = app.user.subscriptionActivity.current;
+        const currentActivityItem = app.user.subscriptionActivity.currentItem;
         if (!currentActivityItem) {
             return;
         }

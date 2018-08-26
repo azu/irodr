@@ -12,6 +12,7 @@ import { AppPreferences } from "../../../../../domain/App/Preferences/AppPrefere
 import { ToggleAllListGroupUseCasePayload } from "./use-case/ToggleAllListGroupUseCase";
 
 export interface SubscriptionListStateProps {
+    prevSubscriptionId?: SubscriptionIdentifier;
     currentSubscriptionId?: SubscriptionIdentifier;
     // group for details
     groups: IGroup[];
@@ -28,6 +29,7 @@ export interface SubscriptionListStateProps {
 }
 
 export class SubscriptionListState {
+    prevSubscriptionId?: SubscriptionIdentifier;
     currentSubscriptionId?: SubscriptionIdentifier;
     groups: IGroup[];
     groupSubscriptions: Subscription[];
@@ -41,12 +43,20 @@ export class SubscriptionListState {
     };
 
     constructor(props: SubscriptionListStateProps) {
+        this.prevSubscriptionId = props.prevSubscriptionId;
         this.currentSubscriptionId = props.currentSubscriptionId;
         this.groups = props.groups;
         this.groupSubscriptions = props.groupSubscriptions;
         this.groupIsCollapsed = props.groupIsCollapsed;
         this.prefetchSubscriptionCount = props.prefetchSubscriptionCount;
         this.categoryMap = props.categoryMap;
+    }
+
+    get isMovedFocusedSubscription() {
+        if (!this.currentSubscriptionId) {
+            return false;
+        }
+        return !this.currentSubscriptionId.equals(this.prevSubscriptionId);
     }
 
     getFirstItem(): Subscription | undefined {
@@ -83,13 +93,18 @@ export class SubscriptionListState {
         });
     }
 
-    updateCurrentSubscriptionId(currentActivityItem: AppSubscriptionActivityItem | undefined) {
+    updateCurrentSubscriptionId(
+        prevActivityItem: AppSubscriptionActivityItem | undefined,
+        currentActivityItem: AppSubscriptionActivityItem | undefined
+    ) {
+        const prevSubscriptionId = prevActivityItem ? prevActivityItem.id : undefined;
         const currentSubscriptionId = currentActivityItem ? currentActivityItem.id : undefined;
-        if (currentSubscriptionId === this.currentSubscriptionId) {
+        if (prevSubscriptionId === this.prevSubscriptionId && currentSubscriptionId === this.currentSubscriptionId) {
             return this;
         }
         return new SubscriptionListState({
             ...(this as SubscriptionListStateProps),
+            prevSubscriptionId,
             currentSubscriptionId
         });
     }
@@ -178,7 +193,7 @@ export class SubscriptionListState {
         }
     }
 
-    reduce(payload: any) {
+    reduce(payload: ToggleListGroupUseCasePayload | ToggleAllListGroupUseCasePayload) {
         if (payload instanceof ToggleListGroupUseCasePayload) {
             return new SubscriptionListState({
                 ...(this as SubscriptionListStateProps),
@@ -223,7 +238,10 @@ export class SubscriptionListStore extends Store<SubscriptionListState> {
             this.state
                 .updateCategoryMap(subscriptionGroupByCategory, subscriptionActivity)
                 .updateAppPreferences(app.preferences)
-                .updateCurrentSubscriptionId(app.user.subscriptionActivity.current)
+                .updateCurrentSubscriptionId(
+                    app.user.subscriptionActivity.previousItem,
+                    app.user.subscriptionActivity.currentItem
+                )
                 .reduce(payload)
         );
     }

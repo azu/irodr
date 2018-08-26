@@ -18,18 +18,25 @@ export class AppSubscriptionActivity {
         return this.items.slice(-RECENT).some(item => subscriptionId.equals(item.id));
     }
 
-    get current(): AppSubscriptionActivityItem | undefined {
-        return this.items[this.items.length - 1];
+    get previousItem(): AppSubscriptionActivityItem | undefined {
+        return this.items[this.items.length - 2];
     }
 
-    get currentId(): SubscriptionIdentifier | undefined {
-        return this.current ? this.current.id : undefined;
+    get currentItem(): AppSubscriptionActivityItem | undefined {
+        return this.items[this.items.length - 1];
     }
 
     addItem(item: AppSubscriptionActivityItem) {
         return new AppSubscriptionActivity({
             ...(this as AppSubscriptionActivityArgs),
             items: this.items.concat(item)
+        });
+    }
+
+    removeCurrentItem() {
+        return new AppSubscriptionActivity({
+            ...(this as AppSubscriptionActivityArgs),
+            items: this.items.slice(0, -1)
         });
     }
 }
