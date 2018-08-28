@@ -99,7 +99,7 @@ export function getActiveContentIdString(): string | undefined {
 }
 
 export class SubscriptionContentsContainer extends BaseContainer<SubscriptionContentsContainerProps, {}> {
-    element: HTMLDivElement | null;
+    containerDivRef: React.RefObject<HTMLDivElement> = React.createRef();
     private onChangedToggleContentsFilter = (checked: boolean) => {
         if (checked) {
             this.useCase(new TurnOnContentsFilterUseCase()).execute();
@@ -135,7 +135,7 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
             .map((content, index) => this.makeContent(content, index));
         return (
             <div
-                ref={c => (this.element = c)}
+                ref={this.containerDivRef}
                 className={classnames("SubscriptionContentsContainer", this.props.className)}
             >
                 <ProgressColorBar
@@ -168,23 +168,23 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
     }
 
     componentDidMount() {
-        if (this.element) {
-            this.element.scrollTo(0, 0);
+        if (this.containerDivRef.current) {
+            this.containerDivRef.current.scrollTo(0, 0);
         }
     }
 
     componentDidUpdate(prevProps: SubscriptionContentsContainerProps) {
         if (!prevProps.subscriptionContents.subscription && this.props.subscriptionContents.subscription) {
-            if (this.element) {
-                this.element.scrollTo(0, 0);
+            if (this.containerDivRef.current) {
+                this.containerDivRef.current.scrollTo(0, 0);
             }
         }
         if (
             prevProps.subscriptionContents.subscription &&
             !prevProps.subscriptionContents.subscription.equals(this.props.subscriptionContents.subscription)
         ) {
-            if (this.element) {
-                this.element.scrollTo(0, 0);
+            if (this.containerDivRef.current) {
+                this.containerDivRef.current.scrollTo(0, 0);
             }
             this.onContentChange();
         }
@@ -192,7 +192,10 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
         if (scrollContentId && prevProps.subscriptionContents.scrollContentId !== scrollContentId) {
             this.scrollToContentId(scrollContentId);
         }
-        this.updateCurrentFocus();
+        // Avoid to Warning: Lifecycle hook scheduled a cascading update
+        requestAnimationFrame(() => {
+            this.updateCurrentFocus();
+        });
     }
 
     private makeHeaderContent(subscription?: Subscription) {
@@ -253,13 +256,13 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
     }
 
     private onContentChange() {
-        if (this.element) {
+        if (this.containerDivRef.current) {
             const observer = new IntersectionObserver(
                 entries => {
                     this.updateCurrentFocus();
                 },
                 {
-                    root: this.element,
+                    root: this.containerDivRef.current,
                     rootMargin: "10px",
                     threshold: [0, 0.1, 0.2, 0.4, 0.6, 0.8, 0.9, 1.0]
                 }
