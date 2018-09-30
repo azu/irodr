@@ -26,7 +26,7 @@ This RSS reader provide a similar experience to [LDR](http://reader.livedoor.com
 ### Keyboard Shortcut 
 
 - <kbd>j</kbd>: move-next-content-item
-- <kbd>shift</kbd>+<kbd>j</kdb>: load-more-past-contents
+- <kbd>shift</kbd>+<kbd>j</kbd>: load-more-past-contents
 - <kbd>t</kbd>: toggle-content-filter
 - <kbd>k</kbd>: move-prev-content-item
 - <kbd>a</kbd>: move-prev-subscription-feed
