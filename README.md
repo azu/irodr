@@ -13,7 +13,7 @@ This RSS reader provide a similar experience to [LDR](http://reader.livedoor.com
     - [x] Mark as "read" on idle time
 - [x] Keyboard Shortcut
 - [x] Customizable by UserScript
-    - [x] We will provide some API like `window.getActiveItem` for UserScript.
+    - [x] Provide [UserScript API](src/component/container/App/Hidden/UserScript) like `window.getActiveItem`
 
 ## Usage
 
