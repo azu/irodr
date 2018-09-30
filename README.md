@@ -13,8 +13,6 @@ This RSS reader provide a similar experience to [LDR](http://reader.livedoor.com
     - [x] Mark as "read" on idle time
 - [x] Customizable by UserScript
     - [x] We will provide some API like `window.getActiveItem` for UserScript.
-- [ ] Allow to use other RSS reader API like Feedly
-    - Domain model should not depended on Inoreader
 
 ## Usage
 
