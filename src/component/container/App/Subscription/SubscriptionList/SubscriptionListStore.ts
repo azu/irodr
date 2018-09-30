@@ -124,11 +124,8 @@ export class SubscriptionListState {
                 if (subscription.hasUnreadContents) {
                     return true;
                 }
-                // current subscription
-                if (subscriptionActivity.isReadRecently(subscription.id)) {
-                    return true;
-                }
-                return false;
+                // current subscription is read recently?
+                return subscriptionActivity.isReadRecently(subscription.id);
             });
             groupSubscriptions = groupSubscriptions.concat(readableSubscriptions);
             if (this.groupIsCollapsed[categoryName] === undefined) {

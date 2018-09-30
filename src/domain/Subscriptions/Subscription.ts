@@ -100,8 +100,23 @@ export class Subscription extends Entity<SubscriptionIdentifier> {
         return `Subscription(${this.id.toValue()})`;
     }
 
+    get hasBeenRead(): boolean {
+        return !this.hasUnreadContents;
+    }
+
     get hasUnreadContents(): boolean {
         return this.unread.count > 0;
+    }
+
+    /**
+     * It has prefetch contents but they are not read.
+     */
+    get hasBeenUnreadAndHasContents(): boolean {
+        return (
+            this.hasUnreadContents &&
+            this.contents.hasContent &&
+            this.contents.lastUpdatedTimestamp.compare(">=", this.unread.readTimestamp)
+        );
     }
 
     readAll() {

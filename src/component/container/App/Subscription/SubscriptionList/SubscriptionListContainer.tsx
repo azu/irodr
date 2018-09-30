@@ -97,24 +97,30 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
         );
     }
 
-    private _onRenderCell = (nestingDepth: number, item: Subscription, itemIndex: number) => {
+    private _onRenderCell = (nestingDepth: number, subscription: Subscription, itemIndex: number) => {
         const onClick = () => {
-            this.onClickSubscription(item);
+            this.onClickSubscription(subscription);
         };
-        const isCurrentItem = item.id.equals(this.props.subscriptionList.currentSubscriptionId);
+        const isCurrentItem = subscription.id.equals(this.props.subscriptionList.currentSubscriptionId);
         return (
             <div
                 data-selection-index={itemIndex}
                 className={classnames("SubscriptionListContainer-item", {
                     "is-currentItem": isCurrentItem,
-                    "has-contents": item.contents.hasContent
+                    "has-unreadContents": subscription.hasBeenUnreadAndHasContents,
+                    "has-read": subscription.hasBeenRead
                 })}
                 onClick={onClick}
-                data-feedid={item.id.toValue()}
+                data-feedid={subscription.id.toValue()}
             >
-                <img className="SubscriptionListContainer-itemImage" src={item.iconUrl} width={16} height={16} />
+                <img
+                    className="SubscriptionListContainer-itemImage"
+                    src={subscription.iconUrl}
+                    width={16}
+                    height={16}
+                />
                 <Link className="SubscriptionListContainer-itemLink">
-                    {item.title} ({item.unread.count})
+                    {subscription.title} ({subscription.unread.count})
                 </Link>
             </div>
         );
