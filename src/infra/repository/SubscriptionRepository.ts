@@ -3,6 +3,8 @@ import { Subscription } from "../../domain/Subscriptions/Subscription";
 import { NullableRepository } from "ddd-base";
 import { splice } from "@immutable-array/prototype";
 
+const UncategorizedName = "Uncategorized";
+
 export class SubscriptionRepository extends NullableRepository<Subscription> {
     // Why not Map
     // Built-in Map is difficult to be immutable
@@ -35,6 +37,14 @@ export class SubscriptionRepository extends NullableRepository<Subscription> {
 
     save(aSubscription: Subscription) {
         super.save(aSubscription);
+        if (aSubscription.categories.length === 0) {
+            // Map empty categories to "Uncategorized"
+            this.categoryMap = {
+                ...this.categoryMap,
+                [UncategorizedName]: [aSubscription]
+            };
+            return;
+        }
         aSubscription.categories.forEach(category => {
             if (this.categoryMap[category] !== undefined) {
                 const subscriptions = this.categoryMap[category];
