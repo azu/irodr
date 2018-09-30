@@ -11,6 +11,7 @@ This RSS reader provide a similar experience to [LDR](http://reader.livedoor.com
 - [x] Fast read RSS like [LDR](http://reader.livedoor.com/)
     - [x] Prefetch contents
     - [x] Mark as "read" on idle time
+- [x] Keyboard Shortcut
 - [x] Customizable by UserScript
     - [x] We will provide some API like `window.getActiveItem` for UserScript.
 
@@ -21,6 +22,21 @@ This RSS reader provide a similar experience to [LDR](http://reader.livedoor.com
 1. Open <https://irodr.netlify.com/>
 2. Click **Connect to Inoreader**
 3. Click **Authorize** on Inoreader site
+
+### Keyboard Shortcut 
+
+- <kbd>j</kbd>: move-next-content-item
+- <kbd>shift</kbd>+<kbd>j</kdb>: load-more-past-contents
+- <kbd>t</kbd>: toggle-content-filter
+- <kbd>k</kbd>: move-prev-content-item
+- <kbd>a</kbd>: move-prev-subscription-feed
+- <kbd>s</kbd>: move-next-subscription-feed
+- <kbd>m</kbd>: make-subscription-read
+- <kbd>v</kbd>: open-current-content-url
+- <kbd>z</kbd>: toggle-subscription-feed-list
+- <kbd>space</kbd>: scroll-down-content
+- <kbd>shift</kbd>+<kbd>space</kdb>: scroll-up-content
+- <kbd>shift</kbd>+<kbd>s</kdb>": skip-and-move-next-subscription-feed
 
 ### Custom Client Id and Client Secret
 
