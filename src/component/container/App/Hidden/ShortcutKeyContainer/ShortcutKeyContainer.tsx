@@ -221,7 +221,7 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
     })();
 
     componentDidMount() {
-        this.combokeys = new Combokeys(document.documentElement);
+        this.combokeys = new Combokeys(document.documentElement || document.body);
         const actionMap = this.defaultActions;
         const keyMap: { [index: string]: keyof typeof actionMap } = {
             j: "move-next-content-item",

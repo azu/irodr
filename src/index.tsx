@@ -59,7 +59,6 @@ const context = new Context({
 });
 appLocator.context = context;
 if (process.env.NODE_ENV !== "production") {
-    console.clear();
     console.info("env", process.env);
     const { AlminLogger } = require("almin-logger");
     const logger = new AlminLogger();
@@ -77,7 +76,6 @@ context
                   .useCase(createSaveInoreaderTokenUseCase())
                   .execute(location.href)
                   .then(token => {
-                      console.log(token);
                       history.replaceState("", "", location.pathname);
                   })
             : Promise.resolve();

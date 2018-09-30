@@ -74,7 +74,7 @@ export class AuthorizeModal extends React.Component<AuthorizePanelProps, Authori
                         Connect to Inoreader
                     </CompoundButton>
                 </div>
-                <p>If you want to use your Client ID/Secret, Please input following.</p>
+                <p>If you want to use your Client ID/Secret, please change following fields.</p>
                 <TextField
                     className="AuthorizeModal-clientId"
                     label="Inoreader App Client Id"

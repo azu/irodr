@@ -2,27 +2,25 @@
 
 RSS reader client for [Inoreader](http://www.inoreader.com/ "Inoreader").
 
-It aim to work on browser/electron.
+This RSS reader provide a similar experience to [LDR](http://reader.livedoor.com/). 
 
-![screenshot](https://media.giphy.com/media/3ohhwrVKv3HfkVlAAg/giphy.gif)
+![Screen Shot](https://media.giphy.com/media/3ohhwrVKv3HfkVlAAg/giphy.gif)
 
 ## Purpose
 
-- Fast read
+- [x] Fast read RSS like [LDR](http://reader.livedoor.com/)
     - [x] Prefetch contents
-    - [x] Mark as "read" at idle time
-- Customizable by UserScript
+    - [x] Mark as "read" on idle time
+- [x] Customizable by UserScript
     - [x] We will provide some API like `window.getActiveItem` for UserScript.
-- Allow of other RSS reader API like Feedly
+- [ ] Allow of other RSS reader API like Feedly
     - Domain model should not depended on Inoreader
-- Welcome to Pull Request!
 
 ## Usage
 
-1. Open http://irodr.netlify.com/
-2. Redirect to Inoreader auth page
-3. Authorize if you want to use inoreader
-4. Load your feed!
+1. Open <https://irodr.netlify.com/>
+2. Click **Connect to Inoreader**
+3. Click **Authorize** on Inoreader site
 
 ### Custom OAuth Client Id/Client Secret
 
@@ -42,7 +40,6 @@ You paste the Client ID and secret to Irodr Authorization.
 
 ![Irodr Authorization](https://monosnap.com/file/ki0yNr9jfRu9TBHvHxrrLOH78w8JyY.png) 
 
-
 ## UserScript API
 
 Irodr provide some UserScript API for UserScript like Greasemonkey.
@@ -53,6 +50,7 @@ Irodr provide some UserScript API for UserScript like Greasemonkey.
 - `window.userScript.triggerKey(keys: string, action?: string): void`
 
 For more details, see [UserScript API document](src/component/container/App/Hidden/UserScript).
+See also [resources/userScript](./resources/userScript) directory.__
 
 ## :memo: Notes
 
@@ -69,7 +67,7 @@ For more details, see [UserScript API document](src/component/container/App/Hidd
 Run following command and open local server.
 
     npm start
-    open http://localhost:13245/
+    # open http://localhost:13245/
 
 
 ### :memo: CORS workaround
@@ -87,15 +85,10 @@ This project use the server that avoid CORS for Inoreader.
 
     npm start
 
-#### Browser extension
+### :memo: Limitation of Mixed-content
 
-- [ ] Chrome/Firefox browser extension for avoiding CORS
-- [ ] <https://github.com/azu/irodr/issues/11>
-
-### :memo: Mixed-content
-
-http://irodr.netlify.com/ is also https://irodr.netlify.com/ 
-But, `https` can not embed http content by mixed-content rule.
+A browser show a warning  on https://irodr.netlify.com/
+It is caused by Mixed content.
 
 - [Mixed content - Web security | MDN](https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content "Mixed content - Web security | MDN")
 

@@ -28,9 +28,9 @@
     "@types/react-dom": "^16.0.2",
     "@types/sanitize-html": "^1.18.0",
     "@uifabric/icons": "^5.4.0",
-    "almin": "^0.18.0",
-    "almin-logger": "^6.2.2",
-    "almin-react-container": "^0.7.2",
+    "almin": "^0.18.1",
+    "almin-logger": "^6.2.3",
+    "almin-react-container": "^0.7.3",
     "classnames": "^2.2.5",
     "client-oauth2": "^4.1.0",
     "combokeys": "^3.0.0",
@@ -60,8 +60,6 @@
     "ulid": "^2.3.0"
   },
   "scripts": {
-    "precommit": "lint-staged",
-    "postcommit": "git reset",
     "prettier": "prettier --write '{src,resources}/**/*.{css,js,ts,tsx}'",
     "start": "PORT=13245 react-scripts-ts start",
     "build": "react-scripts-ts build && react-snap",
@@ -93,12 +91,18 @@
   "devDependencies": {
     "@alrra/travis-scripts": "^3.0.1",
     "dotenv-cli": "^1.4.0",
-    "husky": "^0.14.3",
-    "lint-staged": "^7.1.0",
-    "prettier": "^1.12.1",
-    "pwmetrics": "^3.1.6",
-    "react-scripts-ts": "2.17.0",
+    "husky": "^1.0.1",
+    "lint-staged": "^7.3.0",
+    "prettier": "^1.14.3",
+    "pwmetrics": "^4.0.1",
+    "react-scripts-ts": "3.1.0",
     "react-snap": "^1.10.1",
-    "typescript": "^3.0.1"
+    "typescript": "^3.1.1"
+  },
+  "husky": {
+    "hooks": {
+      "post-commit": "git reset",
+      "pre-commit": "lint-staged"
+    }
   }
 }
