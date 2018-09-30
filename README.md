@@ -4,7 +4,7 @@ RSS reader client for [Inoreader](http://www.inoreader.com/ "Inoreader").
 
 This RSS reader provide a similar experience to [LDR](http://reader.livedoor.com/). 
 
-![Screen Shot](https://media.giphy.com/media/3ohhwrVKv3HfkVlAAg/giphy.gif)
+![Screen Shot](./docs/img/irodr-behavior.gif)
 
 ## Purpose
 
@@ -17,6 +17,8 @@ This RSS reader provide a similar experience to [LDR](http://reader.livedoor.com
     - Domain model should not depended on Inoreader
 
 ## Usage
+
+![login gif](./docs/img/login-irodr.gif)
 
 1. Open <https://irodr.netlify.com/>
 2. Click **Connect to Inoreader**
