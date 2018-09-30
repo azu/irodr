@@ -24,9 +24,9 @@ This RSS reader provide a similar experience to [LDR](http://reader.livedoor.com
 2. Click **Connect to Inoreader**
 3. Click **Authorize** on Inoreader site
 
-### Custom OAuth Client Id/Client Secret
+### Custom Client Id and Client Secret
 
-If you want to your Client ID/Secret, do following steps
+If you want to your Client ID/Secret of inoreader, do following steps:
 
 1. Visit https://www.inoreader.com/
 2. Open "Preferences"
@@ -52,7 +52,7 @@ Irodr provide some UserScript API for UserScript like Greasemonkey.
 - `window.userScript.triggerKey(keys: string, action?: string): void`
 
 For more details, see [UserScript API document](src/component/container/App/Hidden/UserScript).
-See also [resources/userScript](./resources/userScript) directory.__
+See also [resources/userScript](./resources/userScript) directory.
 
 ## :memo: Notes
 
