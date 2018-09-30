@@ -36,7 +36,7 @@ This RSS reader provide a similar experience to [LDR](http://reader.livedoor.com
 - <kbd>z</kbd>: toggle-subscription-feed-list
 - <kbd>space</kbd>: scroll-down-content
 - <kbd>shift</kbd>+<kbd>space</kbd>: scroll-up-content
-- <kbd>shift</kbd>+<kbd>s</kbd>": skip-and-move-next-subscription-feed
+- <kbd>shift</kbd>+<kbd>s</kbd>: skip-and-move-next-subscription-feed
 
 ### Custom Client Id and Client Secret
 
