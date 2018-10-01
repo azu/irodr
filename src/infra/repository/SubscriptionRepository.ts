@@ -37,16 +37,8 @@ export class SubscriptionRepository extends NullableRepository<Subscription> {
 
     save(aSubscription: Subscription) {
         super.save(aSubscription);
-        if (aSubscription.categories.length === 0) {
-            // Map empty categories to "Uncategorized"
-            const subscriptions = this.categoryMap[UncategorizedName] || [];
-            this.categoryMap = {
-                ...this.categoryMap,
-                [UncategorizedName]: subscriptions.concat(aSubscription)
-            };
-            return;
-        }
-        aSubscription.categories.forEach(category => {
+        const categories = aSubscription.categories.length > 0 ? aSubscription.categories : [UncategorizedName];
+        categories.forEach(category => {
             if (this.categoryMap[category] !== undefined) {
                 const subscriptions = this.categoryMap[category];
                 const index = subscriptions.findIndex(subscription => subscription.equals(aSubscription));
