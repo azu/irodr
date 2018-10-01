@@ -159,7 +159,7 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
                     <div
                         className="SubscriptionContentsContainer-footerPadding"
                         style={{
-                            height: 1000
+                            height: 2000
                         }}
                     />
                 </footer>
