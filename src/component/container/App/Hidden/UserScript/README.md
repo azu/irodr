@@ -4,9 +4,9 @@ This handle public API for UserScripts like Greasemonkey, browser's extension.
 
 ## `"userscript-init"` event
 
-irodr dispatch `"userscript-init"` event to `window` object when irodr have finished initialized.
+irodr dispatch `"userscript-init"` event to `window` object when irodr have been finished initialazation.
 
-You should listen the `"userscript-init"` event before invoke `window.userScript.*` API.
+You have to listen the `"userscript-init"` event before invoke `window.userScript.*` API.
 
 ```js
 window.addEventListener("userscript-init", (event) => {
