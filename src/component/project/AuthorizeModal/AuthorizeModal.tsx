@@ -64,11 +64,11 @@ export class AuthorizeModal extends React.Component<AuthorizePanelProps, Authori
                         <li>
                             Click <b>Authorize on Inoreader site</b>
                         </li>
-                        <li>You can read RSS if success!</li>
+                        <li>You can read RSS if it is success!</li>
                     </ol>
                     <CompoundButton
                         className="AuthorizePanel-authorizeButton"
-                        description="You can Connect to Inoreader here."
+                        description="You should login to Inoreader"
                         onClick={this.onClickConnect}
                     >
                         Connect to Inoreader
