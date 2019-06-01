@@ -120,7 +120,8 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
                     height={16}
                 />
                 <Link className="SubscriptionListContainer-itemLink">
-                    {subscription.title} ({subscription.unread.count})
+                    {subscription.title.length > 40 ? subscription.title.slice(0, 40) + "…" : subscription.title} (
+                    {subscription.unread.count})
                 </Link>
             </div>
         );

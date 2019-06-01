@@ -46,8 +46,4 @@
 .SubscriptionListContainer-itemLink {
     padding: 0 4px;
     width: 100%;
-    /* ellipsis long text */
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
