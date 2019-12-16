@@ -32,7 +32,7 @@
     "almin-logger": "^6.2.3",
     "almin-react-container": "^0.7.3",
     "classnames": "^2.2.5",
-    "client-oauth2": "^4.1.0",
+    "client-oauth2": "^4.2.5",
     "combokeys": "^3.0.0",
     "date-fns": "^1.29.0",
     "ddd-base": "^0.3.1",
@@ -77,24 +77,24 @@
   },
   "proxy": {
     "/cors": {
-      "target": "https://www.inoreader.com",
+      "target": "https://jp.inoreader.com/",
       "pathRewrite": {
         "^/cors": ""
       },
       "changeOrigin": true
     },
     "/api": {
-      "target": "https://www.inoreader.com/reader",
+      "target": "https://jp.inoreader.com/reader",
       "changeOrigin": true
     }
   },
   "devDependencies": {
     "@alrra/travis-scripts": "^3.0.1",
-    "dotenv-cli": "^1.4.0",
-    "husky": "^1.0.1",
-    "lint-staged": "^7.3.0",
-    "prettier": "^1.14.3",
-    "pwmetrics": "^4.0.1",
+    "dotenv-cli": "^3.1.0",
+    "husky": "^3.1.0",
+    "lint-staged": "^9.5.0",
+    "prettier": "^1.19.1",
+    "pwmetrics": "^4.2.2",
     "react-scripts-ts": "3.1.0",
     "react-snap": "^1.10.1",
     "typescript": "^3.1.1"
