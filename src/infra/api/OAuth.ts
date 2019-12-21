@@ -48,11 +48,11 @@ export class OAuth {
     }
 
     getToken = () => {
-        const savedTokenJSON = this.loadToken();
-        if (!savedTokenJSON) {
-            return Promise.reject(new Error("Token is not found"));
-        }
         try {
+            const savedTokenJSON = this.loadToken();
+            if (!savedTokenJSON) {
+                return Promise.reject(new Error("Token is not found"));
+            }
             const token = this.getAuth().createToken(
                 savedTokenJSON.accessToken,
                 savedTokenJSON.refreshToken,
