@@ -99,11 +99,11 @@ export class InoreaderAPI {
         return this.getRequest("/api/0/subscription/list")
             .then(res => {
                 debug("subscriptions:response", res);
-                return res.json();
+                return res.text();
             })
-            .then(function(res: SubscriptionsResponse) {
+            .then(function(res: string) {
                 debug("subscriptions:response.json", res);
-                return res;
+                return JSON.parse(res);
             });
     }
 
