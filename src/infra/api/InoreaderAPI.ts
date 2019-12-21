@@ -55,8 +55,7 @@ export class InoreaderAPI {
                 });
                 return fetch(requestObject.url, {
                     method: requestObject.method,
-                    headers: headers,
-                    credentials: "include"
+                    headers: headers
                 });
             })
             .catch(error => {
@@ -99,19 +98,27 @@ export class InoreaderAPI {
         return this.getRequest("/api/0/subscription/list")
             .then(res => {
                 debug("subscriptions:response", res);
+                // FIXME: res.json() throw DOMException. ?
+                // https://twitter.com/azu_re/status/1208285220949987328
                 return res.text();
             })
             .then(function(res: string) {
-                debug("subscriptions:response.json", res);
-                return JSON.parse(res);
+                const json = JSON.parse(res);
+                debug("subscriptions:response.json", json);
+                return json;
             });
     }
 
     unreadCounts(): Promise<UnreadCountsResponse> {
         return this.getRequest("/api/0/unread-count")
-            .then(res => res.json())
-            .then(function(res: UnreadCountsResponse) {
-                return res;
+            .then(res => {
+                debug("unreadCounts:response", res);
+                return res.text();
+            })
+            .then(function(res: string) {
+                const json = JSON.parse(res);
+                debug("unreadCounts:response.json", json);
+                return json;
             });
     }
 
