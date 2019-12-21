@@ -8,6 +8,7 @@ import { stringify } from "querystring";
 import { InoreaderAuthority } from "../../domain/App/Authority/InoreaderAuthority";
 import { OAuth } from "./OAuth";
 
+const debug = require("debug")("irodr:InoreaderAPI");
 const baseURL = process.env.REACT_APP_INOREADER_API_BASE_URL;
 
 export class InoreaderAPI {
@@ -52,7 +53,11 @@ export class InoreaderAPI {
             });
             return fetch(requestObject.url, {
                 method: requestObject.method,
-                headers: headers
+                headers: headers,
+                credentials: "include"
+            }).catch(error => {
+                debug("Fetch Error", error);
+                return Promise.reject(error);
             });
         });
     }
