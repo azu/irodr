@@ -50,4 +50,3 @@ unsafeWindow.fetch = (input, init = {}) => {
         );
     });
 };
-console.log("window.fetch ", unsafeWindow.fetch);
