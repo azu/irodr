@@ -40,26 +40,28 @@ export class InoreaderAPI {
     }
 
     getRequest(apiPath: string, parameters?: { [index: string]: any }): Promise<Response> {
-        return this.getToken().then(token => {
-            // Sign API requests on behalf of the current user.
-            const query = parameters ? `?${stringify(parameters)}` : "";
-            const requestObject = token.sign({
-                method: "get",
-                url: this.baseURL + apiPath + query
-            });
-            const headers = new Headers();
-            Object.keys((requestObject as any).headers).forEach(key => {
-                headers.append(key, (requestObject as any).headers[key]);
-            });
-            return fetch(requestObject.url, {
-                method: requestObject.method,
-                headers: headers,
-                credentials: "include"
-            }).catch(error => {
+        return this.getToken()
+            .then(token => {
+                // Sign API requests on behalf of the current user.
+                const query = parameters ? `?${stringify(parameters)}` : "";
+                const requestObject = token.sign({
+                    method: "get",
+                    url: this.baseURL + apiPath + query
+                });
+                const headers = new Headers();
+                Object.keys((requestObject as any).headers).forEach(key => {
+                    headers.append(key, (requestObject as any).headers[key]);
+                });
+                return fetch(requestObject.url, {
+                    method: requestObject.method,
+                    headers: headers,
+                    credentials: "include"
+                });
+            })
+            .catch(error => {
                 debug("Fetch Error", error);
                 return Promise.reject(error);
             });
-        });
     }
 
     postRequest<T>(apiPath: string, body: object): Promise<T> {
