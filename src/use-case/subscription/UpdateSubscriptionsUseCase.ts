@@ -8,6 +8,7 @@ import { createSubscriptionsFromResponses } from "../../domain/Subscriptions/Sub
 import { repositoryContainer } from "../../infra/repository/RepositoryContainer";
 import { AppRepository } from "../../infra/repository/AppRepository";
 
+const debug = require("debug")("irodr:UpdateSubscriptionsUseCase");
 export const createUpdateSubscriptionsUseCase = () => {
     return new UpdateSubscriptionsUseCase(repositoryContainer.get());
 };
@@ -28,8 +29,14 @@ export class UpdateSubscriptionsUseCase extends UseCase {
             return;
         }
         const client = new InoreaderAPI(app.user.authority);
-        const subscriptionsResponsePromise = client.subscriptions();
-        const unreadCountsResponsePromise = client.unreadCounts();
+        const subscriptionsResponsePromise = client.subscriptions().catch(error => {
+            debug("client.subscriptions() error", error);
+            return Promise.reject(error);
+        });
+        const unreadCountsResponsePromise = client.unreadCounts().catch(error => {
+            debug("client.unreadCounts() error", error);
+            return Promise.reject(error);
+        });
         return Promise.all([subscriptionsResponsePromise, unreadCountsResponsePromise]).then(
             ([newSubscriptionsResponse, newUnreadCountsResponse]: [SubscriptionsResponse, UnreadCountsResponse]) => {
                 const subscriptions = createSubscriptionsFromResponses(
