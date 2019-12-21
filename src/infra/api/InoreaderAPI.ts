@@ -97,7 +97,10 @@ export class InoreaderAPI {
 
     subscriptions(): Promise<SubscriptionsResponse> {
         return this.getRequest("/api/0/subscription/list")
-            .then(res => res.json())
+            .then(res => {
+                debug("res", res);
+                return res.json();
+            })
             .then(function(res: SubscriptionsResponse) {
                 return res;
             });
