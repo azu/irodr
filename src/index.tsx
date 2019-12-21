@@ -41,7 +41,10 @@ requireAll((require as any).context("./", true, /\.css$/));
                 state: "inoreader"
             })
         );
-        client.getRequest(api).then(response => console.log(response), error => console.error(error));
+        client.getRequest(api).then(
+            response => console.log(response),
+            error => console.error(error)
+        );
     },
     appStoreGroup,
     get repository() {
@@ -58,7 +61,7 @@ const context = new Context({
     }
 });
 appLocator.context = context;
-if (process.env.NODE_ENV !== "production") {
+if (process.env.NODE_ENV !== "production" || /[?&]almin_logger\b/.test(location.href)) {
     console.info("env", process.env);
     const { AlminLogger } = require("almin-logger");
     const logger = new AlminLogger();
