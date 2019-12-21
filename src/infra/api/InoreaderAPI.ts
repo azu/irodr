@@ -103,6 +103,7 @@ export class InoreaderAPI {
                 return res.text();
             })
             .then(function(res: string) {
+                debug("subscriptions:response.text", res);
                 const json = JSON.parse(res);
                 debug("subscriptions:response.json", json);
                 return json;
@@ -116,6 +117,7 @@ export class InoreaderAPI {
                 return res.text();
             })
             .then(function(res: string) {
+                debug("unreadCounts:response.text", res);
                 const json = JSON.parse(res);
                 debug("unreadCounts:response.json", json);
                 return json;
