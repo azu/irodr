@@ -100,7 +100,33 @@ export class InoreaderAPI {
                 debug("subscriptions:response", res);
                 // FIXME: res.json() throw DOMException. ?
                 // https://twitter.com/azu_re/status/1208285220949987328
-                return res.text();
+                // return res.text();
+                const reader = res.body?.getReader();
+                if (!reader) {
+                    return "";
+                }
+                const textDecoder = new TextDecoder();
+                return new Promise(function(resolve, reject) {
+                    const chunks: string[] = [];
+                    const readNextChunk = function() {
+                        reader
+                            .read()
+                            .then(function(result) {
+                                if (result.done) {
+                                    //Note: bytes in textDecoder are ignored
+                                    resolve(chunks.join(""));
+                                } else {
+                                    const chunk = textDecoder.decode(result.value, { stream: true });
+                                    chunks.push(chunk);
+                                    readNextChunk();
+                                }
+                            })
+                            .catch(function(error) {
+                                reject(error);
+                            });
+                    };
+                    readNextChunk();
+                }) as Promise<string>;
             })
             .then(function(res: string) {
                 debug("subscriptions:response.text", res);
@@ -113,8 +139,36 @@ export class InoreaderAPI {
     unreadCounts(): Promise<UnreadCountsResponse> {
         return this.getRequest("/api/0/unread-count")
             .then(res => {
-                debug("unreadCounts:response", res);
-                return res.text();
+                debug("subscriptions:response", res);
+                // FIXME: res.json() throw DOMException. ?
+                // https://twitter.com/azu_re/status/1208285220949987328
+                // return res.text();
+                const reader = res.body?.getReader();
+                if (!reader) {
+                    return "";
+                }
+                const textDecoder = new TextDecoder();
+                return new Promise(function(resolve, reject) {
+                    const chunks: string[] = [];
+                    const readNextChunk = function() {
+                        reader
+                            .read()
+                            .then(function(result) {
+                                if (result.done) {
+                                    //Note: bytes in textDecoder are ignored
+                                    resolve(chunks.join(""));
+                                } else {
+                                    const chunk = textDecoder.decode(result.value, { stream: true });
+                                    chunks.push(chunk);
+                                    readNextChunk();
+                                }
+                            })
+                            .catch(function(error) {
+                                reject(error);
+                            });
+                    };
+                    readNextChunk();
+                }) as Promise<string>;
             })
             .then(function(res: string) {
                 debug("unreadCounts:response.text", res);
