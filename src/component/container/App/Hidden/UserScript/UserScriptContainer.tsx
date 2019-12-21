@@ -24,16 +24,17 @@ export interface UserScriptActiveSubscription {
     htmlUrl: string;
 }
 
-export interface UserScriptWindow extends Window {
-    userScript: {
-        getActiveContent(): UserScriptActiveContent | undefined;
-        getActiveSubscription(): UserScriptActiveSubscription | undefined;
-        triggerKey(keys: string, action?: string): void;
-        registerKey(keys: string, handler: (event?: Event) => void): void;
-        getDefaultActions: () => any;
-        event: UserScriptEvent;
+export type UserScriptWindow = typeof globalThis &
+    Window & {
+        userScript: {
+            getActiveContent(): UserScriptActiveContent | undefined;
+            getActiveSubscription(): UserScriptActiveSubscription | undefined;
+            triggerKey(keys: string, action?: string): void;
+            registerKey(keys: string, handler: (event?: Event) => void): void;
+            getDefaultActions: () => any;
+            event: UserScriptEvent;
+        };
     };
-}
 
 export interface UserScriptContainerProps {
     shortcutKey: ShortcutKeyContainer | null;

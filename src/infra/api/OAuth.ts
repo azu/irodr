@@ -1,6 +1,6 @@
 // MIT © 2017 azu
 
-import * as ClientOAuth2 from "client-oauth2";
+import ClientOAuth2 from "client-oauth2";
 import { Token } from "client-oauth2";
 
 const addLasSlash = (str: string) => {

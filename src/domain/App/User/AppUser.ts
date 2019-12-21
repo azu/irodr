@@ -51,6 +51,7 @@ export class AppUser extends Entity<AppUserIdentifier> {
 
     constructor(args: AppUserArgs) {
         super(args.id);
+        this.id = args.id;
         this.isMachine = args.isMachine;
         this.authority = args.authority;
         this.subscriptionActivity = args.subscriptionActivity;

@@ -12,14 +12,19 @@ export interface ObserverContainerProps {
 
 export class ObserverContainer extends BaseContainer<ObserverContainerProps, {}> {
     timeScheduler: TimeScheduler;
+
+    constructor(props: ObserverContainerProps) {
+        super(props);
+        const AUTO_UPDATE_INTERVAL = 1000 * this.props.appPreferences.autoRefreshSubscriptionSec;
+        this.timeScheduler = new TimeScheduler(this.onIntervalWork, AUTO_UPDATE_INTERVAL);
+    }
+
     onIntervalWork = () => {
         debug("try auto-reload");
         this.useCase(createUpdateSubscriptionsUseCase()).execute();
     };
 
     componentDidMount() {
-        const AUTO_UPDATE_INTERVAL = 1000 * this.props.appPreferences.autoRefreshSubscriptionSec;
-        this.timeScheduler = new TimeScheduler(this.onIntervalWork, AUTO_UPDATE_INTERVAL);
         this.timeScheduler.start();
     }
 

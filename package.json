@@ -3,13 +3,35 @@
   "version": "1.0.0",
   "private": true,
   "description": "inoreader RSS reader client on browser",
+  "homepage": "https://azu.github.io/irodr",
   "repository": {
     "type": "git",
     "url": "https://github.com/azu/irodr"
   },
-  "homepage": "https://azu.github.io/irodr",
-  "author": "azu",
   "license": "MIT",
+  "author": "azu",
+  "scripts": {
+    "build": "react-scripts build && react-snap",
+    "eject": "react-scripts eject",
+    "netlify": "dotenv -e .env.netlify react-scripts build",
+    "prettier": "prettier --write '{src,resources}/**/*.{css,js,ts,tsx}'",
+    "pwmerics": "pwmetrics --config ./pwmetrics-config.js",
+    "pwmerics:ci": "CI=true NODE_ENV=production pwmetrics --config ./pwmetrics-config.js",
+    "start": "PORT=13245 react-scripts start",
+    "test": "react-scripts test"
+  },
+  "husky": {
+    "hooks": {
+      "post-commit": "git reset",
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,ts,tsx,css}": [
+      "prettier --write",
+      "git add"
+    ]
+  },
   "dependencies": {
     "@immutable-array/prototype": "^1.0.4",
     "@types/classnames": "^2.2.6",
@@ -22,11 +44,11 @@
     "@types/lodash.maxby": "^4.6.4",
     "@types/lodash.sortby": "^4.7.4",
     "@types/lodash.throttle": "^4.1.4",
-    "@types/node": "^10.9.2",
-    "@types/prop-types": "^15.5.5",
-    "@types/react": "^16.0.16",
-    "@types/react-dom": "^16.0.2",
-    "@types/sanitize-html": "^1.18.0",
+    "@types/node": "^12.12.21",
+    "@types/prop-types": "^15.7.3",
+    "@types/react": "^16.9.17",
+    "@types/react-dom": "^16.9.4",
+    "@types/sanitize-html": "^1.20.2",
     "@uifabric/icons": "^5.4.0",
     "almin": "^0.18.1",
     "almin-logger": "^6.2.3",
@@ -36,8 +58,8 @@
     "combokeys": "^3.0.0",
     "date-fns": "^1.29.0",
     "ddd-base": "^0.3.1",
-    "debug": "^3.1.0",
-    "he": "^1.1.1",
+    "debug": "^4.1.1",
+    "he": "^1.2.0",
     "intersection-observer": "^0.5.0",
     "localforage": "^1.5.2",
     "localforage-memoryStorageDriver": "^0.9.2",
@@ -51,58 +73,37 @@
     "most-visible": "^1.2.1",
     "office-ui-fabric-react": "^5.38.0",
     "popsicle": "^9.1.0",
-    "react": "^16.2.0",
-    "react-dom": "^16.2.0",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0",
     "react-icons": "^2.2.7",
     "react-render-html": "^0.6.0",
     "requestidlecallback": "^0.3.0",
-    "sanitize-html": "^1.18.2",
+    "sanitize-html": "^1.20.1",
     "ulid": "^2.3.0"
-  },
-  "scripts": {
-    "prettier": "prettier --write '{src,resources}/**/*.{css,js,ts,tsx}'",
-    "start": "PORT=13245 react-scripts-ts start",
-    "build": "react-scripts-ts build && react-snap",
-    "test": "react-scripts-ts test",
-    "eject": "react-scripts-ts eject",
-    "netlify": "dotenv -e .env.netlify react-scripts-ts build",
-    "pwmerics": "pwmetrics --config ./pwmetrics-config.js",
-    "pwmerics:ci": "CI=true NODE_ENV=production pwmetrics --config ./pwmetrics-config.js"
-  },
-  "lint-staged": {
-    "*.{js,ts,tsx,css}": [
-      "prettier --write",
-      "git add"
-    ]
-  },
-  "proxy": {
-    "/cors": {
-      "target": "https://jp.inoreader.com/",
-      "pathRewrite": {
-        "^/cors": ""
-      },
-      "changeOrigin": true
-    },
-    "/api": {
-      "target": "https://jp.inoreader.com/reader",
-      "changeOrigin": true
-    }
   },
   "devDependencies": {
     "@alrra/travis-scripts": "^3.0.1",
+    "@types/http-proxy-middleware": "^0.19.3",
     "dotenv-cli": "^3.1.0",
+    "http-proxy-middleware": "^0.20.0",
     "husky": "^3.1.0",
     "lint-staged": "^9.5.0",
     "prettier": "^1.19.1",
     "pwmetrics": "^4.2.2",
-    "react-scripts-ts": "3.1.0",
-    "react-snap": "^1.10.1",
-    "typescript": "^3.1.1"
+    "react-scripts": "^3.3.0",
+    "react-snap": "^1.23.0",
+    "typescript": "^3.7.4"
   },
-  "husky": {
-    "hooks": {
-      "post-commit": "git reset",
-      "pre-commit": "lint-staged"
-    }
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }

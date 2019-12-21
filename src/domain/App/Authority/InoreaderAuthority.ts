@@ -54,6 +54,7 @@ export class InoreaderAuthority extends Entity<InoreaderAuthorityIdentifier> {
 
     constructor(args: InoreaderAuthorityArgs) {
         super(args.id);
+        this.id = args.id;
         this.clientId = args.clientId;
         this.clientSecret = args.clientSecret;
         this.accessTokenUri = args.accessTokenUri;

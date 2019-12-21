@@ -38,7 +38,7 @@ export class InoreaderAPI {
         return this.auth.getNewTokenUrl();
     }
 
-    getRequest(apiPath: string, parameters?: object): Promise<Response> {
+    getRequest(apiPath: string, parameters?: { [index: string]: any }): Promise<Response> {
         return this.getToken().then(token => {
             // Sign API requests on behalf of the current user.
             const query = parameters ? `?${stringify(parameters)}` : "";

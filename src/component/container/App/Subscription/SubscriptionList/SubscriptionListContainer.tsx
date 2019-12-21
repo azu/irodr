@@ -97,7 +97,10 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
         );
     }
 
-    private _onRenderCell = (nestingDepth: number, subscription: Subscription, itemIndex: number) => {
+    private _onRenderCell = (nestingDepth?: number, subscription?: Subscription, itemIndex?: number) => {
+        if (!subscription) {
+            return null;
+        }
         const onClick = () => {
             this.onClickSubscription(subscription);
         };
@@ -127,7 +130,7 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
         );
     };
 
-    private _onRenderHeader = (props: IGroupDividerProps) => {
+    private _onRenderHeader = (props?: IGroupDividerProps) => {
         if (props === undefined) {
             return null;
         }

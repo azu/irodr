@@ -13,7 +13,7 @@ export interface HiddenContainerProps {
 }
 
 export class HiddenContainer extends React.Component<HiddenContainerProps, {}> {
-    shortcutKey: ShortcutKeyContainer | null;
+    shortcutKey: ShortcutKeyContainer | null = null;
 
     render() {
         return (

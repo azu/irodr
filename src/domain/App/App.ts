@@ -41,6 +41,7 @@ export class App extends Entity<AppIdentifier> {
 
     constructor(args: AppArgs) {
         super(args.id);
+        this.id = args.id;
         this.user = args.user;
         this.preferences = args.preferences;
     }

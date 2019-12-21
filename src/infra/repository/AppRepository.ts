@@ -6,6 +6,13 @@ import { createStorageInstance } from "./Storage";
 export class AppRepository extends NonNullableRepository<App> {
     storage: LocalForage;
 
+    constructor(protected initialEntity: App) {
+        super(initialEntity);
+        this.storage = createStorageInstance({
+            name: "AppRepository"
+        });
+    }
+
     /**
      * Please call this before find* API
      * @returns {Promise<any>}
@@ -14,9 +21,6 @@ export class AppRepository extends NonNullableRepository<App> {
         if (this.map.size > 0) {
             return Promise.resolve(this);
         }
-        this.storage = createStorageInstance({
-            name: "AppRepository"
-        });
         await this.storage.ready();
         const values: AppJSON[] = [];
         await this.storage.iterate(value => {
