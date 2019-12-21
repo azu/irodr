@@ -82,7 +82,11 @@ export class OAuth {
             tokenType: token.tokenType,
             expires: (token as any).expires
         };
-        localStorage.setItem("inoreader-token", JSON.stringify(tokenJSON));
+        try {
+            localStorage.setItem("inoreader-token", JSON.stringify(tokenJSON));
+        } catch (error) {
+            debug("localStorage save", error);
+        }
     };
 
     loadToken = (): TokenJSON | undefined => {
