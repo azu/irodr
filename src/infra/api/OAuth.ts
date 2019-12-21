@@ -52,27 +52,32 @@ export class OAuth {
         if (!savedTokenJSON) {
             return Promise.reject(new Error("Token is not found"));
         }
-        const token = this.getAuth().createToken(
-            savedTokenJSON.accessToken,
-            savedTokenJSON.refreshToken,
-            savedTokenJSON.tokenType,
-            {}
-        );
-        token.expiresIn(savedTokenJSON.expires);
-        // Refresh the current users access token.
-        if (token.expired()) {
-            return token
-                .refresh()
-                .then(updatedToken => {
-                    this.saveToken(updatedToken);
-                    return updatedToken;
-                })
-                .catch(error => {
-                    debug("Token Refresh Error", error);
-                    return Promise.reject(error);
-                });
+        try {
+            const token = this.getAuth().createToken(
+                savedTokenJSON.accessToken,
+                savedTokenJSON.refreshToken,
+                savedTokenJSON.tokenType,
+                {}
+            );
+            token.expiresIn(savedTokenJSON.expires);
+            // Refresh the current users access token.
+            if (token.expired()) {
+                return token
+                    .refresh()
+                    .then(updatedToken => {
+                        this.saveToken(updatedToken);
+                        return updatedToken;
+                    })
+                    .catch(error => {
+                        debug("Token Refresh Error", error);
+                        return Promise.reject(error);
+                    });
+            }
+            return Promise.resolve(token);
+        } catch (error) {
+            debug("Token Create Error", error);
+            return Promise.reject(error);
         }
-        return Promise.resolve(token);
     };
 
     saveToken = (token: Token) => {
