@@ -3,6 +3,7 @@
 import ClientOAuth2 from "client-oauth2";
 import { Token } from "client-oauth2";
 
+const debug = require("debug")("irodr:OAuth");
 const addLasSlash = (str: string) => {
     if (str[str.length - 1] === "/") return str;
     return `${str}/`;
@@ -60,10 +61,16 @@ export class OAuth {
         token.expiresIn(savedTokenJSON.expires);
         // Refresh the current users access token.
         if (token.expired()) {
-            return token.refresh().then(updatedToken => {
-                this.saveToken(updatedToken);
-                return updatedToken;
-            });
+            return token
+                .refresh()
+                .then(updatedToken => {
+                    this.saveToken(updatedToken);
+                    return updatedToken;
+                })
+                .catch(error => {
+                    debug("Token Refresh Error", error);
+                    return Promise.reject(error);
+                });
         }
         return Promise.resolve(token);
     };
