@@ -79,11 +79,13 @@
     "react-render-html": "^0.6.0",
     "requestidlecallback": "^0.3.0",
     "sanitize-html": "^1.20.1",
-    "ulid": "^2.3.0"
+    "ulid": "^2.3.0",
+    "whatwg-fetch": "^3.0.0"
   },
   "devDependencies": {
     "@alrra/travis-scripts": "^3.0.1",
     "@types/http-proxy-middleware": "^0.19.3",
+    "@types/whatwg-fetch": "^0.0.33",
     "dotenv-cli": "^3.1.0",
     "http-proxy-middleware": "^0.20.0",
     "husky": "^3.1.0",

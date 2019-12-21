@@ -8,6 +8,8 @@ import { stringify } from "querystring";
 import { InoreaderAuthority } from "../../domain/App/Authority/InoreaderAuthority";
 import { OAuth } from "./OAuth";
 
+const fetchPolyfill: typeof fetch = require("whatwg-fetch").fetch;
+
 const debug = require("debug")("irodr:InoreaderAPI");
 const baseURL = process.env.REACT_APP_INOREADER_API_BASE_URL;
 
@@ -49,11 +51,13 @@ export class InoreaderAPI {
                     method: "get",
                     url: this.baseURL + apiPath + query
                 });
-                const headers = new Headers();
+                const headers: { [index: string]: string } = {};
                 Object.keys((requestObject as any).headers).forEach(key => {
-                    headers.append(key, (requestObject as any).headers[key]);
+                    headers[key] = (requestObject as any).headers[key];
                 });
-                return fetch(requestObject.url, {
+                // FIXME: Native fetch throw DOMException: "The expression cannot be converted to return the specified type."
+                // https://twitter.com/azu_re/status/1208285220949987328
+                return fetchPolyfill(requestObject.url, {
                     method: requestObject.method,
                     headers: headers
                 });
@@ -72,12 +76,12 @@ export class InoreaderAPI {
                     method: "post",
                     url: this.baseURL + apiPath
                 });
-                const headers = new Headers();
+                const headers: { [index: string]: string } = {};
                 Object.keys((requestObject as any).headers).forEach(key => {
-                    headers.append(key, (requestObject as any).headers[key]);
+                    headers[key] = (requestObject as any).headers[key];
                 });
-                headers.append("Accept", "application/json, text/plain, */*");
-                headers.append("Content-Type", "application/json");
+                headers["Accept"] = "application/json, text/plain, */*";
+                headers["Content-Type"] = "application/json";
                 return fetch(requestObject.url, {
                     method: requestObject.method,
                     headers: headers,
@@ -100,38 +104,9 @@ export class InoreaderAPI {
                 debug("subscriptions:response", res);
                 // FIXME: res.json() throw DOMException. ?
                 // https://twitter.com/azu_re/status/1208285220949987328
-                // return res.text();
-                const reader = res.body?.getReader();
-                if (!reader) {
-                    return "";
-                }
-                const textDecoder = new TextDecoder();
-                return new Promise(function(resolve, reject) {
-                    const chunks: string[] = [];
-                    const readNextChunk = function() {
-                        reader
-                            .read()
-                            .then(function(result) {
-                                if (result.done) {
-                                    //Note: bytes in textDecoder are ignored
-                                    resolve(chunks.join(""));
-                                } else {
-                                    const chunk = textDecoder.decode(result.value, { stream: true });
-                                    chunks.push(chunk);
-                                    readNextChunk();
-                                }
-                            })
-                            .catch(function(error) {
-                                reject(error);
-                            });
-                    };
-                    readNextChunk();
-                }) as Promise<string>;
+                return res.json();
             })
-            .then(function(res: string) {
-                debug("subscriptions:response.text", res);
-                const json = JSON.parse(res);
-                debug("subscriptions:response.json", json);
+            .then(function(json: SubscriptionsResponse) {
                 return json;
             });
     }
@@ -139,40 +114,10 @@ export class InoreaderAPI {
     unreadCounts(): Promise<UnreadCountsResponse> {
         return this.getRequest("/api/0/unread-count")
             .then(res => {
-                debug("subscriptions:response", res);
-                // FIXME: res.json() throw DOMException. ?
-                // https://twitter.com/azu_re/status/1208285220949987328
-                // return res.text();
-                const reader = res.body?.getReader();
-                if (!reader) {
-                    return "";
-                }
-                const textDecoder = new TextDecoder();
-                return new Promise(function(resolve, reject) {
-                    const chunks: string[] = [];
-                    const readNextChunk = function() {
-                        reader
-                            .read()
-                            .then(function(result) {
-                                if (result.done) {
-                                    //Note: bytes in textDecoder are ignored
-                                    resolve(chunks.join(""));
-                                } else {
-                                    const chunk = textDecoder.decode(result.value, { stream: true });
-                                    chunks.push(chunk);
-                                    readNextChunk();
-                                }
-                            })
-                            .catch(function(error) {
-                                reject(error);
-                            });
-                    };
-                    readNextChunk();
-                }) as Promise<string>;
+                debug("unreadCounts:response", res);
+                return res.json();
             })
-            .then(function(res: string) {
-                debug("unreadCounts:response.text", res);
-                const json = JSON.parse(res);
+            .then(function(json: UnreadCountsResponse) {
                 debug("unreadCounts:response.json", json);
                 return json;
             });
