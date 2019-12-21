@@ -7,9 +7,17 @@ import { StreamContentsResponse } from "./StreamContentsResponse";
 import { stringify } from "querystring";
 import { InoreaderAuthority } from "../../domain/App/Authority/InoreaderAuthority";
 import { OAuth } from "./OAuth";
+import { UserScriptWindow } from "../../component/container/App/Hidden/UserScript/UserScriptContainer";
 
 const debug = require("debug")("irodr:InoreaderAPI");
 const baseURL = process.env.REACT_APP_INOREADER_API_BASE_URL;
+const userFetch = (input: RequestInfo, init?: RequestInit) => {
+    const userDefinedFetch = (window as UserScriptWindow)?.userScript?.mock?.fetch;
+    if (userDefinedFetch) {
+        return userDefinedFetch(input, init);
+    }
+    return window.fetch(input, init);
+};
 
 export class InoreaderAPI {
     baseURL: string;
@@ -55,7 +63,7 @@ export class InoreaderAPI {
                 });
                 // FIXME: Native fetch throw DOMException: "The expression cannot be converted to return the specified type."
                 // https://twitter.com/azu_re/status/1208285220949987328
-                return fetch(requestObject.url, {
+                return userFetch(requestObject.url, {
                     method: requestObject.method,
                     headers: headers
                 });
@@ -80,7 +88,7 @@ export class InoreaderAPI {
                 });
                 headers["Accept"] = "application/json, text/plain, */*";
                 headers["Content-Type"] = "application/json";
-                return fetch(requestObject.url, {
+                return userFetch(requestObject.url, {
                     method: requestObject.method,
                     headers: headers,
                     body: JSON.stringify(body)
