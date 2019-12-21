@@ -8,8 +8,6 @@ import { stringify } from "querystring";
 import { InoreaderAuthority } from "../../domain/App/Authority/InoreaderAuthority";
 import { OAuth } from "./OAuth";
 
-const fetchPolyfill: typeof fetch = require("whatwg-fetch").fetch;
-
 const debug = require("debug")("irodr:InoreaderAPI");
 const baseURL = process.env.REACT_APP_INOREADER_API_BASE_URL;
 
@@ -57,7 +55,7 @@ export class InoreaderAPI {
                 });
                 // FIXME: Native fetch throw DOMException: "The expression cannot be converted to return the specified type."
                 // https://twitter.com/azu_re/status/1208285220949987328
-                return fetchPolyfill(requestObject.url, {
+                return fetch(requestObject.url, {
                     method: requestObject.method,
                     headers: headers
                 });
