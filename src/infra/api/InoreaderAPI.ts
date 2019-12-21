@@ -65,28 +65,33 @@ export class InoreaderAPI {
     }
 
     postRequest<T>(apiPath: string, body: object): Promise<T> {
-        return this.getToken().then(token => {
-            // Sign API requests on behalf of the current user.
-            const requestObject = token.sign({
-                method: "post",
-                url: this.baseURL + apiPath
-            });
-            const headers = new Headers();
-            Object.keys((requestObject as any).headers).forEach(key => {
-                headers.append(key, (requestObject as any).headers[key]);
-            });
-            headers.append("Accept", "application/json, text/plain, */*");
-            headers.append("Content-Type", "application/json");
-            return fetch(requestObject.url, {
-                method: requestObject.method,
-                headers: headers,
-                body: JSON.stringify(body)
-            })
-                .then(res => res.json())
-                .then(function(res: T) {
-                    return res;
+        return this.getToken()
+            .then(token => {
+                // Sign API requests on behalf of the current user.
+                const requestObject = token.sign({
+                    method: "post",
+                    url: this.baseURL + apiPath
                 });
-        });
+                const headers = new Headers();
+                Object.keys((requestObject as any).headers).forEach(key => {
+                    headers.append(key, (requestObject as any).headers[key]);
+                });
+                headers.append("Accept", "application/json, text/plain, */*");
+                headers.append("Content-Type", "application/json");
+                return fetch(requestObject.url, {
+                    method: requestObject.method,
+                    headers: headers,
+                    body: JSON.stringify(body)
+                })
+                    .then(res => res.json())
+                    .then(function(res: T) {
+                        return res;
+                    });
+            })
+            .catch(error => {
+                debug("Fetch Error", error);
+                return Promise.reject(error);
+            });
     }
 
     subscriptions(): Promise<SubscriptionsResponse> {
