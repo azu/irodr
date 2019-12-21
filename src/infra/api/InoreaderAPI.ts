@@ -10,7 +10,8 @@ import { OAuth } from "./OAuth";
 import { UserScriptWindow } from "../../component/container/App/Hidden/UserScript/UserScriptContainer";
 
 const debug = require("debug")("irodr:InoreaderAPI");
-const baseURL = process.env.REACT_APP_INOREADER_API_BASE_URL;
+const baseURL =
+    localStorage.getItem("REACT_APP_INOREADER_API_BASE_URL") || process.env.REACT_APP_INOREADER_API_BASE_URL;
 const userFetch = (input: RequestInfo, init?: RequestInit) => {
     const userDefinedFetch = (window as UserScriptWindow)?.userScript?.mock?.fetch;
     if (userDefinedFetch) {
