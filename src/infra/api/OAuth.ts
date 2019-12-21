@@ -90,17 +90,22 @@ export class OAuth {
     };
 
     loadToken = (): TokenJSON | undefined => {
-        const savedTokenString = localStorage.getItem("inoreader-token");
-        if (!savedTokenString) {
+        try {
+            const savedTokenString = localStorage.getItem("inoreader-token");
+            if (!savedTokenString) {
+                return;
+            }
+            const parsed = JSON.parse(savedTokenString);
+            return {
+                accessToken: parsed.accessToken,
+                refreshToken: parsed.refreshToken,
+                tokenType: parsed.tokenType,
+                expires: new Date(parsed.expires)
+            };
+        } catch (error) {
+            debug("token load error", error);
             return;
         }
-        const parsed = JSON.parse(savedTokenString);
-        return {
-            accessToken: parsed.accessToken,
-            refreshToken: parsed.refreshToken,
-            tokenType: parsed.tokenType,
-            expires: new Date(parsed.expires)
-        };
     };
 
     saveTokenFromCallbackURL = (url: string) => {
