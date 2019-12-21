@@ -98,10 +98,11 @@ export class InoreaderAPI {
     subscriptions(): Promise<SubscriptionsResponse> {
         return this.getRequest("/api/0/subscription/list")
             .then(res => {
-                debug("res", res);
+                debug("subscriptions:response", res);
                 return res.json();
             })
             .then(function(res: SubscriptionsResponse) {
+                debug("subscriptions:response.json", res);
                 return res;
             });
     }
