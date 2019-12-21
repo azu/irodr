@@ -32,10 +32,6 @@ export type UserScriptWindow = typeof globalThis &
             triggerKey(keys: string, action?: string): void;
             registerKey(keys: string, handler: (event?: Event) => void): void;
             getDefaultActions: () => any;
-            // Replace implementation
-            mock?: {
-                fetch: (input: RequestInfo, init?: RequestInit) => Promise<any>;
-            };
             event: UserScriptEvent;
         };
     };
