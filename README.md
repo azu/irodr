@@ -124,6 +124,11 @@ Install devDependencies and Run `npm test`:
 
     npm i -d && npm test
 
+## Code of Conduct
+
+Please note that this project is released with a [Contributor Code of Conduct](./CODE_OF_CONDUCT.md).
+By participating in this project you agree to abide by its terms.
+
 ## Contributing
 
 Pull requests and stars are always welcome.
