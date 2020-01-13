@@ -11,3 +11,13 @@
 .AuthorizePanel-authorizeButton {
     text-align: center;
 }
+
+.AuthorizeModal-footer {
+    display: flex;
+    background: #a5c5ff;
+    padding: 0.5em 1em;
+}
+
+.AuthorizeModal-footerText {
+    padding-right: 1em;
+}

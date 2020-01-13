@@ -64,7 +64,6 @@ export class AuthorizeModal extends React.Component<AuthorizePanelProps, Authori
                         <li>
                             Click <b>Authorize on Inoreader site</b>
                         </li>
-                        <li>You can read RSS if it is success!</li>
                     </ol>
                     <CompoundButton
                         className="AuthorizePanel-authorizeButton"
@@ -95,6 +94,15 @@ export class AuthorizeModal extends React.Component<AuthorizePanelProps, Authori
                         });
                     }}
                 />
+                <footer className={"AuthorizeModal-footer"}>
+                    <p className={"AuthorizeModal-footerText"}>This site is powered by Netlify.</p>
+                    <a href="https://www.netlify.com">
+                        <img
+                            src="https://www.netlify.com/img/global/badges/netlify-color-bg.svg"
+                            alt={"Netlify Logo"}
+                        />
+                    </a>
+                </footer>
             </Modal>
         );
     }

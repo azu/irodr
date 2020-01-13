@@ -144,3 +144,9 @@ For bugs and feature requests, [please create an issue](https://github.com/azu/i
 ## License
 
 MIT © azu
+
+## OSS Supports
+
+<a href="https://www.netlify.com">
+  <img src="https://www.netlify.com/img/global/badges/netlify-color-bg.svg"/>
+</a>
