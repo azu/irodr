@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        irodr: Replace fetch with gm_xmlhttprequest
-// @namespace   https://irodr.netlify.com/
-// @match       https://irodr.netlify.com/
+// @namespace   https://irodr.netlify.app/
+// @match       https://irodr.netlify.app/
 // @grant       GM_xmlhttpRequest
 // @version     1.0
 // @author      azu

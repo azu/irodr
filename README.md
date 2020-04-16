@@ -19,7 +19,7 @@ This RSS reader provide a similar experience to [LDR](http://reader.livedoor.com
 
 ![login gif](./docs/img/login-irodr.gif)
 
-1. Open <https://irodr.netlify.com/>
+1. Open <https://irodr.netlify.app/>
 2. Click **Connect to Inoreader**
 3. Click **Authorize** on Inoreader site
 
@@ -90,7 +90,7 @@ Run following command and open local server.
 
 #### Production
 
-http://irodr.netlify.com/ work on [Netlify](https://www.netlify.com/ "Netlify").
+http://irodr.netlify.app/ work on [Netlify](https://www.netlify.com/ "Netlify").
 Netlify support CORS proxy
 
 - [Redirect & Rewrite rules | Netlify](https://www.netlify.com/docs/redirects/ "Redirect &amp; Rewrite rules | Netlify")
@@ -103,7 +103,7 @@ This project use the server that avoid CORS for Inoreader.
 
 ### :memo: Limitation of Mixed-content
 
-A browser show a warning  on https://irodr.netlify.com/
+A browser show a warning  on https://irodr.netlify.app/
 It is caused by Mixed content.
 
 - [Mixed content - Web security | MDN](https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content "Mixed content - Web security | MDN")
