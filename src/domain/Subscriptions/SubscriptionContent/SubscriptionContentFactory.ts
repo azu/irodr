@@ -10,7 +10,7 @@ export const createSubscriptionContentsFromResponse = (
     streamContentResponse: StreamContentsResponse
 ): SubscriptionContents => {
     const contentList = streamContentResponse.items.map(item => {
-        return createSubscriptionContentFromResponse(item);
+        return createSubscriptionContentFromResponse(streamContentResponse.id, item);
     });
     return new SubscriptionContents({
         contents: contentList,
@@ -20,13 +20,15 @@ export const createSubscriptionContentsFromResponse = (
 };
 
 export const createSubscriptionContentFromResponse = (
+    streamId: string,
     streamContentResponse: StreamContentResponse
 ): SubscriptionContent => {
     // Inoreader response updated: 0
     const hasUpdate = streamContentResponse.updated !== undefined && streamContentResponse.updated !== 0;
+    const canonicalHref = streamContentResponse.canonical.map(canonical => canonical.href).join(",");
     return new SubscriptionContent({
-        // stream.id + content.id
-        id: new SubscriptionContentIdentifier(`${streamContentResponse.origin.streamId}--${streamContentResponse.id}`),
+        // stream.id + content.id + content.href(s)
+        id: new SubscriptionContentIdentifier(`${streamId}--${streamContentResponse.id}--${canonicalHref}`),
         url: streamContentResponse.canonical[0].href,
         // 2017-10-21~ Inoreader API Response sometimes encode 10 entity
         title: he.decode(streamContentResponse.title) as string,

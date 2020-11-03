@@ -4,7 +4,7 @@ import { repositoryContainer } from "../../infra/repository/RepositoryContainer"
 import { AppRepository } from "../../infra/repository/AppRepository";
 import { SubscriptionRepository } from "../../infra/repository/SubscriptionRepository";
 import { InoreaderAPI } from "../../infra/api/InoreaderAPI";
-import { createSubscriptionContentsFromResponse } from "../../domain/Subscriptions/SubscriptionContent/SubscriptionContentFactoryh";
+import { createSubscriptionContentsFromResponse } from "../../domain/Subscriptions/SubscriptionContent/SubscriptionContentFactory";
 
 export const createFetchMoreSubscriptContentsUseCase = () => {
     return new FetchMoreSubscriptContentsUseCase(repositoryContainer.get());
