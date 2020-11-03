@@ -1,4 +1,4 @@
-# Irodr [![Build Status](https://travis-ci.org/azu/irodr.svg?branch=master)](https://travis-ci.org/azu/irodr) [![Netlify Status](https://api.netlify.com/api/v1/badges/d6fadd05-b8e2-4c2a-a9e5-c74092615028/deploy-status)](https://app.netlify.com/sites/irodr/deploys)
+# Irodr [![Actions Status: test](https://github.com/azu/irodr/workflows/test/badge.svg)](https://github.com/azu/irodr/actions?query=workflow%3A"test")
 
 RSS reader client for [Inoreader](http://www.inoreader.com/ "Inoreader").
 
