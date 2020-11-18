@@ -1417,9 +1417,9 @@
     "@types/yargs" "^13.0.0"
 
 "@microsoft/load-themed-styles@^1.7.13":
-  version "1.10.135"
-  resolved "https://registry.yarnpkg.com/@microsoft/load-themed-styles/-/load-themed-styles-1.10.135.tgz#b8522d393f7b15d7dca60cc8afeff7e6de0089e4"
-  integrity sha512-UmEDS4zZZ+Y4jf9mkxiek8mGi2kHi0ZDhWWX4s2S/IvOtjS93/wD4KrXuhzV78G/0OU30DVbtXDGUXiTJOnYOA==
+  version "1.10.136"
+  resolved "https://registry.yarnpkg.com/@microsoft/load-themed-styles/-/load-themed-styles-1.10.136.tgz#67ee0a4a7787b83baf63c0f6a5db8c4e61663e7f"
+  integrity sha512-D8wWUiW7HQKFp4Qgy5GsDvEymKew/4uK+4dSWSO/+6LfSI15kqDNS7g4Nf/VxL5FBmjwXqQV1d59ucgWiKUjJg==
 
 "@mrmlnc/readdir-enhanced@^2.2.1":
   version "2.2.1"
@@ -3129,9 +3129,9 @@ caniuse-api@^3.0.0:
     lodash.uniq "^4.5.0"
 
 caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000981, caniuse-lite@^1.0.30001035, caniuse-lite@^1.0.30001109, caniuse-lite@^1.0.30001157:
-  version "1.0.30001158"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001158.tgz#fce86d321369603c2bc855ee0e901a7f49f8310b"
-  integrity sha512-s5loVYY+yKpuVA3HyW8BarzrtJvwHReuzugQXlv1iR3LKSReoFXRm86mT6hT7PEF5RxW+XQZg+6nYjlywYzQ+g==
+  version "1.0.30001159"
+  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001159.tgz#bebde28f893fa9594dadcaa7d6b8e2aa0299df20"
+  integrity sha512-w9Ph56jOsS8RL20K9cLND3u/+5WASWdhC/PPrf+V3/HsM3uHOavWOR1Xzakbv4Puo/srmPHudkmCRWM7Aq+/UA==
 
 canonicalize@^1.0.1:
   version "1.0.4"
