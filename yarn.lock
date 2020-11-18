@@ -3135,9 +3135,9 @@ caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000981, caniuse-lite@^1.0.30001035, can
   integrity sha512-w9Ph56jOsS8RL20K9cLND3u/+5WASWdhC/PPrf+V3/HsM3uHOavWOR1Xzakbv4Puo/srmPHudkmCRWM7Aq+/UA==
 
 canonicalize@^1.0.1:
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/canonicalize/-/canonicalize-1.0.4.tgz#0ec3bd951bb84da1c09f65a46eb464e53bc0f33f"
-  integrity sha512-UlYtzVicOYAIOowuJBp+wAoWSLBKJxDbeANTbZNmVVMRgv6ZDLJ8M0WV8ZPDTKIniMyDUZ6GOJbiJSATh0NUmw==
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/canonicalize/-/canonicalize-1.0.5.tgz#b43b390ce981d397908bb847c3a8d9614323a47b"
+  integrity sha512-mAjKJPIyP0xqqv6IAkvso07StOmz6cmGtNDg3pXCSzXVZOqka7StIkAhJl/zHOi4M2CgpYfD6aeRWbnrmtvBEA==
 
 capture-exit@^2.0.0:
   version "2.0.0"
