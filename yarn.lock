@@ -1408,9 +1408,9 @@
     "@types/yargs" "^13.0.0"
 
 "@microsoft/load-themed-styles@^1.7.13":
-  version "1.10.137"
-  resolved "https://registry.yarnpkg.com/@microsoft/load-themed-styles/-/load-themed-styles-1.10.137.tgz#35d53e3ccc9f92da0f6da128195131ce0c0aefeb"
-  integrity sha512-ap6SQX0/pWvdmQy9lurjAi0ewveA/ThbVCkRFUmnsMVpvHVfJo3eLvMBAb5TwW5fS/UfbHT2hLimWHi/Lrwz8g==
+  version "1.10.138"
+  resolved "https://registry.yarnpkg.com/@microsoft/load-themed-styles/-/load-themed-styles-1.10.138.tgz#18be898a1bda7b81e2bfc4d1066e9bb21f78a622"
+  integrity sha512-TDY8c3CnIbysFIQ8Lj/ZujLkvDB/jrnVOx6FDJICFfo1Jbcyia+nIbUkOJtXtTGK/sx/zfyYJxgFgKQEAtKLHQ==
 
 "@mrmlnc/readdir-enhanced@^2.2.1":
   version "2.2.1"
