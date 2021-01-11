@@ -9548,9 +9548,9 @@ popsicle-redirects@^1.1.0:
   integrity sha512-XCpzVjVk7tty+IJnSdqWevmOr1n8HNDhL86v7mZ6T1JIIf2KGybxUk9mm7ZFOhWMkGB0e8XkacHip7BV8AQWQA==
 
 popsicle-transport-http@^1.0.8:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/popsicle-transport-http/-/popsicle-transport-http-1.1.0.tgz#5e773a0675f59115140697f114f5c9861e58898e"
-  integrity sha512-ZPixew3SKB8japs8osmlsmf3Pr/nHXYmU7id98SOuq7/ziCkm7xubUj4Ac6qJ7zVEsdYMUGru6FP8Ikgh9jsSw==
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/popsicle-transport-http/-/popsicle-transport-http-1.1.1.tgz#64816112b17982162ff99ac6af6b26b6ef039266"
+  integrity sha512-RNbifrl5ckXLk1X6YGhjDb0gL5yAH1nvultmboiVGLTnWDbwaoxhEP8He9epMFOPuSDuNJ//TMRoN+XfpN0KCw==
   dependencies:
     cacheable-lookup "^5.0.4"
     make-error-cause "^2.2.0"
