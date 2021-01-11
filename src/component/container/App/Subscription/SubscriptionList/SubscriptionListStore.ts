@@ -64,11 +64,13 @@ export class SubscriptionListState {
     }
 
     getItem(currentSubscriptionId: SubscriptionIdentifier): Subscription | undefined {
-        return this.groupSubscriptions.find(subscription => subscription.id.equals(currentSubscriptionId));
+        return this.groupSubscriptions.find(subscription => subscription.props.id.equals(currentSubscriptionId));
     }
 
     getPrevItem(currentSubscriptionId: SubscriptionIdentifier): Subscription | undefined {
-        const index = this.groupSubscriptions.findIndex(subscription => subscription.id.equals(currentSubscriptionId));
+        const index = this.groupSubscriptions.findIndex(subscription =>
+            subscription.props.id.equals(currentSubscriptionId)
+        );
         if (index === -1) {
             return;
         }
@@ -76,7 +78,9 @@ export class SubscriptionListState {
     }
 
     getNextItem(currentSubscriptionId: SubscriptionIdentifier): Subscription | undefined {
-        const index = this.groupSubscriptions.findIndex(subscription => subscription.id.equals(currentSubscriptionId));
+        const index = this.groupSubscriptions.findIndex(subscription =>
+            subscription.props.id.equals(currentSubscriptionId)
+        );
         if (index === -1) {
             return;
         }
@@ -125,7 +129,7 @@ export class SubscriptionListState {
                     return true;
                 }
                 // current subscription is read recently?
-                return subscriptionActivity.isReadRecently(subscription.id);
+                return subscriptionActivity.isReadRecently(subscription.props.id);
             });
             groupSubscriptions = groupSubscriptions.concat(readableSubscriptions);
             if (this.groupIsCollapsed[categoryName] === undefined) {

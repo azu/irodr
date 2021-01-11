@@ -77,7 +77,7 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
                 if (!firstItem) {
                     return console.info("Not found first item");
                 }
-                await this.useCase(createShowSubscriptionContentsUseCase()).execute(firstItem.id);
+                await this.useCase(createShowSubscriptionContentsUseCase()).execute(firstItem.props.id);
                 return;
             }
             const nextItem = this.props.subscriptionList.getNextItem(currentSubscriptionId);
@@ -85,12 +85,12 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
                 return console.info("Not found next item");
             }
             this.useCase(createShowSubscriptionContentsUseCase())
-                .execute(nextItem.id)
+                .execute(nextItem.props.id)
                 .catch(error => {
                     return this.useCase(createUpdateHeaderMessageUseCase())
                         .execute(`Can't load... Skip ${nextItem.title}.`)
                         .then(() => {
-                            return loadNext(nextItem.id);
+                            return loadNext(nextItem.props.id);
                         });
                 });
         };
@@ -108,7 +108,7 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
                 if (!nextItem) {
                     return console.info("Not found next item");
                 }
-                await this.useCase(createShowSubscriptionContentsUseCase()).execute(nextItem.id);
+                await this.useCase(createShowSubscriptionContentsUseCase()).execute(nextItem.props.id);
             }, DEBOUNCE_TIME),
             "move-next-content-item": (_event: Event) => {
                 const body = document.querySelector(".SubscriptionContentsContainer");
@@ -198,7 +198,7 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
                 this.useCase(new TurnOffContentsFilterUseCase()).execute();
                 this.useCase(createUpdateHeaderMessageUseCase()).execute("Load more past contents");
                 // fetch more contents
-                await this.useCase(createFetchMoreSubscriptContentsUseCase()).execute(subscription.id);
+                await this.useCase(createFetchMoreSubscriptContentsUseCase()).execute(subscription.props.id);
                 // move next content if the user was not moved
                 if (
                     beforeFocusContendId &&

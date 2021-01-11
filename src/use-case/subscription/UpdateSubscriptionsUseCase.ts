@@ -44,7 +44,7 @@ export class UpdateSubscriptionsUseCase extends UseCase {
                     newUnreadCountsResponse
                 );
                 subscriptions.forEach(subscription => {
-                    const preSubscription = this.repo.subscriptionRepository.findById(subscription.id);
+                    const preSubscription = this.repo.subscriptionRepository.findById(subscription.props.id);
                     const saveSubscription = preSubscription
                         ? preSubscription.refreshSubscription(subscription)
                         : subscription;

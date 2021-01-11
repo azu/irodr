@@ -14,7 +14,7 @@ export const TimeStampSerializer: Serializer<TimeStamp, TimeStampJSON> = {
 export type TimeStampJSON = number;
 export type TimeStampOperator = "==" | ">=" | "<=" | ">" | "<";
 
-export class TimeStamp extends ValueObject {
+export class TimeStamp extends ValueObject<{}> {
     // millsecond
     value: number;
     readonly date: Date;
@@ -36,7 +36,7 @@ export class TimeStamp extends ValueObject {
     }
 
     constructor(millisecond: number) {
-        super();
+        super(millisecond);
         this.value = millisecond;
         this.date = new Date(this.value);
     }

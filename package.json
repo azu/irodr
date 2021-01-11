@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "inoreader RSS reader client on browser",
-  "homepage": "https://azu.github.io/irodr",
+  "homepage": "https://irodr.netlify.com",
   "repository": {
     "type": "git",
     "url": "https://github.com/azu/irodr"

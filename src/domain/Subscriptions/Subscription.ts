@@ -1,6 +1,5 @@
 // MIT © 2017 azu
 import { Entity, Identifier, Serializer } from "ddd-base";
-import { SubscriptionOrder } from "./SubscriptionOrder";
 import { SubscriptionUnread, SubscriptionUnreadJSON, SubscriptionUnreadSerializer } from "./SubscriptionUnread";
 import {
     SubscriptionContents,
@@ -13,7 +12,7 @@ import { NullSubscriptionContents } from "./SubscriptionContent/NullSubscription
 export const SubscriptionSerializer: Serializer<Subscription, SubscriptionJSON> = {
     toJSON(entity) {
         return {
-            id: entity.id.toValue(),
+            id: entity.props.id.toValue(),
             title: entity.title,
             url: entity.url,
             iconUrl: entity.iconUrl,
@@ -32,7 +31,6 @@ export const SubscriptionSerializer: Serializer<Subscription, SubscriptionJSON> 
             iconUrl: json.iconUrl,
             htmlUrl: json.htmlUrl,
             categories: json.categories,
-            order: new SubscriptionOrder(),
             contents: SubscriptionContentsSerializer.fromJSON(json.contents),
             unread: SubscriptionUnreadSerializer.fromJSON(json.unread),
             lastUpdated: TimeStampSerializer.fromJSON(json.lastUpdated),
@@ -49,7 +47,6 @@ export interface SubscriptionJSON {
     htmlUrl: string;
     categories: string[];
     contents: SubscriptionContentsJSON;
-    // order: SubscriptionOrder;
     unread: SubscriptionUnreadJSON;
     lastUpdated: TimeStampJSON;
 }
@@ -64,40 +61,37 @@ export interface SubscriptionArgs {
     htmlUrl: string;
     categories: string[];
     contents: NullSubscriptionContents | SubscriptionContents;
-    order: SubscriptionOrder;
     unread: SubscriptionUnread;
     lastUpdated: TimeStamp;
     isContentsUpdating: boolean;
 }
 
-export class Subscription extends Entity<SubscriptionIdentifier> {
+export class Subscription extends Entity<SubscriptionArgs> {
     title: string;
     url: string;
     iconUrl: string;
     htmlUrl: string;
     categories: string[];
     contents: NullSubscriptionContents | SubscriptionContents;
-    order: SubscriptionOrder;
     unread: SubscriptionUnread;
     lastUpdated: TimeStamp;
     isContentsUpdating: boolean;
 
     constructor(args: SubscriptionArgs) {
-        super(args.id);
+        super(args);
         this.title = args.title;
         this.url = args.url;
         this.iconUrl = args.iconUrl;
         this.htmlUrl = args.htmlUrl;
         this.contents = args.contents;
         this.categories = args.categories;
-        this.order = args.order;
         this.unread = args.unread;
         this.lastUpdated = args.lastUpdated;
         this.isContentsUpdating = args.isContentsUpdating;
     }
 
     get name() {
-        return `Subscription(${this.id.toValue()})`;
+        return `Subscription(${this.props.id.toValue()})`;
     }
 
     get hasBeenRead(): boolean {
@@ -121,7 +115,7 @@ export class Subscription extends Entity<SubscriptionIdentifier> {
 
     readAll() {
         return new Subscription({
-            ...(this as SubscriptionArgs),
+            ...this.props,
             unread: this.unread.read()
         });
     }
@@ -132,21 +126,21 @@ export class Subscription extends Entity<SubscriptionIdentifier> {
             delete subscriptionArgs.contents;
         }
         return new Subscription({
-            ...(this as SubscriptionArgs),
+            ...this.props,
             ...subscriptionArgs
         });
     }
 
     appendContents(subscriptionContents: SubscriptionContents) {
         return new Subscription({
-            ...(this as SubscriptionArgs),
+            ...this.props,
             contents: this.contents.concat(subscriptionContents)
         });
     }
 
     updateContents(subscriptionContents: SubscriptionContents) {
         return new Subscription({
-            ...(this as SubscriptionArgs),
+            ...this.props,
             contents: subscriptionContents
         });
     }

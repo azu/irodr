@@ -31,13 +31,13 @@ export interface SubscriptionUnreadArgs {
     readTimestamp: TimeStamp;
 }
 
-export class SubscriptionUnread extends ValueObject {
+export class SubscriptionUnread extends ValueObject<SubscriptionUnreadArgs> {
     count: number;
     maxCount: number = 1000;
     readTimestamp: TimeStamp;
 
     constructor(args: SubscriptionUnreadArgs) {
-        super();
+        super(args);
         this.count = args.count;
         this.maxCount = args.maxCount;
         this.readTimestamp = args.readTimestamp;

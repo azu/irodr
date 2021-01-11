@@ -116,7 +116,7 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
         // disable content filter
         this.useCase(new TurnOffContentsFilterUseCase()).execute();
         // fetch more contents
-        this.useCase(createFetchMoreSubscriptContentsUseCase()).execute(subscription.id);
+        this.useCase(createFetchMoreSubscriptContentsUseCase()).execute(subscription.props.id);
     };
 
     render() {

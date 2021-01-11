@@ -9,6 +9,7 @@ import {
     InoreaderAuthoritySerializer
 } from "../Authority/InoreaderAuthority";
 import { Authority } from "../Authority/Authority";
+import { AppSubscriptionActivityItem } from "./AppSubscriptionActivityItem";
 
 // Limited Implementation
 export const AppUserSerializer: Serializer<AppUser, AppUserJSON> = {
@@ -41,7 +42,7 @@ export interface AppUserArgs {
     subscriptionActivity: AppSubscriptionActivity;
 }
 
-export class AppUser extends Entity<AppUserIdentifier> {
+export class AppUser extends Entity<AppUserArgs> {
     id: AppUserIdentifier;
     // user include authority
     // It has a limitation that one user has a one authority.
@@ -50,7 +51,7 @@ export class AppUser extends Entity<AppUserIdentifier> {
     subscriptionActivity: AppSubscriptionActivity;
 
     constructor(args: AppUserArgs) {
-        super(args.id);
+        super(args);
         this.id = args.id;
         this.isMachine = args.isMachine;
         this.authority = args.authority;
@@ -62,7 +63,8 @@ export class AppUser extends Entity<AppUserIdentifier> {
     }
 
     openNewSubscription(subscription: Subscription) {
-        this.subscriptionActivity = this.subscriptionActivity.addItem(subscription);
+        const activityItem = new AppSubscriptionActivityItem(subscription.props);
+        this.subscriptionActivity = this.subscriptionActivity.addItem(activityItem);
     }
 
     /**

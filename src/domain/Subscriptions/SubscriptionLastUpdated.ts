@@ -11,11 +11,11 @@ export const SubscriptionLastUpdatedSerializer: Serializer<SubscriptionLastUpdat
 
 export type SubscriptionLastUpdatedJSON = string;
 
-export class SubscriptionLastUpdated extends ValueObject {
+export class SubscriptionLastUpdated extends ValueObject<{}> {
     date: Date;
 
     constructor(date: Date) {
-        super();
+        super(date);
         this.date = date;
     }
 }

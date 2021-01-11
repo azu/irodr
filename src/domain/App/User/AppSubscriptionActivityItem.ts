@@ -6,11 +6,11 @@ export interface AppSubscriptionActivityItemArgs {
     id: SubscriptionIdentifier;
 }
 
-export class AppSubscriptionActivityItem extends ValueObject {
+export class AppSubscriptionActivityItem extends ValueObject<{}> {
     id: SubscriptionIdentifier;
 
     constructor(args: AppSubscriptionActivityItemArgs) {
-        super();
+        super(args);
         this.id = args.id;
     }
 }

@@ -32,7 +32,7 @@ export interface SubscriptionListContainerProps {
 export class SubscriptionListContainer extends BaseContainer<SubscriptionListContainerProps, {}> {
     private groupList: React.Ref<GroupedList> = React.createRef();
     private onClickSubscription = async (item: Subscription) => {
-        await this.useCase(createShowSubscriptionContentsUseCase()).execute(item.id);
+        await this.useCase(createShowSubscriptionContentsUseCase()).execute(item.props.id);
     };
     private prefetchSubscriptions = async (
         currentSubscriptionId: SubscriptionIdentifier,
@@ -45,8 +45,8 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
         if (!nextItem) {
             return;
         }
-        await this.useCase(createPrefetchSubscriptContentsUseCase()).execute(nextItem.id);
-        return this.prefetchSubscriptions(nextItem.id, count - 1);
+        await this.useCase(createPrefetchSubscriptContentsUseCase()).execute(nextItem.props.id);
+        return this.prefetchSubscriptions(nextItem.props.id, count - 1);
     };
 
     async componentDidUpdate(prevProp: SubscriptionListContainerProps) {
@@ -104,7 +104,7 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
         const onClick = () => {
             this.onClickSubscription(subscription);
         };
-        const isCurrentItem = subscription.id.equals(this.props.subscriptionList.currentSubscriptionId);
+        const isCurrentItem = subscription.props.id.equals(this.props.subscriptionList.currentSubscriptionId);
         return (
             <div
                 data-selection-index={itemIndex}
@@ -114,7 +114,7 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
                     "has-read": subscription.hasBeenRead
                 })}
                 onClick={onClick}
-                data-feedid={subscription.id.toValue()}
+                data-feedid={subscription.props.id.toValue()}
             >
                 <img
                     className="SubscriptionListContainer-itemImage"

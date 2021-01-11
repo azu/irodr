@@ -34,13 +34,13 @@ export interface AppArgs {
 
 export class AppIdentifier extends Identifier<string> {}
 
-export class App extends Entity<AppIdentifier> {
+export class App extends Entity<AppArgs> {
     id: AppIdentifier;
     user: AppUser;
     preferences: AppPreferences;
 
     constructor(args: AppArgs) {
-        super(args.id);
+        super(args);
         this.id = args.id;
         this.user = args.user;
         this.preferences = args.preferences;

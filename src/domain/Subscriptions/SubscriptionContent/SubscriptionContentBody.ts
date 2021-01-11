@@ -1,9 +1,9 @@
 // MIT © 2017 azu
 import { ValueObject } from "ddd-base";
 
-export class SubscriptionContentBody extends ValueObject {
+export class SubscriptionContentBody extends ValueObject<{}> {
     constructor(private body: string) {
-        super();
+        super(body);
     }
 
     get HTMLString(): string {

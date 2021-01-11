@@ -54,7 +54,7 @@ export interface SubscriptionContentArgs {
     url: string;
 }
 
-export class SubscriptionContent extends Entity<SubscriptionContentIdentifier> {
+export class SubscriptionContent extends Entity<SubscriptionContentArgs> {
     id: SubscriptionContentIdentifier;
     author: string;
     publishedDate: TimeStamp;
@@ -65,7 +65,7 @@ export class SubscriptionContent extends Entity<SubscriptionContentIdentifier> {
     url: string;
 
     constructor(args: SubscriptionContentArgs) {
-        super(args.id);
+        super(args);
         this.id = args.id;
         this.author = args.author;
         this.publishedDate = args.publishedDate;

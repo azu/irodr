@@ -135,7 +135,7 @@ export class InoreaderAPI {
         // http://www.inoreader.com/developers/stream-contents
         // /api/0/stream/contents/feed%2Fhttps%3A%2F%2Faddons.mozilla.org%2Fja%2Ffirefox%2Fextensions%2Fweb-development%2Fformat%3Arss%3Fsort%3Dnewest?n=20
         // http://irodr.netlify.app/api/0/stream/contents/feed/http://b.hatena.ne.jp/keyword/JavaScript?mode=rss&sort=hot&threshold=5?n=20
-        const feedId = encodeURIComponent(subscription.id.toValue());
+        const feedId = encodeURIComponent(subscription.props.id.toValue());
         return this.getRequest(`/api/0/stream/contents/${feedId}`, {
             n: fetchCount,
             c: isContinuous && subscription.contents.continuationKey ? subscription.contents.continuationKey : undefined
@@ -149,7 +149,7 @@ export class InoreaderAPI {
     markAsRead(subscription: Subscription): Promise<boolean> {
         // http://www.inoreader.com/developers/mark-all-as-read
         return this.getRequest("/api/0/mark-all-as-read", {
-            s: subscription.id.toValue(),
+            s: subscription.props.id.toValue(),
             ts: subscription.unread.readTimestamp.second
         })
             .then(res => res.text())

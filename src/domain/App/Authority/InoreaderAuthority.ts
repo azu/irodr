@@ -43,7 +43,7 @@ export interface InoreaderAuthorityJSON {
 
 export class InoreaderAuthorityIdentifier extends Identifier<string> {}
 
-export class InoreaderAuthority extends Entity<InoreaderAuthorityIdentifier> {
+export class InoreaderAuthority extends Entity<InoreaderAuthorityArgs> {
     id: InoreaderAuthorityIdentifier;
     clientId: string;
     clientSecret: string;
@@ -53,7 +53,7 @@ export class InoreaderAuthority extends Entity<InoreaderAuthorityIdentifier> {
     state: string;
 
     constructor(args: InoreaderAuthorityArgs) {
-        super(args.id);
+        super(args);
         this.id = args.id;
         this.clientId = args.clientId;
         this.clientSecret = args.clientSecret;

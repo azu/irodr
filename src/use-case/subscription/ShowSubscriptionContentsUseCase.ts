@@ -36,7 +36,7 @@ export class ShowSubscriptionContentsUseCase extends UseCase {
             throw new Error(`Not found subscription: ${subscriptionId}`);
         }
         if (subscription.isContentsUpdating) {
-            console.info(`This subscription is updating. No more update at once. ${subscription.id}`);
+            console.info(`This subscription is updating. No more update at once. ${subscription.props.id}`);
             return;
         }
         this.dispatch(new StartLoadingPayload());

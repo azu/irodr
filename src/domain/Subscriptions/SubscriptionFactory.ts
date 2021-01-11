@@ -1,7 +1,6 @@
 // MIT © 2017 azu
 import { SubscriptionResponse, SubscriptionsResponse } from "../../infra/api/SubscriptionResponse";
 import { Subscription, SubscriptionIdentifier } from "./Subscription";
-import { SubscriptionOrder } from "./SubscriptionOrder";
 import { SubscriptionUnread } from "./SubscriptionUnread";
 import { UnreadCountResponse, UnreadCountsResponse } from "../../infra/api/UnreadCountResponse";
 import keyBy from "lodash.keyby";
@@ -38,7 +37,6 @@ export function createSubscriptionFromResponse(
         lastUpdated: TimeStamp.createTimeStampFromMicrosecond(subscriptionResponse.firstitemmsec),
         categories: subscriptionResponse.categories.map(category => category.label),
         contents: new NullSubscriptionContents(),
-        order: new SubscriptionOrder(),
         unread: new SubscriptionUnread({
             count: Number(unreadResponse.count),
             maxCount: 1000,
