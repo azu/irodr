@@ -3018,6 +3018,11 @@ cache-base@^1.0.1:
     union-value "^1.0.0"
     unset-value "^1.0.0"
 
+cacheable-lookup@^5.0.4:
+  version "5.0.4"
+  resolved "https://registry.yarnpkg.com/cacheable-lookup/-/cacheable-lookup-5.0.4.tgz#5a6b865b2c44357be3d5ebc2a467b032719a7005"
+  integrity sha512-2/kNscPhpcxrOigMZzbiWF7dz8ilhb/nIHU3EyZiXWXpeq/au8qJ8VhdftMkty3n7Gj6HIGalQG8oiBNB3AJgA==
+
 call-bind@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/call-bind/-/call-bind-1.0.1.tgz#29aca9151f8ddcfd5b9b786898f005f425e88567"
@@ -9543,12 +9548,12 @@ popsicle-redirects@^1.1.0:
   integrity sha512-XCpzVjVk7tty+IJnSdqWevmOr1n8HNDhL86v7mZ6T1JIIf2KGybxUk9mm7ZFOhWMkGB0e8XkacHip7BV8AQWQA==
 
 popsicle-transport-http@^1.0.8:
-  version "1.0.9"
-  resolved "https://registry.yarnpkg.com/popsicle-transport-http/-/popsicle-transport-http-1.0.9.tgz#aebd9aeb751eceec910380ae23a1c094c957581e"
-  integrity sha512-55Os0JdCs35FI8cAsgMoKG6XXKR4Wh8qZIbL3rY5+IZqqjMIo3/3q3wSE98mUhHyLgjg9HQ6ep5wNfhbYCI7GQ==
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/popsicle-transport-http/-/popsicle-transport-http-1.1.0.tgz#5e773a0675f59115140697f114f5c9861e58898e"
+  integrity sha512-ZPixew3SKB8japs8osmlsmf3Pr/nHXYmU7id98SOuq7/ziCkm7xubUj4Ac6qJ7zVEsdYMUGru6FP8Ikgh9jsSw==
   dependencies:
+    cacheable-lookup "^5.0.4"
     make-error-cause "^2.2.0"
-    pump "^3.0.0"
 
 popsicle-transport-xhr@^2.0.0:
   version "2.0.0"
