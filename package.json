@@ -83,7 +83,7 @@
     "whatwg-fetch": "^3.6.1"
   },
   "devDependencies": {
-    "@alrra/travis-scripts": "^3.0.1",
+    "@alrra/travis-scripts": "^3.0.2",
     "@types/http-proxy-middleware": "^0.19.3",
     "@types/whatwg-fetch": "^0.0.33",
     "dotenv-cli": "^3.2.0",
