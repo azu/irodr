@@ -80,7 +80,7 @@
     "requestidlecallback": "^0.3.0",
     "sanitize-html": "^1.27.5",
     "ulid": "^2.3.0",
-    "whatwg-fetch": "^3.6.1"
+    "whatwg-fetch": "^3.6.2"
   },
   "devDependencies": {
     "@alrra/travis-scripts": "^3.0.2",
