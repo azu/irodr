@@ -53,7 +53,7 @@
     "almin": "^0.19.0",
     "almin-logger": "^6.2.4",
     "almin-react-container": "^0.7.4",
-    "classnames": "^2.2.6",
+    "classnames": "^2.3.0",
     "client-oauth2": "^4.3.3",
     "combokeys": "^3.0.1",
     "date-fns": "^1.30.1",
