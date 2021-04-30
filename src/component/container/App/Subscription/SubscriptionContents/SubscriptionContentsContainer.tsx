@@ -14,6 +14,7 @@ import { Time } from "../../../../ui-kit/Time/Time";
 import { TurnOffContentsFilterUseCase, TurnOnContentsFilterUseCase } from "./use-case/ToggleFilterContents";
 import { createFetchMoreSubscriptContentsUseCase } from "../../../../../use-case/subscription/FetchMoreSubscriptContentsUseCase";
 import { SubscriptionContentComponent } from "./SubscriptionContent/SubscriptionContentComponent";
+
 const debug = require("debug")("irodr:SubscriptionContentsContainer");
 const format = require("date-fns/format");
 
@@ -304,9 +305,13 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
     }
 
     private scrollToContentId(scrollContentId: SubscriptionContentIdentifier) {
-        const targetElement = document.querySelector(`[data-content-id="${scrollContentId.toValue()}"]`);
-        if (targetElement) {
-            targetElement.scrollIntoView();
+        try {
+            const targetElement = document.querySelector(`[data-content-id="${scrollContentId.toValue()}"]`);
+            if (targetElement) {
+                targetElement.scrollIntoView();
+            }
+        } catch (error) {
+            console.error("error on scrollToContentId", error);
         }
     }
 }

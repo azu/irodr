@@ -26,9 +26,12 @@ export const createSubscriptionContentFromResponse = (
     // Inoreader response updated: 0
     const hasUpdate = streamContentResponse.updated !== undefined && streamContentResponse.updated !== 0;
     const canonicalHref = streamContentResponse.canonical.map(canonical => canonical.href).join(",");
+    // some id includes space, it is invalid as css selector, so remote it
+    // e.g. http://feeds.feedburner.com/alistapart/main
+    const identifier = `${streamId}--${streamContentResponse.id}--${canonicalHref}`.replace(/\s+/, "");
     return new SubscriptionContent({
         // stream.id + content.id + content.href(s)
-        id: new SubscriptionContentIdentifier(`${streamId}--${streamContentResponse.id}--${canonicalHref}`),
+        id: new SubscriptionContentIdentifier(identifier),
         url: streamContentResponse.canonical[0].href,
         // 2017-10-21~ Inoreader API Response sometimes encode 10 entity
         title: he.decode(streamContentResponse.title) as string,
