@@ -15,7 +15,7 @@ export class SubscriptionGroupByCategoryMap extends MapLike<string, Subscription
 
     sortedEntities(): Array<[string, Subscription[]]> {
         const sortedKeys = this.keys().sort();
-        return sortedKeys.map(key => {
+        return sortedKeys.map((key) => {
             const subscriptions: Subscription[] = this.get(key) as Subscription[];
             return [key, subscriptions] as [string, Subscription[]];
         });

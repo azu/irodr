@@ -39,7 +39,7 @@ export class BootSubscriptionUseCase extends UseCase {
                     require("./ci/subscriptions.json"),
                     require("./ci/unread.json")
                 );
-                subscriptions.forEach(subscription => {
+                subscriptions.forEach((subscription) => {
                     this.repo.subscriptionRepository.save(subscription);
                 });
             } catch (error) {

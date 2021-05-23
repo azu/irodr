@@ -9,7 +9,7 @@ describe("Subscription", () => {
             require("../__fixtures__/subbscription.json"),
             require("../__fixtures__/unread.json")
         );
-        subscriptions.forEach(subscription => {
+        subscriptions.forEach((subscription) => {
             assert.ok(subscription instanceof Subscription);
         });
     });

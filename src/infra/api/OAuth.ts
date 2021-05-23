@@ -64,11 +64,11 @@ export class OAuth {
             if (token.expired()) {
                 return token
                     .refresh()
-                    .then(updatedToken => {
+                    .then((updatedToken) => {
                         this.saveToken(updatedToken);
                         return updatedToken;
                     })
-                    .catch(error => {
+                    .catch((error) => {
                         debug("Token Refresh Error", error);
                         return Promise.reject(error);
                     });
@@ -118,7 +118,7 @@ export class OAuth {
         localStorage.removeItem("inoreader-token");
         return this.getAuth()
             .code.getToken(url)
-            .then(token => {
+            .then((token) => {
                 this.saveToken(token);
                 return token;
             });

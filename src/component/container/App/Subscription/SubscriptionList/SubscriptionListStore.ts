@@ -64,11 +64,11 @@ export class SubscriptionListState {
     }
 
     getItem(currentSubscriptionId: SubscriptionIdentifier): Subscription | undefined {
-        return this.groupSubscriptions.find(subscription => subscription.props.id.equals(currentSubscriptionId));
+        return this.groupSubscriptions.find((subscription) => subscription.props.id.equals(currentSubscriptionId));
     }
 
     getPrevItem(currentSubscriptionId: SubscriptionIdentifier): Subscription | undefined {
-        const index = this.groupSubscriptions.findIndex(subscription =>
+        const index = this.groupSubscriptions.findIndex((subscription) =>
             subscription.props.id.equals(currentSubscriptionId)
         );
         if (index === -1) {
@@ -78,7 +78,7 @@ export class SubscriptionListState {
     }
 
     getNextItem(currentSubscriptionId: SubscriptionIdentifier): Subscription | undefined {
-        const index = this.groupSubscriptions.findIndex(subscription =>
+        const index = this.groupSubscriptions.findIndex((subscription) =>
             subscription.props.id.equals(currentSubscriptionId)
         );
         if (index === -1) {
@@ -122,9 +122,9 @@ export class SubscriptionListState {
         let currentIndex = 0;
         let groupSubscriptions: Subscription[] = [];
         const categoryNames = Object.keys(categoryMap).sort();
-        const groups: IGroup[] = categoryNames.map(categoryName => {
+        const groups: IGroup[] = categoryNames.map((categoryName) => {
             const subscriptions = categoryMap[categoryName];
-            const readableSubscriptions = subscriptions.filter(subscription => {
+            const readableSubscriptions = subscriptions.filter((subscription) => {
                 if (subscription.hasUnreadContents) {
                     return true;
                 }
@@ -155,7 +155,7 @@ export class SubscriptionListState {
     }
 
     private toggleGroup(categoryKey: string): IGroup[] {
-        const index = this.groups.findIndex(group => group.key === categoryKey);
+        const index = this.groups.findIndex((group) => group.key === categoryKey);
         if (index === -1) {
             return this.groups;
         }
@@ -174,19 +174,19 @@ export class SubscriptionListState {
     }
 
     private closeGroups() {
-        return this.groups.map(group => {
+        return this.groups.map((group) => {
             return this.updateGroupCollapsedStatus(group, false);
         });
     }
 
     private openGroups() {
-        return this.groups.map(group => {
+        return this.groups.map((group) => {
             return this.updateGroupCollapsedStatus(group, true);
         });
     }
 
     private toggleGroups() {
-        const anyOneOpen = this.groups.some(group => group.isCollapsed === true);
+        const anyOneOpen = this.groups.some((group) => group.isCollapsed === true);
         if (anyOneOpen) {
             return this.closeGroups();
         } else {

@@ -23,11 +23,11 @@ export class AppRepository extends NonNullableRepository<App> {
         }
         await this.storage.ready();
         const values: AppJSON[] = [];
-        await this.storage.iterate(value => {
+        await this.storage.iterate((value) => {
             values.push(value as AppJSON);
         });
         values
-            .map(json => {
+            .map((json) => {
                 try {
                     return AppSerializer.fromJSON(json);
                 } catch (error) {
@@ -35,7 +35,7 @@ export class AppRepository extends NonNullableRepository<App> {
                     return this.initialEntity;
                 }
             })
-            .forEach(app => {
+            .forEach((app) => {
                 this.save(app);
             });
         return this;

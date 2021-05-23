@@ -25,8 +25,8 @@ const NGList = [
     // }
 ];
 window.addEventListener("userscript-init", () => {
-    userScript.event.subscribe("SubscriptionContent::componentDidMount", content => {
-        const isMatchAnyNG = NGList.some(NGItem => {
+    userScript.event.subscribe("SubscriptionContent::componentDidMount", (content) => {
+        const isMatchAnyNG = NGList.some((NGItem) => {
             let isNG = false;
             if (NGItem.title) {
                 isNG = NGItem.title.test(content.title);

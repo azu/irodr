@@ -46,7 +46,7 @@ export class InoreaderAPI {
 
     getRequest(apiPath: string, parameters?: { [index: string]: any }): Promise<Response> {
         return this.getToken()
-            .then(token => {
+            .then((token) => {
                 debug("token", token);
                 // Sign API requests on behalf of the current user.
                 const query = parameters ? `?${stringify(parameters)}` : "";
@@ -55,7 +55,7 @@ export class InoreaderAPI {
                     url: this.baseURL + apiPath + query
                 });
                 const headers: { [index: string]: string } = {};
-                Object.keys((requestObject as any).headers).forEach(key => {
+                Object.keys((requestObject as any).headers).forEach((key) => {
                     headers[key] = (requestObject as any).headers[key];
                 });
                 // FIXME: Native fetch throw DOMException: "The expression cannot be converted to return the specified type."
@@ -65,7 +65,7 @@ export class InoreaderAPI {
                     headers: headers
                 });
             })
-            .catch(error => {
+            .catch((error) => {
                 debug("Fetch Error", error);
                 return Promise.reject(error);
             });
@@ -73,14 +73,14 @@ export class InoreaderAPI {
 
     postRequest<T>(apiPath: string, body: object): Promise<T> {
         return this.getToken()
-            .then(token => {
+            .then((token) => {
                 // Sign API requests on behalf of the current user.
                 const requestObject = token.sign({
                     method: "post",
                     url: this.baseURL + apiPath
                 });
                 const headers: { [index: string]: string } = {};
-                Object.keys((requestObject as any).headers).forEach(key => {
+                Object.keys((requestObject as any).headers).forEach((key) => {
                     headers[key] = (requestObject as any).headers[key];
                 });
                 headers["Accept"] = "application/json, text/plain, */*";
@@ -90,12 +90,12 @@ export class InoreaderAPI {
                     headers: headers,
                     body: JSON.stringify(body)
                 })
-                    .then(res => res.json())
-                    .then(function(res: T) {
+                    .then((res) => res.json())
+                    .then(function (res: T) {
                         return res;
                     });
             })
-            .catch(error => {
+            .catch((error) => {
                 debug("Fetch Error", error);
                 return Promise.reject(error);
             });
@@ -103,24 +103,24 @@ export class InoreaderAPI {
 
     subscriptions(): Promise<SubscriptionsResponse> {
         return this.getRequest("/api/0/subscription/list")
-            .then(res => {
+            .then((res) => {
                 debug("subscriptions:response", res);
                 // FIXME: res.json() throw DOMException. ?
                 // https://twitter.com/azu_re/status/1208285220949987328
                 return res.json();
             })
-            .then(function(json: SubscriptionsResponse) {
+            .then(function (json: SubscriptionsResponse) {
                 return json;
             });
     }
 
     unreadCounts(): Promise<UnreadCountsResponse> {
         return this.getRequest("/api/0/unread-count")
-            .then(res => {
+            .then((res) => {
                 debug("unreadCounts:response", res);
                 return res.json();
             })
-            .then(function(json: UnreadCountsResponse) {
+            .then(function (json: UnreadCountsResponse) {
                 debug("unreadCounts:response.json", json);
                 return json;
             });
@@ -140,8 +140,8 @@ export class InoreaderAPI {
             n: fetchCount,
             c: isContinuous && subscription.contents.continuationKey ? subscription.contents.continuationKey : undefined
         })
-            .then(res => res.json())
-            .then(function(res: StreamContentsResponse) {
+            .then((res) => res.json())
+            .then(function (res: StreamContentsResponse) {
                 return res;
             });
     }
@@ -152,7 +152,7 @@ export class InoreaderAPI {
             s: subscription.props.id.toValue(),
             ts: subscription.unread.readTimestamp.second
         })
-            .then(res => res.text())
+            .then((res) => res.text())
             .then((res: string) => {
                 return res === "ok";
             });

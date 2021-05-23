@@ -12,13 +12,13 @@ import { TimeStamp } from "../TimeStamp";
 export const SubscriptionContentsSerializer: Serializer<SubscriptionContents, SubscriptionContentsJSON> = {
     fromJSON(json) {
         return new SubscriptionContents({
-            contents: json.contents.map(content => SubscriptionContentSerializer.fromJSON(content)),
+            contents: json.contents.map((content) => SubscriptionContentSerializer.fromJSON(content)),
             lastUpdatedTimestamp: TimeStamp.createTimeStampFromMillisecond(json.lastUpdatedTimestampMs)
         });
     },
     toJSON(entity) {
         return {
-            contents: entity.contents.map(content => SubscriptionContentSerializer.toJSON(content)),
+            contents: entity.contents.map((content) => SubscriptionContentSerializer.toJSON(content)),
             lastUpdatedTimestampMs: entity.lastUpdatedTimestamp.millSecond
         };
     }
@@ -109,7 +109,7 @@ export class SubscriptionContents {
         });
     }
 
-    getContentsWithPredicate(predicate: ((content: SubscriptionContent) => boolean)) {
+    getContentsWithPredicate(predicate: (content: SubscriptionContent) => boolean) {
         const filteredContents = this.contents.filter(predicate);
         return new SubscriptionContents({
             ...(this as SubscriptionContentsArgs),
@@ -118,11 +118,11 @@ export class SubscriptionContents {
     }
 
     findContentById(id: SubscriptionContentIdentifier) {
-        return this.contents.find(content => content.id.equals(id));
+        return this.contents.find((content) => content.id.equals(id));
     }
 
     prevContentOf(aContent: SubscriptionContent) {
-        const index = this.contents.findIndex(content => content.equals(aContent));
+        const index = this.contents.findIndex((content) => content.equals(aContent));
         if (index === -1) {
             return;
         }
@@ -130,7 +130,7 @@ export class SubscriptionContents {
     }
 
     nextContentOf(aContent: SubscriptionContent) {
-        const index = this.contents.findIndex(content => content.equals(aContent));
+        const index = this.contents.findIndex((content) => content.equals(aContent));
         if (index === -1) {
             return;
         }
@@ -150,7 +150,7 @@ export class SubscriptionContents {
     }
 
     remove(aContent: SubscriptionContent) {
-        const index = this.contents.findIndex(content => content.id.equals(aContent.id));
+        const index = this.contents.findIndex((content) => content.id.equals(aContent.id));
         if (index === -1) {
             return;
         }

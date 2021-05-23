@@ -21,7 +21,7 @@ function nKeyHandler() {
     w.userScript.triggerKey("j");
 }
 
-document.body.addEventListener("keyup", event => {
+document.body.addEventListener("keyup", (event) => {
     if (event.key === N_KEY) {
         nKeyHandler();
     }

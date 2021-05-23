@@ -33,7 +33,7 @@ export class MarkAsReadToServerUseCase extends UseCase {
         // send to server
         const app = this.repo.appRepository.get();
         const client = new InoreaderAPI(app.user.authority);
-        return client.markAsRead(subscription).catch(error => {
+        return client.markAsRead(subscription).catch((error) => {
             console.error(error);
             // revert
             this.repo.subscriptionRepository.save(subscription);

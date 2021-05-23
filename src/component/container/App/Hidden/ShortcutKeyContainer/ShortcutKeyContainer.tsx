@@ -86,7 +86,7 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
             }
             this.useCase(createShowSubscriptionContentsUseCase())
                 .execute(nextItem.props.id)
-                .catch(error => {
+                .catch((error) => {
                     return this.useCase(createUpdateHeaderMessageUseCase())
                         .execute(`Can't load... Skip ${nextItem.title}.`)
                         .then(() => {
@@ -237,7 +237,7 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
             "shift+space": "scroll-up-content",
             "shift+s": "skip-and-move-next-subscription-feed"
         };
-        Object.keys(keyMap).forEach(key => {
+        Object.keys(keyMap).forEach((key) => {
             this.combokeys.bind(key, (event: Event) => {
                 if (isIgnoreNode(event)) {
                     return;

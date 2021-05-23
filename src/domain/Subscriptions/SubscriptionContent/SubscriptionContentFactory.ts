@@ -9,7 +9,7 @@ const he = require("he");
 export const createSubscriptionContentsFromResponse = (
     streamContentResponse: StreamContentsResponse
 ): SubscriptionContents => {
-    const contentList = streamContentResponse.items.map(item => {
+    const contentList = streamContentResponse.items.map((item) => {
         return createSubscriptionContentFromResponse(streamContentResponse.id, item);
     });
     return new SubscriptionContents({
@@ -25,7 +25,7 @@ export const createSubscriptionContentFromResponse = (
 ): SubscriptionContent => {
     // Inoreader response updated: 0
     const hasUpdate = streamContentResponse.updated !== undefined && streamContentResponse.updated !== 0;
-    const canonicalHref = streamContentResponse.canonical.map(canonical => canonical.href).join(",");
+    const canonicalHref = streamContentResponse.canonical.map((canonical) => canonical.href).join(",");
     // some id includes space, it is invalid as css selector, so remote it
     // e.g. http://feeds.feedburner.com/alistapart/main
     const identifier = `${streamId}--${streamContentResponse.id}--${canonicalHref}`.replace(/\s+/, "");

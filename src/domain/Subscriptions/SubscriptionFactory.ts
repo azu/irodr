@@ -13,7 +13,7 @@ export function createSubscriptionsFromResponses(
 ): Subscription[] {
     const unreadCountsById = keyBy(unreadsResponse.unreadcounts, "id");
     const results: Subscription[] = [];
-    subscriptionsResponse.subscriptions.forEach(subscriptionResponse => {
+    subscriptionsResponse.subscriptions.forEach((subscriptionResponse) => {
         const unreadCountResponse: UnreadCountResponse | undefined = unreadCountsById[subscriptionResponse.id];
         if (unreadCountResponse) {
             results.push(createSubscriptionFromResponse(subscriptionResponse, unreadCountResponse));
@@ -35,7 +35,7 @@ export function createSubscriptionFromResponse(
         iconUrl: subscriptionResponse.iconUrl,
         htmlUrl: subscriptionResponse.htmlUrl,
         lastUpdated: TimeStamp.createTimeStampFromMicrosecond(subscriptionResponse.firstitemmsec),
-        categories: subscriptionResponse.categories.map(category => category.label),
+        categories: subscriptionResponse.categories.map((category) => category.label),
         contents: new NullSubscriptionContents(),
         unread: new SubscriptionUnread({
             count: Number(unreadResponse.count),

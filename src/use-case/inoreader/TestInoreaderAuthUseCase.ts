@@ -23,7 +23,7 @@ export class TestInoreaderAuthUseCase extends UseCase {
             return;
         }
         const client = new InoreaderAPI(app.user.authority);
-        return client.getToken().catch(error => {
+        return client.getToken().catch((error) => {
             return Promise.reject(error);
         });
     }

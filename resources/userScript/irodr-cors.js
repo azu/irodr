@@ -11,16 +11,16 @@
 // Hook
 localStorage.setItem("REACT_APP_INOREADER_API_BASE_URL", "https://www.inoreader.com/reader");
 // Fetch API with CORS
-const fromEntries = e => e.reduce((acc, [k, v]) => ((acc[k] = v), acc), {});
-const parseHeader = h =>
+const fromEntries = (e) => e.reduce((acc, [k, v]) => ((acc[k] = v), acc), {});
+const parseHeader = (h) =>
     fromEntries(
         h
             .split("\n")
             .filter(Boolean)
-            .map(l => l.split(":").map(tok => tok.trim()))
+            .map((l) => l.split(":").map((tok) => tok.trim()))
     );
 unsafeWindow.fetch = (input, init = {}) => {
-    return new Promise(res => {
+    return new Promise((res) => {
         if (init.headers instanceof Headers) {
             init.headers = fromEntries(Array.from(init.headers.entries()));
         }
@@ -38,11 +38,11 @@ unsafeWindow.fetch = (input, init = {}) => {
         );
         GM_xmlhttpRequest(
             Object.assign({}, init, {
-                onload: xhr => {
+                onload: (xhr) => {
                     xhr.headers = parseHeader(xhr.responseHeaders);
                     res(new Response(xhr.response, Object.assign({}, init, xhr)));
                 },
-                onerror: xhr => {
+                onerror: (xhr) => {
                     console.log("err", xhr);
                     res(new Response(xhr.response, Object.assign({}, init, xhr)));
                 }

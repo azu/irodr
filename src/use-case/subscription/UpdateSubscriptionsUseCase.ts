@@ -29,11 +29,11 @@ export class UpdateSubscriptionsUseCase extends UseCase {
             return;
         }
         const client = new InoreaderAPI(app.user.authority);
-        const subscriptionsResponsePromise = client.subscriptions().catch(error => {
+        const subscriptionsResponsePromise = client.subscriptions().catch((error) => {
             debug("client.subscriptions() error", error);
             return Promise.reject(error);
         });
-        const unreadCountsResponsePromise = client.unreadCounts().catch(error => {
+        const unreadCountsResponsePromise = client.unreadCounts().catch((error) => {
             debug("client.unreadCounts() error", error);
             return Promise.reject(error);
         });
@@ -43,7 +43,7 @@ export class UpdateSubscriptionsUseCase extends UseCase {
                     newSubscriptionsResponse,
                     newUnreadCountsResponse
                 );
-                subscriptions.forEach(subscription => {
+                subscriptions.forEach((subscription) => {
                     const preSubscription = this.repo.subscriptionRepository.findById(subscription.props.id);
                     const saveSubscription = preSubscription
                         ? preSubscription.refreshSubscription(subscription)

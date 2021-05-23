@@ -42,8 +42,8 @@ requireAll((require as any).context("./", true, /\.css$/));
             })
         );
         client.getRequest(api).then(
-            response => console.log(response),
-            error => console.error(error)
+            (response) => console.log(response),
+            (error) => console.error(error)
         );
     },
     appStoreGroup,
@@ -78,7 +78,7 @@ context
             ? context
                   .useCase(createSaveInoreaderTokenUseCase())
                   .execute(location.href)
-                  .then(token => {
+                  .then((token) => {
                       history.replaceState("", "", location.pathname);
                   })
             : Promise.resolve();
@@ -95,7 +95,7 @@ context
         return context
             .useCase(createTestInoreaderAuthUseCase())
             .execute()
-            .catch(async error => {
+            .catch(async (error) => {
                 await context.useCase(new ShowAuthorizePanelUseCase()).execute();
                 return Promise.reject(error);
             });
@@ -103,6 +103,6 @@ context
     .then(() => {
         return context.useCase(createUpdateSubscriptionsUseCase()).execute();
     })
-    .catch(error => {
+    .catch((error) => {
         console.error(error);
     });

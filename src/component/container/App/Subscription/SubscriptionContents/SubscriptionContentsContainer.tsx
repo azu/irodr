@@ -29,9 +29,9 @@ export interface SubscriptionContentsContainerProps {
  */
 export function getActiveContentIdString(): string | undefined {
     const contentContainer = document.querySelector(".SubscriptionContentsContainer") as HTMLElement;
-    const contentElements = document.querySelectorAll(".SubscriptionContentsContainer-content") as NodeListOf<
-        HTMLElement
-    >;
+    const contentElements = document.querySelectorAll(
+        ".SubscriptionContentsContainer-content"
+    ) as NodeListOf<HTMLElement>;
     // TODO: should be computable
     // AppHeader's height = 32px
     const marginTopOfContentContainer = 32;
@@ -49,7 +49,7 @@ export function getActiveContentIdString(): string | undefined {
         return;
     }
     const screen = [containerScrollTop, containerScrollTop + containerOffsetHeight];
-    const pairs = offsets.map(function(v, i, element) {
+    const pairs = offsets.map(function (v, i, element) {
         if (element[i + 1]) {
             return [v, element[i + 1]];
         } else {
@@ -60,7 +60,7 @@ export function getActiveContentIdString(): string | undefined {
     const full_contain: number[] = [];
     debug("getActiveContentIdString:screen", screen);
     debug("getActiveContentIdString:pairs", pairs);
-    const intersections = pairs.map(function(pair, i) {
+    const intersections = pairs.map(function (pair, i) {
         if (pair[1] < screen[0]) {
             return 0;
         }
@@ -259,7 +259,7 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
     private onContentChange() {
         if (this.containerDivRef.current) {
             const observer = new IntersectionObserver(
-                entries => {
+                (entries) => {
                     this.updateCurrentFocus();
                 },
                 {
@@ -268,7 +268,7 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
                     threshold: [0, 0.1, 0.2, 0.4, 0.6, 0.8, 0.9, 1.0]
                 }
             );
-            Array.from(document.querySelectorAll(".SubscriptionContentsContainer-content")).forEach(element => {
+            Array.from(document.querySelectorAll(".SubscriptionContentsContainer-content")).forEach((element) => {
                 observer.observe(element);
             });
         }

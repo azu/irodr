@@ -25,7 +25,7 @@ export class HiddenContainer extends React.Component<HiddenContainerProps, {}> {
                     subscriptionContents={this.props.subscriptionContents}
                 />
                 <ShortcutKeyContainer
-                    ref={c => (this.shortcutKey = c)}
+                    ref={(c) => (this.shortcutKey = c)}
                     subscriptionList={this.props.subscriptionList}
                     subscriptionContents={this.props.subscriptionContents}
                 />

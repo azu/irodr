@@ -15,7 +15,7 @@ export class AppSubscriptionActivity {
 
     isReadRecently(subscriptionId: SubscriptionIdentifier): boolean {
         const RECENT = 5;
-        return this.items.slice(-RECENT).some(item => subscriptionId.equals(item.id));
+        return this.items.slice(-RECENT).some((item) => subscriptionId.equals(item.id));
     }
 
     get previousItem(): AppSubscriptionActivityItem | undefined {
