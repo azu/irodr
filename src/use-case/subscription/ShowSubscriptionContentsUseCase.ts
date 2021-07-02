@@ -12,6 +12,7 @@ import { repositoryContainer } from "../../infra/repository/RepositoryContainer"
 export class StartLoadingPayload implements Payload {
     type = "StartLoadingPayload";
 }
+
 export class FinishLoadingPayload implements Payload {
     type = "FinishLoadingPayload";
 }
@@ -44,8 +45,9 @@ export class ShowSubscriptionContentsUseCase extends UseCase {
         const specResult = isSatisfiedSubscriptionContentsFetchSpec(subscription);
         const app = this.repo.appRepository.get();
         if (!specResult.ok) {
-            console.info(specResult.reason);
+            console.log("specResult.reason:", specResult.reason);
             app.user.openNewSubscription(subscription);
+            await this.repo.appRepository.save(app);
             this.dispatch(new FinishLoadingPayload());
             return;
         }
@@ -55,11 +57,12 @@ export class ShowSubscriptionContentsUseCase extends UseCase {
             .streamContents(subscription, app.preferences.fetchContentsCount)
             .then((response) => {
                 const subscriptionContents = createSubscriptionContentsFromResponse(response);
+                console.log("!!!!subscriptionContents", subscriptionContents);
                 const newSubscription = subscription.updateContents(subscriptionContents);
                 newSubscription.mutableEndContentUpdating();
                 this.repo.subscriptionRepository.save(newSubscription);
                 app.user.openNewSubscription(newSubscription);
-                this.repo.appRepository.save(app);
+                return this.repo.appRepository.save(app);
             })
             .then(() => {
                 this.dispatch(new FinishLoadingPayload());
