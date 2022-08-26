@@ -11,8 +11,14 @@ export function createSubscriptionsFromResponses(
     subscriptionsResponse: SubscriptionsResponse,
     unreadsResponse: UnreadCountsResponse
 ): Subscription[] {
-    const unreadCountsById = keyBy(unreadsResponse.unreadcounts, "id");
+    const unreadCountsById = keyBy(unreadsResponse.unreadcounts, (unreadCount) => {
+        // list: "feed/https://getpocket.com/users/{user}/feed/unread"
+        // unread: "feed/https://<basicauth>@getpocket.com/users/{user}/feed/unread"
+        // この差分を吸収する
+        return unreadCount.id.replace(/(https?):\/\/(\w+):(\w+)@/, "$1://");
+    });
     const results: Subscription[] = [];
+
     subscriptionsResponse.subscriptions.forEach((subscriptionResponse) => {
         const unreadCountResponse: UnreadCountResponse | undefined = unreadCountsById[subscriptionResponse.id];
         if (unreadCountResponse) {

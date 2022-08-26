@@ -108,6 +108,7 @@
 }
 
 .SubscriptionContentsContainer-readMoreButton {
+    border: 1px solid rgb(138, 136, 134, 0.5);
     margin: auto;
     width: 100%;
 }
