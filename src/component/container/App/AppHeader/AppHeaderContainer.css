@@ -1,6 +1,6 @@
 .AppHeaderContainer {
     min-height: var(--AppContainer-header--height);
-    background-color: #f7f7f7;
+    background-color: white;
     padding: 0 12px;
     display: flex;
     align-items: center;

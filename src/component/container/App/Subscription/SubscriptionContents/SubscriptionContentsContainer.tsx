@@ -101,7 +101,7 @@ export function getActiveContentIdString(): string | undefined {
 
 export class SubscriptionContentsContainer extends BaseContainer<SubscriptionContentsContainerProps, {}> {
     containerDivRef: React.RefObject<HTMLDivElement> = React.createRef();
-    private onChangedToggleContentsFilter = (checked: boolean) => {
+    private onChangedToggleContentsFilter = (_event: React.MouseEvent<HTMLElement>, checked: boolean = false) => {
         if (checked) {
             this.useCase(new TurnOnContentsFilterUseCase()).execute();
         } else {
@@ -249,7 +249,7 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
                         offAriaLabel="Show only unread contents"
                         onText="Unread"
                         offText="All"
-                        onChanged={this.onChangedToggleContentsFilter}
+                        onChange={this.onChangedToggleContentsFilter}
                     />
                 </div>
             </header>

@@ -58,7 +58,7 @@ export class AppPreferencesPanel extends React.Component<AppPreferencesPanelProp
                     className="AppPreferencesPanel-autoRefreshSubscriptionSec"
                     label="Auto Refresh Subscription Seconds"
                     value={String(this.state.autoRefreshSubscriptionSec)}
-                    onChanged={(newValue) => {
+                    onChange={(_event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue) => {
                         const autoRefreshSubscriptionSec = Number(newValue);
                         if (Number.isNaN(autoRefreshSubscriptionSec)) {
                             return;
@@ -72,7 +72,7 @@ export class AppPreferencesPanel extends React.Component<AppPreferencesPanelProp
                     className="AppPreferencesPanel-prefetchSubscriptionCount"
                     label="Prefetch Subscription Count"
                     value={String(this.state.prefetchSubscriptionCount)}
-                    onChanged={(newValue) => {
+                    onChange={(_event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue) => {
                         const prefetchSubscriptionCount = Number(newValue);
                         if (Number.isNaN(prefetchSubscriptionCount)) {
                             return;
@@ -87,7 +87,7 @@ export class AppPreferencesPanel extends React.Component<AppPreferencesPanelProp
                     className="AppPreferencesPanel-fetchContentsCount"
                     label="Fetch subscription contents Count"
                     value={String(this.state.fetchContentsCount)}
-                    onChanged={(newValue) => {
+                    onChange={(_event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue) => {
                         const fetchContentsCount = Number(newValue);
                         if (Number.isNaN(fetchContentsCount)) {
                             return;

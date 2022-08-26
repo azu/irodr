@@ -49,6 +49,7 @@ export class AuthorizeModal extends React.Component<AuthorizePanelProps, Authori
 
     render() {
         return (
+            // @ts-ignore
             <Modal
                 isOpen={this.props.isOpen}
                 onDismiss={this.props.onDismiss}
@@ -78,7 +79,7 @@ export class AuthorizeModal extends React.Component<AuthorizePanelProps, Authori
                     className="AuthorizeModal-clientId"
                     label="Inoreader App Client Id"
                     value={String(this.state.clientId)}
-                    onChanged={(newValue) => {
+                    onChange={(_event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue = "") => {
                         this.setState({
                             clientId: newValue
                         });
@@ -88,7 +89,7 @@ export class AuthorizeModal extends React.Component<AuthorizePanelProps, Authori
                     className="AuthorizeModal-clientSecret"
                     label="Inoreader App Client secret"
                     value={String(this.state.clientSecret)}
-                    onChanged={(newValue) => {
+                    onClick={(_event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue = "") => {
                         this.setState({
                             clientSecret: newValue
                         });

@@ -30,7 +30,6 @@ export interface SubscriptionListContainerProps {
 }
 
 export class SubscriptionListContainer extends BaseContainer<SubscriptionListContainerProps, {}> {
-    private groupList: React.Ref<GroupedList> = React.createRef();
     private onClickSubscription = async (item: Subscription) => {
         await this.useCase(createShowSubscriptionContentsUseCase()).execute(item.props.id);
     };
@@ -85,7 +84,6 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
         return (
             <div className={classnames("SubscriptionListContainer", this.props.className)}>
                 <GroupedList
-                    ref={this.groupList}
                     items={this.props.subscriptionList.groupSubscriptions}
                     onRenderCell={this._onRenderCell}
                     groupProps={{

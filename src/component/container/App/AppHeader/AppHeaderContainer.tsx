@@ -8,7 +8,7 @@ import { CommandBar, IconButton, Image, ImageFit, Link } from "office-ui-fabric-
 import { ShowAppPreferenceUseCase } from "../Preferences/use-case/ToggleAppPreferenceUseCase";
 import { ShowAuthorizePanelUseCase } from "../Panel/use-case/ToggleAuthorizePanelUseCase";
 
-const GitHubIcon = require("react-icons/lib/ti/social-github");
+import { AiFillGithub as GithubIcon } from "react-icons/ai";
 
 export interface AppHeaderContainerProps {
     appHeader: AppHeaderState;
@@ -43,7 +43,6 @@ export class AppHeaderContainer extends BaseContainer<AppHeaderContainerProps, {
                     </h1>
                     <div className="AppHeaderContainer-menu">
                         <CommandBar
-                            isSearchBoxVisible={false}
                             items={[
                                 {
                                     key: "reload-list",
@@ -97,7 +96,7 @@ export class AppHeaderContainer extends BaseContainer<AppHeaderContainerProps, {
                         onClick={this.onClickPreferences}
                     />
                     <Link title="Irodr on GitHub" href="https://github.com/azu/irodr">
-                        <GitHubIcon size="24" />
+                        <GithubIcon size="24" />
                     </Link>
                 </div>
             </header>
