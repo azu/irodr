@@ -21,3 +21,6 @@ yarn-debug.log*
 yarn-error.log*
 /src/use-case/subscription/__fixtures__/
 /pwmetrics.secret.js
+
+# Local Netlify folder
+.netlify
