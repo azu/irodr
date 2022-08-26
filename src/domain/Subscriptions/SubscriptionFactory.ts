@@ -12,17 +12,18 @@ export function createSubscriptionsFromResponses(
     unreadsResponse: UnreadCountsResponse
 ): Subscription[] {
     const unreadCountsById = keyBy(unreadsResponse.unreadcounts, (unreadCount) => {
-        // list: "feed/https://getpocket.com/users/{user}/feed/unread"
-        // unread: "feed/https://<basicauth>@getpocket.com/users/{user}/feed/unread"
-        // この差分を吸収する
-        return unreadCount.id.replace(/(https?):\/\/(\w+):(\w+)@/, "$1://");
+        return unreadCount.id;
     });
     const results: Subscription[] = [];
 
     subscriptionsResponse.subscriptions.forEach((subscriptionResponse) => {
-        const unreadCountResponse: UnreadCountResponse | undefined = unreadCountsById[subscriptionResponse.id];
+        // unread: "feed/https://getpocket.com/users/{user}/feed/unread"
+        // list: "feed/https://<basicauth>@getpocket.com/users/{user}/feed/unread"
+        // この差分を吸収する
+        const subscriptionId = subscriptionResponse.id.replace(/(https?):\/\/(\w+):(\w+)@/, "$1://");
+        const unreadCountResponse: UnreadCountResponse | undefined = unreadCountsById[subscriptionId];
         if (unreadCountResponse) {
-            results.push(createSubscriptionFromResponse(subscriptionResponse, unreadCountResponse));
+            results.push(createSubscriptionFromResponse(subscriptionId, subscriptionResponse, unreadCountResponse));
         } else {
             console.warn(`${subscriptionResponse.id}に対応するunreadCountResponseがない`, unreadCountResponse);
         }
@@ -31,11 +32,12 @@ export function createSubscriptionsFromResponses(
 }
 
 export function createSubscriptionFromResponse(
+    id: string,
     subscriptionResponse: SubscriptionResponse,
     unreadResponse: UnreadCountResponse
 ): Subscription {
     return new Subscription({
-        id: new SubscriptionIdentifier(subscriptionResponse.id),
+        id: new SubscriptionIdentifier(id),
         title: subscriptionResponse.title,
         url: subscriptionResponse.url,
         iconUrl: subscriptionResponse.iconUrl,
