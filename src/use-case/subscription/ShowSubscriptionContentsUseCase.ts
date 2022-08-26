@@ -57,7 +57,6 @@ export class ShowSubscriptionContentsUseCase extends UseCase {
             .streamContents(subscription, app.preferences.fetchContentsCount)
             .then((response) => {
                 const subscriptionContents = createSubscriptionContentsFromResponse(response);
-                console.log("!!!!subscriptionContents", subscriptionContents);
                 const newSubscription = subscription.updateContents(subscriptionContents);
                 newSubscription.mutableEndContentUpdating();
                 this.repo.subscriptionRepository.save(newSubscription);
