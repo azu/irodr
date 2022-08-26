@@ -21,10 +21,9 @@ export function createSubscriptionsFromResponses(
         // list: "feed/https://<basicauth>@getpocket.com/users/{user}/feed/unread"
         // この差分を吸収する
         const subscriptionId = subscriptionResponse.id.replace(/(https?):\/\/(\w+):(\w+)@/, "$1://");
-        subscriptionResponse.id = subscriptionId;
         const unreadCountResponse: UnreadCountResponse | undefined = unreadCountsById[subscriptionId];
         if (unreadCountResponse) {
-            results.push(createSubscriptionFromResponse(subscriptionId, subscriptionResponse, unreadCountResponse));
+            results.push(createSubscriptionFromResponse(subscriptionResponse, unreadCountResponse));
         } else {
             console.warn(`${subscriptionResponse.id}に対応するunreadCountResponseがない`, unreadCountResponse);
         }
@@ -33,12 +32,11 @@ export function createSubscriptionsFromResponses(
 }
 
 export function createSubscriptionFromResponse(
-    id: string,
     subscriptionResponse: SubscriptionResponse,
     unreadResponse: UnreadCountResponse
 ): Subscription {
     return new Subscription({
-        id: new SubscriptionIdentifier(id),
+        id: new SubscriptionIdentifier(subscriptionResponse.id),
         title: subscriptionResponse.title,
         url: subscriptionResponse.url,
         iconUrl: subscriptionResponse.iconUrl,
