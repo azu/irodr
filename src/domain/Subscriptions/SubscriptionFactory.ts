@@ -21,6 +21,7 @@ export function createSubscriptionsFromResponses(
         // list: "feed/https://<basicauth>@getpocket.com/users/{user}/feed/unread"
         // この差分を吸収する
         const subscriptionId = subscriptionResponse.id.replace(/(https?):\/\/(\w+):(\w+)@/, "$1://");
+        subscriptionResponse.id = subscriptionId;
         const unreadCountResponse: UnreadCountResponse | undefined = unreadCountsById[subscriptionId];
         if (unreadCountResponse) {
             results.push(createSubscriptionFromResponse(subscriptionId, subscriptionResponse, unreadCountResponse));
