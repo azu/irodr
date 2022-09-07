@@ -1233,6 +1233,16 @@
     "@uifabric/set-version" "^7.0.24"
     tslib "^1.10.0"
 
+"@fluentui/theme@^1.7.11":
+  version "1.7.11"
+  resolved "https://registry.yarnpkg.com/@fluentui/theme/-/theme-1.7.11.tgz#821d541cb495b26d37ff09aa3f433bed12fc5430"
+  integrity sha512-oyD9xMPsHlpG+yJTY/PY+ibiSr0/bv/AF4+Ru+hvjzA1TtQ/jS9Az12Irfrm01TB5QuAVMnHA5ihlxWs+ocE3A==
+  dependencies:
+    "@uifabric/merge-styles" "^7.20.0"
+    "@uifabric/set-version" "^7.0.24"
+    "@uifabric/utilities" "^7.38.0"
+    tslib "^1.10.0"
+
 "@fluentui/theme@^1.7.7":
   version "1.7.7"
   resolved "https://registry.yarnpkg.com/@fluentui/theme/-/theme-1.7.7.tgz#a8aa8b61b871384e9700ed115702d1e508f9eb2a"
@@ -1832,10 +1842,19 @@
   dependencies:
     "@types/react" "*"
 
-"@types/react@*", "@types/react@^18.0.17":
+"@types/react@*":
   version "18.0.17"
   resolved "https://registry.yarnpkg.com/@types/react/-/react-18.0.17.tgz#4583d9c322d67efe4b39a935d223edcc7050ccf4"
   integrity sha512-38ETy4tL+rn4uQQi7mB81G7V1g0u2ryquNmsVIOKUAEIDK+3CUjZ6rSRpdvS99dNBnkLFL83qfmtLacGOTIhwQ==
+  dependencies:
+    "@types/prop-types" "*"
+    "@types/scheduler" "*"
+    csstype "^3.0.2"
+
+"@types/react@^18.0.18":
+  version "18.0.18"
+  resolved "https://registry.yarnpkg.com/@types/react/-/react-18.0.18.tgz#9f16f33d57bc5d9dca848d12c3572110ff9429ac"
+  integrity sha512-6hI08umYs6NaiHFEEGioXnxJ+oEhY3eRz8VCUaudZmGdtvPviCJB8mgaMxaDWAdPSYd4eFavrPk2QIolwbLYrg==
   dependencies:
     "@types/prop-types" "*"
     "@types/scheduler" "*"
@@ -1939,10 +1958,28 @@
     "@uifabric/utilities" "^7.35.0"
     tslib "^1.10.0"
 
+"@uifabric/icons@^7.7.6":
+  version "7.8.6"
+  resolved "https://registry.yarnpkg.com/@uifabric/icons/-/icons-7.8.6.tgz#c53079740999a09584c26de5538b1ba245ff8f40"
+  integrity sha512-Gmgk5jTqHKS28f/tjhJH2S/NcWSZHG3ZdqjtS1vaT8zVzKEtdL0rXeicMUgrfo52xh21nazytriQkxgiWCerZw==
+  dependencies:
+    "@uifabric/set-version" "^7.0.24"
+    "@uifabric/styling" "^7.22.3"
+    "@uifabric/utilities" "^7.38.0"
+    tslib "^1.10.0"
+
 "@uifabric/merge-styles@^7.19.2":
   version "7.19.2"
   resolved "https://registry.yarnpkg.com/@uifabric/merge-styles/-/merge-styles-7.19.2.tgz#e020adc2f9b238f0feb855274dfeedaf6d5822a7"
   integrity sha512-kTlhwglDqwVgIaJq+0yXgzi65plGhmFcPrfme/rXUGMJZoU+qlGT5jXj5d3kuI59p6VB8jWEg9DAxHozhYeu0g==
+  dependencies:
+    "@uifabric/set-version" "^7.0.24"
+    tslib "^1.10.0"
+
+"@uifabric/merge-styles@^7.20.0":
+  version "7.20.0"
+  resolved "https://registry.yarnpkg.com/@uifabric/merge-styles/-/merge-styles-7.20.0.tgz#864793617713c768a9d9ec6f645fa9f4605eb9ad"
+  integrity sha512-7u1oF1lGmNDzOfE9UhULAO9xcEkZV2DDlKlbeIHuXQUGG480drfDWqNPk5LuGNx4ogvH9qSNPbXeGLLZYBb4wQ==
   dependencies:
     "@uifabric/set-version" "^7.0.24"
     tslib "^1.10.0"
@@ -1976,6 +2013,18 @@
     "@uifabric/utilities" "^7.35.0"
     tslib "^1.10.0"
 
+"@uifabric/styling@^7.22.3":
+  version "7.22.3"
+  resolved "https://registry.yarnpkg.com/@uifabric/styling/-/styling-7.22.3.tgz#bb96b71d32997cb63348ef7f98d549c6273a7e7a"
+  integrity sha512-CDahF+/LXx+oeqYFPC0Bib2Teb+wFCrAI0rs2BXylgSrgecYv5QvS9SdZbnrXIwxjnbW6fFOEINy3muwpCOitA==
+  dependencies:
+    "@fluentui/theme" "^1.7.11"
+    "@microsoft/load-themed-styles" "^1.10.26"
+    "@uifabric/merge-styles" "^7.20.0"
+    "@uifabric/set-version" "^7.0.24"
+    "@uifabric/utilities" "^7.38.0"
+    tslib "^1.10.0"
+
 "@uifabric/utilities@^7.35.0":
   version "7.35.0"
   resolved "https://registry.yarnpkg.com/@uifabric/utilities/-/utilities-7.35.0.tgz#b523f4a098880c02671851bc4e5404fa4c8ff266"
@@ -1983,6 +2032,17 @@
   dependencies:
     "@fluentui/dom-utilities" "^1.1.2"
     "@uifabric/merge-styles" "^7.19.2"
+    "@uifabric/set-version" "^7.0.24"
+    prop-types "^15.7.2"
+    tslib "^1.10.0"
+
+"@uifabric/utilities@^7.38.0":
+  version "7.38.0"
+  resolved "https://registry.yarnpkg.com/@uifabric/utilities/-/utilities-7.38.0.tgz#3c202621ccaabb01f4e52ddc8c56b24eaab6b865"
+  integrity sha512-qiF/PkmAdYzvpmOJDjxgqqy3Z1p4WewKn0PBxaDuaH0nZSJswEUAyn53qN6C+FYJ3WllC9cjfBYwmmeGHkc2ug==
+  dependencies:
+    "@fluentui/dom-utilities" "^1.1.2"
+    "@uifabric/merge-styles" "^7.20.0"
     "@uifabric/set-version" "^7.0.24"
     prop-types "^15.7.2"
     tslib "^1.10.0"
