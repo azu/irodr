@@ -1213,34 +1213,34 @@
   dependencies:
     tslib "^1.10.0"
 
-"@fluentui/react-focus@^7.18.12":
-  version "7.18.12"
-  resolved "https://registry.yarnpkg.com/@fluentui/react-focus/-/react-focus-7.18.12.tgz#491df147d30a21098485fd45dc570ed247c29249"
-  integrity sha512-nQk73r/SU4cTcDY/pZW0Av7x4LbShXApm5PvVJxDUoqIvuGG18thpg1KPzzyHMGfVWfG1Qu6w+DGjJ/Sf/vc4Q==
+"@fluentui/react-focus@^7.18.16":
+  version "7.18.16"
+  resolved "https://registry.yarnpkg.com/@fluentui/react-focus/-/react-focus-7.18.16.tgz#a221a4484d71ac4ef1d71548fc0ba83d81f9d2ea"
+  integrity sha512-F84mFfA71pTcKKYVV/U6EXvuxhsOJDTEyIAQHpg7AJZDD78ZCAOY+rcXqxfrx0UfCh9y7hbjU3Q3UIRuveKBzQ==
   dependencies:
     "@fluentui/keyboard-key" "^0.2.12"
-    "@uifabric/merge-styles" "^7.20.0"
+    "@uifabric/merge-styles" "^7.20.1"
     "@uifabric/set-version" "^7.0.24"
-    "@uifabric/styling" "^7.22.3"
-    "@uifabric/utilities" "^7.38.0"
+    "@uifabric/styling" "^7.25.0"
+    "@uifabric/utilities" "^7.38.1"
     tslib "^1.10.0"
 
-"@fluentui/react-window-provider@^1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@fluentui/react-window-provider/-/react-window-provider-1.0.4.tgz#e09bd86bee9ecb5594fb20c146d1720c6a05aa04"
-  integrity sha512-nBkV3RP7DlCzo4MYeCNLUrmKuGUhgmOt/fraNddBRjPXxpr9+u0VJwUD2Bz+qiG4SibclJIGJ8Mh0Il5Bj0kFA==
+"@fluentui/react-window-provider@^1.0.5":
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/@fluentui/react-window-provider/-/react-window-provider-1.0.5.tgz#d625e16f02b18db28657e5f7c6b075c00ca2a0d6"
+  integrity sha512-cvGuFyyOIYjwFsWbLUK1k0yXS4Jz9FNkC8Z+1QAyQHUMNpaGi0thU3L9Y8oS8lm0RnCRKVkm3EEHo5LkvNPfIg==
   dependencies:
     "@uifabric/set-version" "^7.0.24"
     tslib "^1.10.0"
 
-"@fluentui/theme@^1.7.11":
-  version "1.7.11"
-  resolved "https://registry.yarnpkg.com/@fluentui/theme/-/theme-1.7.11.tgz#821d541cb495b26d37ff09aa3f433bed12fc5430"
-  integrity sha512-oyD9xMPsHlpG+yJTY/PY+ibiSr0/bv/AF4+Ru+hvjzA1TtQ/jS9Az12Irfrm01TB5QuAVMnHA5ihlxWs+ocE3A==
+"@fluentui/theme@^1.7.12":
+  version "1.7.12"
+  resolved "https://registry.yarnpkg.com/@fluentui/theme/-/theme-1.7.12.tgz#0f93610ef34a7ecdf863a5efe75880ddd59d34d5"
+  integrity sha512-/vYSXeXP5eWOAUN5NuuCto3lcZkyjJm4tDxZ3MCFXLqw/EP14/l3xXthBqQB+nW4EzYmN3AiJHwWzVm3R00drg==
   dependencies:
-    "@uifabric/merge-styles" "^7.20.0"
+    "@uifabric/merge-styles" "^7.20.1"
     "@uifabric/set-version" "^7.0.24"
-    "@uifabric/utilities" "^7.38.0"
+    "@uifabric/utilities" "^7.38.1"
     tslib "^1.10.0"
 
 "@gribnoysup/wunderbar@^2.2.1":
@@ -1927,43 +1927,43 @@
     semver "^7.3.2"
     tsutils "^3.17.1"
 
-"@uifabric/foundation@^7.10.11":
-  version "7.10.11"
-  resolved "https://registry.yarnpkg.com/@uifabric/foundation/-/foundation-7.10.11.tgz#497914b00416c5b350a8f7ff4b443a33a807f595"
-  integrity sha512-0tqJSzSU6leqWadCAd7KykFiePeQWfwb3CKZO14Z1EEmyOHuqzm4mGIt+KlDQgYdsD3VlSRA0Kx4tbPM1CaTkQ==
+"@uifabric/foundation@^7.10.15":
+  version "7.10.15"
+  resolved "https://registry.yarnpkg.com/@uifabric/foundation/-/foundation-7.10.15.tgz#7c11c3dee8eb3bdbb90ba8589fae11ce8e304599"
+  integrity sha512-Zup0OPJ8j/biWpy4E3MpR51jllmke2z7sBtF3deJS2/FsMjXPKsrdMlmUzaem/v3OcRXhel9ZS0eb97/GZhvYA==
   dependencies:
-    "@uifabric/merge-styles" "^7.20.0"
+    "@uifabric/merge-styles" "^7.20.1"
     "@uifabric/set-version" "^7.0.24"
-    "@uifabric/styling" "^7.22.3"
-    "@uifabric/utilities" "^7.38.0"
+    "@uifabric/styling" "^7.25.0"
+    "@uifabric/utilities" "^7.38.1"
     tslib "^1.10.0"
 
-"@uifabric/icons@^7.8.6":
-  version "7.8.6"
-  resolved "https://registry.yarnpkg.com/@uifabric/icons/-/icons-7.8.6.tgz#c53079740999a09584c26de5538b1ba245ff8f40"
-  integrity sha512-Gmgk5jTqHKS28f/tjhJH2S/NcWSZHG3ZdqjtS1vaT8zVzKEtdL0rXeicMUgrfo52xh21nazytriQkxgiWCerZw==
+"@uifabric/icons@^7.9.4":
+  version "7.9.4"
+  resolved "https://registry.yarnpkg.com/@uifabric/icons/-/icons-7.9.4.tgz#11ea7602367639725ef91e7b9185a24680772167"
+  integrity sha512-7lG09YuryCO8+EqZpQM9Y6+/uC6uxpbPIeQeSDG0QY8e951t7lHcLskxCOk4CSTYqhTbB2vurkOgJFQPjQ573A==
   dependencies:
     "@uifabric/set-version" "^7.0.24"
-    "@uifabric/styling" "^7.22.3"
-    "@uifabric/utilities" "^7.38.0"
+    "@uifabric/styling" "^7.25.0"
+    "@uifabric/utilities" "^7.38.1"
     tslib "^1.10.0"
 
-"@uifabric/merge-styles@^7.20.0":
-  version "7.20.0"
-  resolved "https://registry.yarnpkg.com/@uifabric/merge-styles/-/merge-styles-7.20.0.tgz#864793617713c768a9d9ec6f645fa9f4605eb9ad"
-  integrity sha512-7u1oF1lGmNDzOfE9UhULAO9xcEkZV2DDlKlbeIHuXQUGG480drfDWqNPk5LuGNx4ogvH9qSNPbXeGLLZYBb4wQ==
+"@uifabric/merge-styles@^7.20.1":
+  version "7.20.1"
+  resolved "https://registry.yarnpkg.com/@uifabric/merge-styles/-/merge-styles-7.20.1.tgz#56a9457c696b1efc5947c8392bcc479180d14d02"
+  integrity sha512-LaxbbAGGh/X4x9gwd6kMFIiJKOczy0kHJ1/16b2CAs9De+Ra0mxdTfO9yHbLXKXOvNJcx0mzwaYMDrgBG7cT8A==
   dependencies:
     "@uifabric/set-version" "^7.0.24"
     tslib "^1.10.0"
 
-"@uifabric/react-hooks@^7.16.2":
-  version "7.16.2"
-  resolved "https://registry.yarnpkg.com/@uifabric/react-hooks/-/react-hooks-7.16.2.tgz#1cc8a66ca90767ee4ecc0e52142b6b30c93538eb"
-  integrity sha512-vlWRO73o0jLua0YaVMOZr9VrjiyQRwILi8yoe3Tm8xT8PoDzdsJt4lHNxnXW865xzAYWiUqrlQuds7NiaZsaOg==
+"@uifabric/react-hooks@^7.16.3":
+  version "7.16.3"
+  resolved "https://registry.yarnpkg.com/@uifabric/react-hooks/-/react-hooks-7.16.3.tgz#7f0293be8633acead98ae1194cd7649bfda534bd"
+  integrity sha512-Qf2WQRDbToDsED96xxrW0VpevZ/0NumTyAFY3NHUEphdzqBLDohZQDYB1MjSQxa2T8TBqbvCBcmcnzYi4+kz3A==
   dependencies:
-    "@fluentui/react-window-provider" "^1.0.4"
+    "@fluentui/react-window-provider" "^1.0.5"
     "@uifabric/set-version" "^7.0.24"
-    "@uifabric/utilities" "^7.38.0"
+    "@uifabric/utilities" "^7.38.1"
     tslib "^1.10.0"
 
 "@uifabric/set-version@^7.0.24":
@@ -1973,25 +1973,25 @@
   dependencies:
     tslib "^1.10.0"
 
-"@uifabric/styling@^7.22.3":
-  version "7.22.3"
-  resolved "https://registry.yarnpkg.com/@uifabric/styling/-/styling-7.22.3.tgz#bb96b71d32997cb63348ef7f98d549c6273a7e7a"
-  integrity sha512-CDahF+/LXx+oeqYFPC0Bib2Teb+wFCrAI0rs2BXylgSrgecYv5QvS9SdZbnrXIwxjnbW6fFOEINy3muwpCOitA==
+"@uifabric/styling@^7.25.0":
+  version "7.25.0"
+  resolved "https://registry.yarnpkg.com/@uifabric/styling/-/styling-7.25.0.tgz#03ad7f18e5301db058cdebfe460ff4a6950be5c9"
+  integrity sha512-F92QgRZnsh7Wg0O60SROIAuf0wWW0wYbLca8bO0gNifDjfmAWT/Hoc8d5g8v73kRh/F5lcUWxlHZQEF/vyb2qA==
   dependencies:
-    "@fluentui/theme" "^1.7.11"
+    "@fluentui/theme" "^1.7.12"
     "@microsoft/load-themed-styles" "^1.10.26"
-    "@uifabric/merge-styles" "^7.20.0"
+    "@uifabric/merge-styles" "^7.20.1"
     "@uifabric/set-version" "^7.0.24"
-    "@uifabric/utilities" "^7.38.0"
+    "@uifabric/utilities" "^7.38.1"
     tslib "^1.10.0"
 
-"@uifabric/utilities@^7.38.0":
-  version "7.38.0"
-  resolved "https://registry.yarnpkg.com/@uifabric/utilities/-/utilities-7.38.0.tgz#3c202621ccaabb01f4e52ddc8c56b24eaab6b865"
-  integrity sha512-qiF/PkmAdYzvpmOJDjxgqqy3Z1p4WewKn0PBxaDuaH0nZSJswEUAyn53qN6C+FYJ3WllC9cjfBYwmmeGHkc2ug==
+"@uifabric/utilities@^7.38.1":
+  version "7.38.1"
+  resolved "https://registry.yarnpkg.com/@uifabric/utilities/-/utilities-7.38.1.tgz#a3dc91759559f6552a3ccb5059aa6ee72a148bda"
+  integrity sha512-AdNsDbiARDEtLA9QLGzCYZA7nVKuS7etV7ANvpJ9rko3ApyudRrKZBdHAckd+r8yMCQzg77v8tCfiam2A4jN8g==
   dependencies:
     "@fluentui/dom-utilities" "^1.1.2"
-    "@uifabric/merge-styles" "^7.20.0"
+    "@uifabric/merge-styles" "^7.20.1"
     "@uifabric/set-version" "^7.0.24"
     prop-types "^15.7.2"
     tslib "^1.10.0"
@@ -9015,22 +9015,22 @@ obuf@^1.0.0, obuf@^1.1.2:
   resolved "https://registry.yarnpkg.com/obuf/-/obuf-1.1.2.tgz#09bea3343d41859ebd446292d11c9d4db619084e"
   integrity sha512-PX1wu0AmAdPqOL1mWhqmlOd8kOIZQwGZw6rh7uby9fTc5lhaOWFLX3I6R1hrF9k3zUY40e6igsLGkDXK92LJNg==
 
-office-ui-fabric-react@^7.197.6:
-  version "7.197.6"
-  resolved "https://registry.yarnpkg.com/office-ui-fabric-react/-/office-ui-fabric-react-7.197.6.tgz#19e7015f4d5e055152bc0524d75e19a3bc597692"
-  integrity sha512-xnyRDq3wNELTvrnUH1OwSlw6SNnFbAImR9mQZMVllY/XVX9OMkQEwk6lhzmTwhL1P03BlKBnWjQAIW1punlhZQ==
+office-ui-fabric-react@^7.199.3:
+  version "7.199.3"
+  resolved "https://registry.yarnpkg.com/office-ui-fabric-react/-/office-ui-fabric-react-7.199.3.tgz#6a298ce73312f65e007282b73038f6a6854cddf2"
+  integrity sha512-JEsCWeLyuiR+TzueacaKp0wVMQd2glTEFulAcniA1c0iApAQpLAq6exupTUSTVVdNFNStScGxYjt/XryqeDQBQ==
   dependencies:
     "@fluentui/date-time-utilities" "^7.9.1"
-    "@fluentui/react-focus" "^7.18.12"
-    "@fluentui/react-window-provider" "^1.0.4"
+    "@fluentui/react-focus" "^7.18.16"
+    "@fluentui/react-window-provider" "^1.0.5"
     "@microsoft/load-themed-styles" "^1.10.26"
-    "@uifabric/foundation" "^7.10.11"
-    "@uifabric/icons" "^7.8.6"
-    "@uifabric/merge-styles" "^7.20.0"
-    "@uifabric/react-hooks" "^7.16.2"
+    "@uifabric/foundation" "^7.10.15"
+    "@uifabric/icons" "^7.9.4"
+    "@uifabric/merge-styles" "^7.20.1"
+    "@uifabric/react-hooks" "^7.16.3"
     "@uifabric/set-version" "^7.0.24"
-    "@uifabric/styling" "^7.22.3"
-    "@uifabric/utilities" "^7.38.0"
+    "@uifabric/styling" "^7.25.0"
+    "@uifabric/utilities" "^7.38.1"
     prop-types "^15.7.2"
     tslib "^1.10.0"
 
