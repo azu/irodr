@@ -1213,6 +1213,17 @@
   dependencies:
     tslib "^1.10.0"
 
+"@fluentui/react-compose@^0.19.24":
+  version "0.19.24"
+  resolved "https://registry.yarnpkg.com/@fluentui/react-compose/-/react-compose-0.19.24.tgz#99039410d4c9ad773e6fb6d5c1c9df71bd406a9b"
+  integrity sha512-4PO7WSIZjwBGObpknjK8d1+PhPHJGSlVSXKFHGEoBjLWVlCTMw6Xa1S4+3K6eE3TEBbe9rsqwwocMTFHjhWwtQ==
+  dependencies:
+    "@types/classnames" "^2.2.9"
+    "@uifabric/set-version" "^7.0.24"
+    "@uifabric/utilities" "^7.38.2"
+    classnames "^2.2.6"
+    tslib "^1.10.0"
+
 "@fluentui/react-focus@^7.18.17":
   version "7.18.17"
   resolved "https://registry.yarnpkg.com/@fluentui/react-focus/-/react-focus-7.18.17.tgz#1df7c6cbbece4f1d5a1c792e278999e259931da2"
@@ -1223,6 +1234,30 @@
     "@uifabric/set-version" "^7.0.24"
     "@uifabric/styling" "^7.25.1"
     "@uifabric/utilities" "^7.38.2"
+    tslib "^1.10.0"
+
+"@fluentui/react-stylesheets@^0.2.9":
+  version "0.2.9"
+  resolved "https://registry.yarnpkg.com/@fluentui/react-stylesheets/-/react-stylesheets-0.2.9.tgz#6510eb360614ea4f70937e18e1c1e834cbb52dfb"
+  integrity sha512-6GDU/cUEG/eJ4owqQXDWPmP5L1zNh2NLEDKdEzxd7cWtGnoXLeMjbs4vF4t5wYGzGaxZmUQILOvJdgCIuc9L9Q==
+  dependencies:
+    "@uifabric/set-version" "^7.0.24"
+    tslib "^1.10.0"
+
+"@fluentui/react-theme-provider@^0.19.16":
+  version "0.19.16"
+  resolved "https://registry.yarnpkg.com/@fluentui/react-theme-provider/-/react-theme-provider-0.19.16.tgz#b1a35450f7235bbea3c1e87b302dbb2e94cc899b"
+  integrity sha512-Kf7z4ZfNLS/onaFL5eQDSlizgwy2ytn6SDyjEKV+9VhxIXdDtOh8AaMXWE7dsj1cRBfBUvuGPVnsnoaGdHxJ+A==
+  dependencies:
+    "@fluentui/react-compose" "^0.19.24"
+    "@fluentui/react-stylesheets" "^0.2.9"
+    "@fluentui/react-window-provider" "^1.0.6"
+    "@fluentui/theme" "^1.7.13"
+    "@uifabric/merge-styles" "^7.20.2"
+    "@uifabric/react-hooks" "^7.16.4"
+    "@uifabric/set-version" "^7.0.24"
+    "@uifabric/utilities" "^7.38.2"
+    classnames "^2.2.6"
     tslib "^1.10.0"
 
 "@fluentui/react-window-provider@^1.0.6":
@@ -1653,7 +1688,7 @@
   dependencies:
     "@babel/types" "^7.3.0"
 
-"@types/classnames@^2.3.0":
+"@types/classnames@^2.2.9", "@types/classnames@^2.3.0":
   version "2.3.1"
   resolved "https://registry.yarnpkg.com/@types/classnames/-/classnames-2.3.1.tgz#3c2467aa0f1a93f1f021e3b9bcf938bd5dfdc0dd"
   integrity sha512-zeOWb0JGBoVmlQoznvqXbE0tEC/HONsnoUNH19Hc96NFsTAwTXbTqb8FMYkru1F/iqp7a18Ws3nWJvtA1sHD1A==
@@ -3431,7 +3466,7 @@ classnames@*:
   resolved "https://registry.yarnpkg.com/classnames/-/classnames-2.3.1.tgz#dfcfa3891e306ec1dad105d0e88f4417b8535e8e"
   integrity sha512-OlQdbZ7gLfGarSqxesMesDa5uz7KFbID8Kpq/SxIoNGDqY8lSYs0D+hhtBXhcdB3rcbXArFr7vlHheLk1voeNA==
 
-classnames@^2.3.2:
+classnames@^2.2.6, classnames@^2.3.2:
   version "2.3.2"
   resolved "https://registry.yarnpkg.com/classnames/-/classnames-2.3.2.tgz#351d813bf0137fcc6a76a16b88208d2560a0d924"
   integrity sha512-CSbhY4cFEJRe6/GQzIk5qXZ4Jeg5pcsP7b5peFSDpffpe1cqjASH/n9UTjBwOp6XpMSTwQ8Za2K5V02ueA7Tmw==
@@ -9015,14 +9050,16 @@ obuf@^1.0.0, obuf@^1.1.2:
   resolved "https://registry.yarnpkg.com/obuf/-/obuf-1.1.2.tgz#09bea3343d41859ebd446292d11c9d4db619084e"
   integrity sha512-PX1wu0AmAdPqOL1mWhqmlOd8kOIZQwGZw6rh7uby9fTc5lhaOWFLX3I6R1hrF9k3zUY40e6igsLGkDXK92LJNg==
 
-office-ui-fabric-react@^7.199.6:
-  version "7.199.6"
-  resolved "https://registry.yarnpkg.com/office-ui-fabric-react/-/office-ui-fabric-react-7.199.6.tgz#68113e773e000fed95a390b0b158906bc390db85"
-  integrity sha512-Nxs3bmTpPeoUlDdk1pld26HornxhK9DCig74Y390fcprQc/9Y6zEDaCPqXxOCybqluNQLKoteF1Pc4kpsseofw==
+office-ui-fabric-react@^7.200.0:
+  version "7.201.0"
+  resolved "https://registry.yarnpkg.com/office-ui-fabric-react/-/office-ui-fabric-react-7.201.0.tgz#cebc58fd99faee6f300d61687953a37caa4425a1"
+  integrity sha512-8WDlw4QDwz8hyw7VEk8OqBWg0qd7hXzLseUtc3s84C9WOjM5PX35E9eatODTxQWQ87jl44Sb1W1upBZDheo4vg==
   dependencies:
     "@fluentui/date-time-utilities" "^7.9.1"
     "@fluentui/react-focus" "^7.18.17"
+    "@fluentui/react-theme-provider" "^0.19.16"
     "@fluentui/react-window-provider" "^1.0.6"
+    "@fluentui/theme" "^1.7.13"
     "@microsoft/load-themed-styles" "^1.10.26"
     "@uifabric/foundation" "^7.10.16"
     "@uifabric/icons" "^7.9.5"
