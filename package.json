@@ -75,7 +75,7 @@
     "popsicle": "^9.2.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-icons": "^4.6.0",
+    "react-icons": "^4.7.1",
     "react-render-html": "^0.6.0",
     "requestidlecallback": "^0.3.0",
     "sanitize-html": "^1.27.5",
