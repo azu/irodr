@@ -37,7 +37,7 @@
     "@types/classnames": "^2.3.0",
     "@types/combokeys": "^2.4.6",
     "@types/debug": "^4.1.7",
-    "@types/jest": "^23.3.14",
+    "@types/jest": "^29.2.5",
     "@types/lodash.debounce": "^4.0.7",
     "@types/lodash.groupby": "^4.6.7",
     "@types/lodash.keyby": "^4.6.7",
@@ -48,7 +48,7 @@
     "@types/prop-types": "^15.7.5",
     "@types/react": "^18.0.26",
     "@types/react-dom": "^18.0.10",
-    "@types/sanitize-html": "^1.27.2",
+    "@types/sanitize-html": "^2.8.0",
     "@uifabric/icons": "^7.9.5",
     "almin": "^0.19.0",
     "almin-logger": "^6.2.4",
@@ -78,7 +78,7 @@
     "react-icons": "^4.7.1",
     "react-render-html": "^0.6.0",
     "requestidlecallback": "^0.3.0",
-    "sanitize-html": "^1.27.5",
+    "sanitize-html": "^2.8.1",
     "ulid": "^2.3.0",
     "whatwg-fetch": "^3.6.2"
   },
@@ -87,12 +87,14 @@
     "@types/http-proxy-middleware": "^0.19.3",
     "dotenv-cli": "^3.2.0",
     "http-proxy-middleware": "^0.21.0",
-    "lint-staged": "^11.2.6",
-    "prettier": "^2.3.0",
+    "lint-staged": "^13.1.0",
+    "prettier": "^2.8.2",
     "pwmetrics": "^4.2.3",
-    "react-scripts": "^3.4.4",
+    "react-scripts": "^5.0.1",
     "react-snap": "^1.23.0",
-    "typescript": "^3.7.4"
+    "typescript": "^4.9.4",
+    "assert": "npm:assert@^2.0.0",
+    "querystring": "npm:querystring-es3@^0.2.1"
   },
   "browserslist": {
     "production": [

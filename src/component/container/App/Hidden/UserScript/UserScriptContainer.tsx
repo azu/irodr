@@ -26,7 +26,7 @@ export interface UserScriptActiveSubscription {
 
 export type UserScriptWindow = typeof globalThis &
     Window & {
-        userScript: {
+        userScript?: {
             getActiveContent(): UserScriptActiveContent | undefined;
             getActiveSubscription(): UserScriptActiveSubscription | undefined;
             triggerKey(keys: string, action?: string): void;
