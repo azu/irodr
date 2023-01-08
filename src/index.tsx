@@ -1,9 +1,8 @@
 // polyfill
-require("intersection-observer");
 require("requestidlecallback");
 
 import * as React from "react";
-import { hydrate, render } from "react-dom";
+import { render } from "react-dom";
 import { AppContainer } from "./component/container/App/AppContainer";
 // import registerServiceWorker from "./registerServiceWorker";
 import { InoreaderAPI } from "./infra/api/InoreaderAPI";
@@ -21,6 +20,7 @@ import { ShowAuthorizePanelUseCase } from "./component/container/App/Panel/use-c
 import { initializeIcons } from "@uifabric/icons";
 // Register icons and pull the fonts from the default SharePoint cdn:
 initializeIcons();
+
 // require all css files
 function requireAll(r: any) {
     r.keys().forEach(r);
@@ -85,11 +85,7 @@ context
     })
     .then(() => {
         const rootElement = document.getElementById("root");
-        if (rootElement && rootElement.hasChildNodes()) {
-            hydrate(<App />, rootElement);
-        } else {
-            render(<App />, rootElement);
-        }
+        render(<App />, rootElement);
     })
     .then(() => {
         return context

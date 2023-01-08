@@ -140,7 +140,12 @@ export class InoreaderAPI {
             n: fetchCount,
             c: isContinuous && subscription.contents.continuationKey ? subscription.contents.continuationKey : undefined
         })
-            .then((res) => res.json())
+            .then((res) => {
+                if (res.ok) {
+                    return res.json();
+                }
+                return Promise.reject(new Error("streamContents:response is not ok: " + res.statusText));
+            })
             .then(function (res: StreamContentsResponse) {
                 return res;
             });

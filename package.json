@@ -11,7 +11,7 @@
   "license": "MIT",
   "author": "azu",
   "scripts": {
-    "build": "react-scripts build && react-snap",
+    "build": "react-scripts build",
     "eject": "react-scripts eject",
     "netlify": "dotenv -e .env.netlify react-scripts build",
     "pwmerics": "pwmetrics --config ./pwmetrics-config.js",
@@ -60,7 +60,6 @@
     "ddd-base": "^0.9.1",
     "debug": "^4.3.4",
     "he": "^1.2.0",
-    "intersection-observer": "^0.12.2",
     "localforage": "^1.10.0",
     "localforage-memoryStorageDriver": "^0.9.2",
     "lodash.debounce": "^4.0.8",
@@ -91,7 +90,6 @@
     "prettier": "^2.8.2",
     "pwmetrics": "^4.2.3",
     "react-scripts": "^5.0.1",
-    "react-snap": "^1.23.0",
     "typescript": "^4.9.4",
     "assert": "npm:assert@^2.0.0",
     "querystring": "npm:querystring-es3@^0.2.1"
