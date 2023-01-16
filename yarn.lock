@@ -1568,65 +1568,65 @@
   resolved "https://registry.yarnpkg.com/@humanwhocodes/object-schema/-/object-schema-1.2.1.tgz#b520529ec21d8e5945a1851dfd1c32e94e39ff45"
   integrity sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==
 
-"@immutable-array/copy-within@^1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@immutable-array/copy-within/-/copy-within-1.0.4.tgz#1816a66ad8720ae9dd9ee051838fba62c19afcc8"
-  integrity sha1-GBamathyCundnuBRg4+6YsGa/Mg=
+"@immutable-array/copy-within@^1.0.6":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@immutable-array/copy-within/-/copy-within-1.0.6.tgz#4c51123357675df9b8a50e62cce2330e5f59ce24"
+  integrity sha512-T4JYOIAo0FI9LxVj/2BZQ0egagx2SzuI9meI/+oxgfGpKAZwALX5HWinQ/fJU0iPOTWFcu6TqdF013gcRBiEOA==
 
-"@immutable-array/fill@^1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@immutable-array/fill/-/fill-1.0.4.tgz#d70edd609d308288f406807d4be1bbbef08094f7"
-  integrity sha1-1w7dYJ0wgoj0BoB9S+G7vvCAlPc=
+"@immutable-array/fill@^1.0.6":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@immutable-array/fill/-/fill-1.0.6.tgz#dd9ff0164de33c172fce62b19d07187d99cbfda1"
+  integrity sha512-+eeQ999UJRb3PRy55dHwPlV2cKusREx45GF23TQDgXFSuhBbXO68svPSX5DjE9U7DJro1c20R3oncScxUoDdag==
 
-"@immutable-array/pop@^1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@immutable-array/pop/-/pop-1.0.4.tgz#a34dc8f379f37ca620e672f682effad448a023dd"
-  integrity sha1-o03I83nzfKYg5nL2gu/61EigI90=
+"@immutable-array/pop@^1.0.6":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@immutable-array/pop/-/pop-1.0.6.tgz#e6fd555ceb0199aa14d74d97c2348ecb96ebe072"
+  integrity sha512-2QdH76zibT6ykyz/q9zxJQi04Qf7G8AzA7kVf3El8vGoFKtlDy9ryXBmdmuXPSlNv3HMWT86bT3F739EdhmfDA==
 
-"@immutable-array/prototype@^1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@immutable-array/prototype/-/prototype-1.0.4.tgz#abd70fdb06a24e75428a3d032d3c8226ad910322"
-  integrity sha1-q9cP2waiTnVCij0DLTyCJq2RAyI=
+"@immutable-array/prototype@^1.0.6":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@immutable-array/prototype/-/prototype-1.0.6.tgz#e0c65c3162ca49317ee8990f54d9629fe4ebe37f"
+  integrity sha512-D5hMo8eDKU53iu0Dz5Mr55ifeaoaDzrOOB9uZZvWzzDcFixvlprhyJ3EG2SMGt+r4tUwis+s9MJdAcv2QhNsMQ==
   dependencies:
-    "@immutable-array/copy-within" "^1.0.4"
-    "@immutable-array/fill" "^1.0.4"
-    "@immutable-array/pop" "^1.0.4"
-    "@immutable-array/push" "^1.0.4"
-    "@immutable-array/reverse" "^1.0.4"
-    "@immutable-array/shift" "^1.0.4"
-    "@immutable-array/sort" "^1.0.4"
-    "@immutable-array/splice" "^1.0.4"
-    "@immutable-array/unshift" "^1.0.4"
+    "@immutable-array/copy-within" "^1.0.6"
+    "@immutable-array/fill" "^1.0.6"
+    "@immutable-array/pop" "^1.0.6"
+    "@immutable-array/push" "^1.0.6"
+    "@immutable-array/reverse" "^1.0.6"
+    "@immutable-array/shift" "^1.0.6"
+    "@immutable-array/sort" "^1.0.6"
+    "@immutable-array/splice" "^1.0.6"
+    "@immutable-array/unshift" "^1.0.6"
 
-"@immutable-array/push@^1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@immutable-array/push/-/push-1.0.4.tgz#74ae946494f03eb6b48f24aada3711e9962c4ebf"
-  integrity sha1-dK6UZJTwPra0jySq2jcR6ZYsTr8=
+"@immutable-array/push@^1.0.6":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@immutable-array/push/-/push-1.0.6.tgz#2b323397484a61a1b7a7253987bce5a4fb7fe8e4"
+  integrity sha512-9ilKp2BFxqDhbWwxD1yv4xVBFXnIFMFI9Vd+YPPB73f+ql4FjAhKAzyzECffFMNn80Fxvvp75STWagM/CwEdug==
 
-"@immutable-array/reverse@^1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@immutable-array/reverse/-/reverse-1.0.4.tgz#6efb3d814f2c09e89f7f4ad3271fe9f1d88462f9"
-  integrity sha1-bvs9gU8sCeiff0rTJx/p8diEYvk=
+"@immutable-array/reverse@^1.0.6":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@immutable-array/reverse/-/reverse-1.0.6.tgz#c3a5940490176efd0e75854f1fe9e8da35ef45fa"
+  integrity sha512-wCa7u+s5gIJv7TW5HDhep5kkukhXS177ENREyYbaqEadqVsCJTTltcKaSb6MNkSNeboGFW7l5JPqMSGFpbSqlw==
 
-"@immutable-array/shift@^1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@immutable-array/shift/-/shift-1.0.4.tgz#6f8edc72ae9fe2835446c39d2ba992da3ff22ffd"
-  integrity sha1-b47ccq6f4oNURsOdK6mS2j/yL/0=
+"@immutable-array/shift@^1.0.6":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@immutable-array/shift/-/shift-1.0.6.tgz#d9e4aaec2d246f80297f292eb15a3b13cb9fa323"
+  integrity sha512-34b/Y0G268UcD1fOfSKsUgr8LQ8l9NTgAkKMuIDIF5M9mH5vf2AL9VOwFtvJCNM1tlHV010u0+dSKKLyUa1CVg==
 
-"@immutable-array/sort@^1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@immutable-array/sort/-/sort-1.0.4.tgz#05e961d3c2bef57c8db8a4413bbebfc8b68e6108"
-  integrity sha1-Belh08K+9XyNuKRBO76/yLaOYQg=
+"@immutable-array/sort@^1.0.6":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@immutable-array/sort/-/sort-1.0.6.tgz#a1c9b748f029f868132221609811340ec48d0d3f"
+  integrity sha512-RBjqb+vJEGFmdJzqwlUq/baQPPYC7YwdJ1qjwuPYU3PEagBNrGko4ZxeW8DnQGUsy2EzAuH5gfV0kbccPIrXPg==
 
-"@immutable-array/splice@^1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@immutable-array/splice/-/splice-1.0.4.tgz#546d3de52b52b644e5e8179858d8873a40e31abb"
-  integrity sha1-VG095StStkTl6BeYWNiHOkDjGrs=
+"@immutable-array/splice@^1.0.6":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@immutable-array/splice/-/splice-1.0.6.tgz#788272eb02761cd7e79db1ac1250475473f65406"
+  integrity sha512-i8rCwl6TIvIVLW/5wcblbiNUx2fCRQYunsuKd68atQmZvpKKTBPfm7iHiSu1aZnWSAiSIe1THktjWwMMKLnw9Q==
 
-"@immutable-array/unshift@^1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@immutable-array/unshift/-/unshift-1.0.4.tgz#cdafb37d515382e3028c68e15ae0997de962d8e2"
-  integrity sha1-za+zfVFTguMCjGjhWuCZfeli2OI=
+"@immutable-array/unshift@^1.0.6":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@immutable-array/unshift/-/unshift-1.0.6.tgz#9b951ff40acc5e0fd54430671a8e643ab616106a"
+  integrity sha512-E5URFtTAAZCMz9KSqqNBN8QoLkKKNAZbEbxSE31BqIgbdwz4nBQYwxDmGR70jXSjX7ewq6C1Mm3OThoB5JobmA==
 
 "@istanbuljs/load-nyc-config@^1.0.0":
   version "1.1.0"
