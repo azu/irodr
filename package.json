@@ -77,7 +77,7 @@
     "react-icons": "^4.7.1",
     "react-render-html": "^0.6.0",
     "requestidlecallback": "^0.3.0",
-    "sanitize-html": "^2.8.1",
+    "sanitize-html": "^2.9.0",
     "ulid": "^2.3.0",
     "whatwg-fetch": "^3.6.2"
   },
