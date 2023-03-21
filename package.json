@@ -48,7 +48,7 @@
     "@types/prop-types": "^15.7.5",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
-    "@types/sanitize-html": "^2.8.1",
+    "@types/sanitize-html": "^2.9.0",
     "@uifabric/icons": "^7.9.5",
     "almin": "^0.19.0",
     "almin-logger": "^6.2.4",
