@@ -5,6 +5,7 @@ import { SubscriptionContentSerializer } from "../../../../../domain/Subscriptio
 import { SubscriptionSerializer } from "../../../../../domain/Subscriptions/Subscription";
 import { ShortcutKeyContainer } from "../ShortcutKeyContainer/ShortcutKeyContainer";
 import { UserScriptEvent } from "./UserScriptEvent";
+import { Enclosure } from "../../../../../infra/api/StreamContentsResponse";
 
 export interface UserScriptActiveContent {
     id: string;
@@ -13,7 +14,10 @@ export interface UserScriptActiveContent {
     // if is not update, same with publishedDate
     updatedDate: Date;
     title: string;
-    body: string;
+    body: {
+        content: string;
+        enclosures?: Enclosure[];
+    };
     url: string;
 }
 
