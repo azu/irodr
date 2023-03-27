@@ -19,4 +19,11 @@ export class SubscriptionContentBody extends ValueObject<{}> {
                 .join("") ?? "";
         return this.body + (attachments ? `<div>${attachments}</div>` : "");
     }
+
+    toJSON() {
+        return {
+            content: this.body.content,
+            enclosures: this.body.enclosures
+        };
+    }
 }

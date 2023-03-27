@@ -2,6 +2,7 @@
 import { Entity, Identifier, Serializer } from "ddd-base";
 import { SubscriptionContentBody } from "./SubscriptionContentBody";
 import { TimeStamp, TimeStampJSON, TimeStampSerializer } from "../TimeStamp";
+import { Enclosure } from "../../../infra/api/StreamContentsResponse";
 
 export const SubscriptionContentSerializer: Serializer<SubscriptionContent, SubscriptionContentJSON> = {
     toJSON(entity) {
@@ -11,7 +12,7 @@ export const SubscriptionContentSerializer: Serializer<SubscriptionContent, Subs
             publishedDate: TimeStampSerializer.toJSON(entity.publishedDate),
             updatedDate: TimeStampSerializer.toJSON(entity.updatedDate),
             title: entity.title,
-            body: entity.body.HTMLString,
+            body: entity.body.toJSON(),
             url: entity.url
         };
     },
@@ -36,7 +37,10 @@ export interface SubscriptionContentJSON {
     // if is not update, same with publishedDate
     updatedDate: TimeStampJSON;
     title: string;
-    body: string;
+    body: {
+        content: string;
+        enclosures?: Enclosure[];
+    };
     url: string;
 }
 
