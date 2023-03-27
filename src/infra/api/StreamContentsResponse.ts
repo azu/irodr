@@ -9,11 +9,17 @@ export interface Canonical {
     href: string;
 }
 
+export interface Enclosure {
+    href: string;
+    type: "image/jpeg";
+    length: string;
+}
+
 export interface StreamContentResponse {
     crawlTimeMsec: string;
     canonical: Canonical[];
     annotations: any[];
-    alternate: Alternate[];
+    enclosure?: Enclosure[];
     author: string;
     comments: any[];
     categories: string[];

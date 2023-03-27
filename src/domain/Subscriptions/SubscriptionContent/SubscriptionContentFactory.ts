@@ -36,7 +36,10 @@ export const createSubscriptionContentFromResponse = (
         // 2017-10-21~ Inoreader API Response sometimes encode 10 entity
         title: he.decode(streamContentResponse.title) as string,
         author: streamContentResponse.author,
-        body: new SubscriptionContentBody(streamContentResponse.summary.content),
+        body: new SubscriptionContentBody({
+            content: streamContentResponse.summary.content,
+            enclosures: streamContentResponse.enclosure ?? []
+        }),
         publishedDate: TimeStamp.createTimeStampFromSecond(streamContentResponse.published),
         updatedDate: hasUpdate
             ? TimeStamp.createTimeStampFromSecond(streamContentResponse.updated)
