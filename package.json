@@ -87,7 +87,7 @@
     "assert": "npm:assert@^2.0.0",
     "dotenv-cli": "^3.2.0",
     "http-proxy-middleware": "^0.21.0",
-    "lint-staged": "^13.2.0",
+    "lint-staged": "^13.2.1",
     "prettier": "^2.8.7",
     "pwmetrics": "^4.2.3",
     "querystring": "npm:querystring-es3@^0.2.1",
