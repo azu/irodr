@@ -20,6 +20,7 @@ import { createFetchMoreSubscriptContentsUseCase } from "../../../../../use-case
 import { ToggleAllListGroupUseCase } from "../../Subscription/SubscriptionList/use-case/ToggleAllListGroupUseCase";
 import { createReleaseFocusSubscriptionUseCase } from "../../../../../use-case/subscription/ReleaseFocusSubscriptionUseCase";
 import { FaMapSigns as MapSigns } from "react-icons/fa";
+import { createDumpReadContentHistoryToConsole } from "../../../../../use-case/subscription/DumpReadContentHistoryToConsole";
 
 const DEBOUNCE_TIME = 32;
 const IGNORE_NODE_NAME_PATTERN = /webview/i;
@@ -214,6 +215,9 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
                 await this.useCase(createUpdateHeaderMessageUseCase()).execute("Skip current subscription");
                 await this.useCase(createReleaseFocusSubscriptionUseCase()).execute();
                 await loadNext(currentSubscriptionId);
+            },
+            "dump-read-content-history-to-console": async (_event: Event) => {
+                await this.useCase(createDumpReadContentHistoryToConsole()).execute();
             }
         };
         return actionMap;
@@ -226,6 +230,7 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
             j: "move-next-content-item",
             "shift+j": "load-more-past-contents",
             t: "toggle-content-filter",
+            "shift+h": "dump-read-content-history-to-console",
             k: "move-prev-content-item",
             a: "move-prev-subscription-feed",
             s: "move-next-subscription-feed",

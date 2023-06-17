@@ -14,8 +14,6 @@
     "build": "react-scripts build",
     "eject": "react-scripts eject",
     "netlify": "dotenv -e .env.netlify react-scripts build",
-    "pwmerics": "pwmetrics --config ./pwmetrics-config.js",
-    "pwmerics:ci": "CI=true NODE_ENV=production pwmetrics --config ./pwmetrics-config.js",
     "start": "PORT=13245 react-scripts start",
     "test": "react-scripts test",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,css}\"",
@@ -89,7 +87,6 @@
     "http-proxy-middleware": "^0.21.0",
     "lint-staged": "^13.2.2",
     "prettier": "^2.8.7",
-    "pwmetrics": "^4.2.3",
     "querystring": "npm:querystring-es3@^0.2.1",
     "react-scripts": "^5.0.1",
     "typescript": "^5.0.2"
