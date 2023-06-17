@@ -13,6 +13,6 @@ export class DumpReadContentHistoryToConsole extends UseCase {
 
     execute() {
         const readContents = this.repo.readContentHistoryRepository.getAll();
-        console.log(readContents);
+        console.dir(readContents);
     }
 }

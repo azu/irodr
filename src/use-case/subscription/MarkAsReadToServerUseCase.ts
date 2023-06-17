@@ -32,6 +32,7 @@ export class MarkAsReadToServerUseCase extends UseCase {
             this.repo.subscriptionRepository.save(subscription);
         });
         // save history
-        this.repo.readContentHistoryRepository.saveContents(readSubscription.contents.getContentList());
+        await this.repo.readContentHistoryRepository.saveContents(readSubscription.contents.getContentList());
+        await this.repo.readContentHistoryRepository.deleteUnusedSavedContents();
     }
 }
