@@ -20,7 +20,8 @@ export class ReadContentHistoryRepository extends NullableRepository<Subscriptio
         if (contents.length <= limit) {
             return;
         }
-        const contentsToDelete = contents.slice(limit);
+        // LRU - preserve last 100 contents
+        const contentsToDelete = contents.slice(0, contents.length - limit);
         for (const content of contentsToDelete) {
             this.delete(content);
         }

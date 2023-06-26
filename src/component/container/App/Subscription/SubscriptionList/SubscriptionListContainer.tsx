@@ -12,7 +12,7 @@ import { createPrefetchSubscriptContentsUseCase } from "../../../../../use-case/
 import { createMarkAsReadToClientUseCase } from "../../../../../use-case/subscription/MarkAsReadToClientUseCase";
 import { createMarkAsReadToServerUseCase } from "../../../../../use-case/subscription/MarkAsReadToServerUseCase";
 import { createUpdateHeaderMessageUseCase } from "../../../../../use-case/app/UpdateHeaderMessageUseCase";
-import { debounce } from "lodash";
+import debounce from "lodash.debounce";
 
 function scrollToSubscriptionId(subscriptionId: SubscriptionIdentifier) {
     const targetElement = document.querySelector(
