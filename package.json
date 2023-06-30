@@ -44,7 +44,7 @@
     "@types/lodash.throttle": "^4.1.7",
     "@types/node": "^18.16.18",
     "@types/prop-types": "^15.7.5",
-    "@types/react": "^18.2.13",
+    "@types/react": "^18.2.14",
     "@types/react-dom": "^18.2.6",
     "@types/sanitize-html": "^2.9.0",
     "@uifabric/icons": "^7.9.5",
