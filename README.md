@@ -91,9 +91,13 @@ Run following command and open local server.
 #### Production
 
 http://irodr.netlify.app/ work on [Netlify](https://www.netlify.com/ "Netlify").
-Netlify support CORS proxy
+It uses Netlify `_redirects` as CORS proxy
 
 - [Redirect & Rewrite rules | Netlify](https://www.netlify.com/docs/redirects/ "Redirect &amp; Rewrite rules | Netlify")
+
+You can connect Irord to Inoreader directly via UserScripts.
+
+- [irodr-cros.js](./resources/userScript/irodr-cors.js "irodr-cros.js")
 
 #### Local server
 
