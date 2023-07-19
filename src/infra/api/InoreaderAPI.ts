@@ -96,7 +96,6 @@ export class InoreaderAPI {
                 const cache_buster_uuid = crypto.randomUUID();
                 const urlObject = new URL(requestObject.url, window.location.href);
                 urlObject.searchParams.set("cache_buster_uuid", cache_buster_uuid);
-                console.log("urlObject", urlObject.toString());
                 return userFetch(cache_buster_uuid.toString(), {
                     method: requestObject.method,
                     headers: headers,
