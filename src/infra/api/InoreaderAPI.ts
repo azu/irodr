@@ -58,7 +58,6 @@ export class InoreaderAPI {
                 Object.keys((requestObject as any).headers).forEach((key) => {
                     headers[key] = (requestObject as any).headers[key];
                 });
-                console.log(requestObject);
                 // FIXME: Avoid Netlify cache
                 // https://github.com/azu/irodr/issues/100
                 const cache_buster_uuid = crypto.randomUUID();
