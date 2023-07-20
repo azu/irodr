@@ -1,0 +1,4 @@
+# _redirects is broken
+# See https://github.com/azu/irodr/issues/100
+/api/*  https://github.com/azu/irodr/issues/100 302
+/token https://github.com/azu/irodr/issues/100 302
