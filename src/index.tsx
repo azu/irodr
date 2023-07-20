@@ -43,7 +43,7 @@ requireAll((require as any).context("./", true, /\.css$/));
                 id: new InoreaderAuthorityIdentifier(process.env.REACT_APP_INOREADER_CLIENT_ID!),
                 clientId: process.env.REACT_APP_INOREADER_CLIENT_ID!,
                 clientSecret: process.env.REACT_APP_INOREADER_CLIENT_KEY!,
-                accessTokenUri: process.env.REACT_APP_INOREADER_ACCESS_TOKEN_URL!,
+                accessTokenUri: "https://www.inoreader.com/oauth2/token", // https://github.com/azu/irodr/issues/100
                 authorizationUri: "https://www.inoreader.com/oauth2/auth",
                 scopes: ["read", "write"],
                 state: "inoreader"
