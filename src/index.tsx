@@ -7,7 +7,7 @@ if (process.env.NODE_ENV === "production") {
         if (!localStorage.getItem("REACT_APP_INOREADER_API_BASE_URL")) {
             location.href = "https://github.com/azu/irodr/issues/100";
         }
-    }, 16);
+    }, 3000);
 }
 import * as React from "react";
 import { render } from "react-dom";
