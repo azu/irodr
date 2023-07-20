@@ -1,7 +1,7 @@
 // MIT © 2017 azu
 
-import ClientOAuth2 from "client-oauth2";
-import { Token } from "client-oauth2";
+import ClientOAuth2 from "@azu/client-oauth2";
+import { Token } from "@azu/client-oauth2";
 
 const debug = require("debug")("irodr:OAuth");
 const addLasSlash = (str: string) => {
