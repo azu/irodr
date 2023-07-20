@@ -61,6 +61,7 @@ export class InoreaderAuthority extends Entity<InoreaderAuthorityArgs> {
         this.authorizationUri = args.authorizationUri;
         this.scopes = args.scopes;
         this.state = args.state;
+        console.info("InoreaderAuthority args", args);
     }
 
     update(args: Partial<InoreaderAuthorityArgs>) {
