@@ -1,6 +1,14 @@
 // polyfill
 require("requestidlecallback");
-
+if (process.env.NODE_ENV === "production") {
+    // See https://github.com/azu/irodr/issues/100
+    // Redirect issue if user does not install userScript
+    setTimeout(() => {
+        if (!localStorage.getItem("REACT_APP_INOREADER_API_BASE_URL")) {
+            location.href = "https://github.com/azu/irodr/issues/100";
+        }
+    }, 16);
+}
 import * as React from "react";
 import { render } from "react-dom";
 import { AppContainer } from "./component/container/App/AppContainer";
