@@ -1,5 +1,5 @@
 // MIT © 2017 azu
-import { Token } from "client-oauth2";
+import { Token } from "@azu/client-oauth2";
 import { UnreadCountsResponse } from "./UnreadCountResponse";
 import { SubscriptionsResponse } from "./SubscriptionResponse";
 import { Subscription } from "../../domain/Subscriptions/Subscription";
