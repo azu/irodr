@@ -2,3 +2,6 @@
   base    = "."
   publish = "build"
   command = "npm run netlify"
+[dev]
+  command = "npm run start"
+  targetPort = 13245

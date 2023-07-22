@@ -88,22 +88,29 @@ Run following command and open local server.
 
 ### :memo: CORS workaround
 
+Inoreader doesn't support CORS for API.
+So, Irodr use CORS proxy for Inoreader API.
+
 #### Production
 
 http://irodr.netlify.app/ work on [Netlify](https://www.netlify.com/ "Netlify").
-It uses Netlify `_redirects` as CORS proxy
+It uses [Netlify Edge Functions](https://docs.netlify.com/edge-functions/overview/) for CORS proxy.
 
-- [Redirect & Rewrite rules | Netlify](https://www.netlify.com/docs/redirects/ "Redirect &amp; Rewrite rules | Netlify")
+- [netlify/edge-functions/cors-proxy.ts](./netlify/edge-functions/cors-proxy.ts)
 
-You can connect to Inoreader API directly via UserScripts.
+Recommend: You can connect to Inoreader API without CORS proxy via UserScripts.
 
 - [irodr-cros.js](./resources/userScript/irodr-cors.js "irodr-cros.js")
 
+Also, you can use own CORS proxy.
+
+- [irodr-custom-cors-proxy.js](./resources/userScript/irodr-custom-cors-proxy.js)
+
 #### Local server
 
-This project use the server that avoid CORS for Inoreader.
+In local, you can just run `npm run dev` and open `http://localhost:8888/`.
 
-    npm start
+    npm run dev
 
 ### :memo: Limitation of Mixed-content
 
@@ -120,7 +127,7 @@ See [Releases page](https://github.com/azu/irodr/releases).
 
 Install devDependencies and Run `npm test`:
 
-    npm i -d && npm test
+    npm test
 
 ## Code of Conduct
 

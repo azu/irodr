@@ -8,9 +8,13 @@
 // @description Direct API Request without CORS Error
 // @run-at document-start
 // ==/UserScript==
-// Hook
-localStorage.setItem("REACT_APP_INOREADER_API_BASE_URL", "https://www.inoreader.com/reader");
-// Fetch API with CORS
+// Disable CORS Proxy
+localStorage.setItem("REACT_APP_CORS_PROXY", "");
+// If you uninstall this script, you need to clear localStorage
+// OR localStorage.removeItem("REACT_APP_CORS_PROXY")
+// =====================
+// override fetch with GM_xmlhttpRequest
+// GM_xmlhttpRequest can ignore CORS
 const fromEntries = (e) => e.reduce((acc, [k, v]) => ((acc[k] = v), acc), {});
 const parseHeader = (h) =>
     fromEntries(

@@ -23,7 +23,8 @@ export const AppUserSerializer: Serializer<AppUser, AppUserJSON> = {
         return new AppUser({
             ...defaultAppUserArgs(false),
             id: new AppUserIdentifier(json.id),
-            authority: InoreaderAuthoritySerializer.fromJSON(json.authority)
+            // authority should not restore
+            authority: defaultAppUserArgs(false).authority
         });
     }
 };
