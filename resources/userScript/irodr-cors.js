@@ -3,7 +3,7 @@
 // @namespace   https://irodr.netlify.app/
 // @match       https://irodr.netlify.app/
 // @grant       GM_xmlhttpRequest
-// @version     1.0
+// @version     2.0
 // @author      azu
 // @description Direct API Request without CORS Error
 // @run-at document-start
