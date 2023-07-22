@@ -16,7 +16,8 @@
     "netlify": "dotenv -e .env.netlify react-scripts build",
     "dev": "netlify dev",
     "start": "PORT=13245 react-scripts start",
-    "test": "react-scripts test",
+    "test": "react-scripts test && npm run test:proxy",
+    "test:proxy": "node tools/no-console-proxy.mjs",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,css}\"",
     "prepare": "git config --local core.hooksPath .githooks"
   },
