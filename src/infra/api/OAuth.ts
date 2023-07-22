@@ -36,7 +36,6 @@ export class OAuth {
         const redirectUri =
             DynamicURL !== undefined ? DynamicURL : PUBLIC_URL ? addLasSlash(PUBLIC_URL) : `http://localhost:8888/`;
         const { clientId, clientSecret, accessTokenUri, authorizationUri, scopes, state } = this.options;
-        console.info("OAuth options", { clientId, clientSecret, accessTokenUri, authorizationUri, scopes, state });
         return new ClientOAuth2({
             clientId,
             clientSecret,
