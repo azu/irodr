@@ -158,5 +158,5 @@ MIT © azu
 ## OSS Supports
 
 <a href="https://www.netlify.com">
-  <img src="https://www.netlify.com/img/global/badges/netlify-color-bg.svg"/>
+  <img src="https://www.netlify.com/img/global/badges/netlify-color-bg.svg" alt="Netlify"/>
 </a>
