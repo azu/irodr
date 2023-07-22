@@ -32,7 +32,6 @@ export default async (req: Request) => {
         proxiedResponse.headers.set("Cache-Control", "no-store");
         return proxiedResponse;
     } catch (e: any) {
-        console.error(e);
         return new Response(e.message, {
             status: 500
         });
