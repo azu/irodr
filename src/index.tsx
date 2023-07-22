@@ -1,14 +1,5 @@
 // polyfill
 require("requestidlecallback");
-if (process.env.NODE_ENV === "production") {
-    // See https://github.com/azu/irodr/issues/100
-    // Redirect issue if user does not install userScript
-    setTimeout(() => {
-        if (!localStorage.getItem("REACT_APP_INOREADER_API_BASE_URL")) {
-            location.href = "https://github.com/azu/irodr/issues/100";
-        }
-    }, 3000);
-}
 import * as React from "react";
 import { render } from "react-dom";
 import { AppContainer } from "./component/container/App/AppContainer";
@@ -38,12 +29,15 @@ requireAll((require as any).context("./", true, /\.css$/));
 
 (window as any).irodr = {
     debugGetRequest(api: string) {
+        const corsProxy = localStorage.getItem("REACT_APP_CORS_PROXY") ?? process.env.REACT_APP_CORS_PROXY;
         const client = new InoreaderAPI(
             new InoreaderAuthority({
                 id: new InoreaderAuthorityIdentifier(process.env.REACT_APP_INOREADER_CLIENT_ID!),
                 clientId: process.env.REACT_APP_INOREADER_CLIENT_ID!,
                 clientSecret: process.env.REACT_APP_INOREADER_CLIENT_KEY!,
-                accessTokenUri: "https://www.inoreader.com/oauth2/token", // https://github.com/azu/irodr/issues/100
+                accessTokenUri: corsProxy
+                    ? `${corsProxy}https://www.inoreader.com/oauth2/token`
+                    : "https://www.inoreader.com/oauth2/token",
                 authorizationUri: "https://www.inoreader.com/oauth2/auth",
                 scopes: ["read", "write"],
                 state: "inoreader"

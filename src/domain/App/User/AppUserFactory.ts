@@ -4,6 +4,7 @@ import { AppUser, AppUserArgs, AppUserIdentifier } from "./AppUser";
 import { AppSubscriptionActivity } from "./AppSubscriptionActivity";
 import { InoreaderAuthority, InoreaderAuthorityIdentifier } from "../Authority/InoreaderAuthority";
 
+const corsProxy = localStorage.getItem("REACT_APP_CORS_PROXY") ?? process.env.REACT_APP_CORS_PROXY;
 export const defaultAppUserArgs = (isMachine: boolean): AppUserArgs => {
     return {
         id: new AppUserIdentifier(ulid()),
@@ -15,7 +16,9 @@ export const defaultAppUserArgs = (isMachine: boolean): AppUserArgs => {
             id: new InoreaderAuthorityIdentifier(process.env.REACT_APP_INOREADER_CLIENT_ID!),
             clientId: process.env.REACT_APP_INOREADER_CLIENT_ID!,
             clientSecret: process.env.REACT_APP_INOREADER_CLIENT_KEY!,
-            accessTokenUri: "https://www.inoreader.com/oauth2/token", // https://github.com/azu/irodr/issues/100
+            accessTokenUri: corsProxy
+                ? `${corsProxy}https://www.inoreader.com/oauth2/token`
+                : "https://www.inoreader.com/oauth2/token",
             authorizationUri: "https://www.inoreader.com/oauth2/auth",
             scopes: ["read", "write"],
             state: "inoreader"

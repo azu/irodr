@@ -9,15 +9,18 @@ import { InoreaderAuthority } from "../../domain/App/Authority/InoreaderAuthorit
 import { OAuth } from "./OAuth";
 
 const debug = require("debug")("irodr:InoreaderAPI");
-// localStorage hook
-const baseURL =
-    localStorage.getItem("REACT_APP_INOREADER_API_BASE_URL") || process.env.REACT_APP_INOREADER_API_BASE_URL;
+// default: https://www.inoreader.com
+const inoreaderBaseUrl =
+    localStorage.getItem("REACT_APP_INOREADER_BASE_URL") ?? process.env.REACT_APP_INOREADER_BASE_URL;
+
+const corsProxy = localStorage.getItem("REACT_APP_CORS_PROXY") ?? process.env.REACT_APP_CORS_PROXY;
+
 const userFetch = (input: RequestInfo, init?: RequestInit) => {
     return window.fetch(input, init);
 };
 
 export class InoreaderAPI {
-    baseURL: string;
+    apiBaseUrl: string;
     private auth: OAuth;
 
     constructor(private inoreaderAuthority: InoreaderAuthority) {
@@ -29,7 +32,8 @@ export class InoreaderAPI {
             scopes: this.inoreaderAuthority.scopes,
             state: this.inoreaderAuthority.state
         });
-        this.baseURL = baseURL || "";
+        // api base url
+        this.apiBaseUrl = `${inoreaderBaseUrl}/reader` || "https://www.inoreader.com/reader";
     }
 
     getToken(): Promise<Token> {
@@ -52,20 +56,16 @@ export class InoreaderAPI {
                 const query = parameters ? `?${stringify(parameters)}` : "";
                 const requestObject = token.sign({
                     method: "get",
-                    url: this.baseURL + apiPath + query
+                    url: this.apiBaseUrl + apiPath + query
                 });
                 const headers: { [index: string]: string } = {};
                 Object.keys((requestObject as any).headers).forEach((key) => {
                     headers[key] = (requestObject as any).headers[key];
                 });
-                // FIXME: Avoid Netlify cache
-                // https://github.com/azu/irodr/issues/100
-                const cache_buster_uuid = crypto.randomUUID();
-                const urlObject = new URL(requestObject.url, window.location.href);
-                urlObject.searchParams.set("cache_buster_uuid", cache_buster_uuid);
+                const proxiedUrl = corsProxy ? `${corsProxy}${requestObject.url}` : requestObject.url;
                 // FIXME: Native fetch throw DOMException: "The expression cannot be converted to return the specified type."
                 // https://twitter.com/azu_re/status/1208285220949987328
-                return userFetch(urlObject.toString(), {
+                return userFetch(proxiedUrl, {
                     method: requestObject.method,
                     headers: headers
                 });
@@ -82,7 +82,7 @@ export class InoreaderAPI {
                 // Sign API requests on behalf of the current user.
                 const requestObject = token.sign({
                     method: "post",
-                    url: this.baseURL + apiPath
+                    url: this.apiBaseUrl + apiPath
                 });
                 const headers: { [index: string]: string } = {};
                 Object.keys((requestObject as any).headers).forEach((key) => {
@@ -90,12 +90,8 @@ export class InoreaderAPI {
                 });
                 headers["Accept"] = "application/json, text/plain, */*";
                 headers["Content-Type"] = "application/json";
-                // FIXME: Avoid Netlify cache
-                // https://github.com/azu/irodr/issues/100
-                const cache_buster_uuid = crypto.randomUUID();
-                const urlObject = new URL(requestObject.url, window.location.href);
-                urlObject.searchParams.set("cache_buster_uuid", cache_buster_uuid);
-                return userFetch(cache_buster_uuid.toString(), {
+                const proxiedUrl = corsProxy ? `${corsProxy}/${requestObject.url}` : requestObject.url;
+                return userFetch(proxiedUrl, {
                     method: requestObject.method,
                     headers: headers,
                     body: JSON.stringify(body)
