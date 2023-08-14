@@ -87,7 +87,7 @@
     "dotenv-cli": "^3.2.0",
     "http-proxy-middleware": "^0.21.0",
     "lint-staged": "^13.2.3",
-    "netlify-cli": "^15.10.0",
+    "netlify-cli": "^15.11.0",
     "prettier": "^2.8.7",
     "querystring": "npm:querystring-es3@^0.2.1",
     "react-scripts": "^5.0.1",
