@@ -83,7 +83,7 @@
   "devDependencies": {
     "@alrra/travis-scripts": "^3.0.2",
     "@types/http-proxy-middleware": "^0.19.3",
-    "assert": "npm:assert@^2.0.0",
+    "assert": "npm:assert@^2.1.0",
     "dotenv-cli": "^3.2.0",
     "http-proxy-middleware": "^0.21.0",
     "lint-staged": "^13.3.0",
