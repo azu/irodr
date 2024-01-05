@@ -54,7 +54,7 @@
     "almin": "^0.19.0",
     "almin-logger": "^6.2.4",
     "almin-react-container": "^0.7.4",
-    "classnames": "^2.5.0",
+    "classnames": "^2.5.1",
     "combokeys": "^3.0.1",
     "date-fns": "^1.30.1",
     "ddd-base": "^0.9.1",
