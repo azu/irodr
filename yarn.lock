@@ -3544,7 +3544,7 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-20.4.3.tgz#ca83a5a006e0d5709a3fe8966112f26436071d81"
   integrity sha512-Yu3+r4Mn/iY6Mf0aihncZQ1qOjOUrCiodbHHY1hds5O+7BbKp9t+Li7zLO13zO8j9L2C6euz8xsYQP0rjGvVXw==
 
-"@types/node@^18.19.12":
+"@types/node@^18.19.13":
   version "18.19.14"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-18.19.14.tgz#1880ff1b3ac913f3877f711588e5ed227da01886"
   integrity sha512-EnQ4Us2rmOS64nHDWr0XqAD8DsO6f3XR6lf9UIIrZQpUzPVdN/oPuEzfDWNHSyXLvoGgjuEm/sPwFGSSs35Wtg==
