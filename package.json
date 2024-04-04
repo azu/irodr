@@ -48,7 +48,7 @@
     "@types/node": "^18.19.26",
     "@types/prop-types": "^15.7.12",
     "@types/react": "^18.2.73",
-    "@types/react-dom": "^18.2.22",
+    "@types/react-dom": "^18.2.23",
     "@types/sanitize-html": "^2.11.0",
     "@uifabric/icons": "^7.9.5",
     "almin": "^0.19.0",
