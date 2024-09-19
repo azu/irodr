@@ -38,7 +38,7 @@
     "@types/classnames": "^2.3.1",
     "@types/combokeys": "^2.4.9",
     "@types/debug": "^4.1.12",
-    "@types/jest": "^29.5.12",
+    "@types/jest": "^29.5.13",
     "@types/lodash.debounce": "^4.0.9",
     "@types/lodash.groupby": "^4.6.9",
     "@types/lodash.keyby": "^4.6.9",
