@@ -45,7 +45,7 @@
     "@types/lodash.maxby": "^4.6.9",
     "@types/lodash.sortby": "^4.7.9",
     "@types/lodash.throttle": "^4.1.9",
-    "@types/node": "^18.19.67",
+    "@types/node": "^18.19.68",
     "@types/prop-types": "^15.7.14",
     "@types/react": "^18.3.16",
     "@types/react-dom": "^18.3.5",
