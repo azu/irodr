@@ -78,7 +78,7 @@
     "react-render-html": "^0.6.0",
     "requestidlecallback": "^0.3.0",
     "sanitize-html": "^2.14.0",
-    "ulid": "^2.3.0"
+    "ulid": "^2.4.0"
   },
   "devDependencies": {
     "@alrra/travis-scripts": "^3.0.2",
