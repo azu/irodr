@@ -60,6 +60,7 @@ export class HTMLContent extends React.PureComponent<HTMLContentProps, {}> {
         return (
             <div
                 className={classnames("SubscriptionContentsContainer-contentBody", this.props.className)}
+                translate="yes"
                 dangerouslySetInnerHTML={{ __html: senitizedHTML }}
             />
         );
