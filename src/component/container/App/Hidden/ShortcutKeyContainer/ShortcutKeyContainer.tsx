@@ -12,6 +12,7 @@ import { createMarkAsReadToServerUseCase } from "../../../../../use-case/subscri
 import { createOpenSubscriptionContentInNewTabUseCase } from "../../../../../use-case/subscription/OpenSubscriptionContentInNewTabUseCase";
 import { createUpdateHeaderMessageUseCase } from "../../../../../use-case/app/UpdateHeaderMessageUseCase";
 import { SubscriptionIdentifier } from "../../../../../domain/Subscriptions/Subscription";
+import { SubscriptionContentIdentifier } from "../../../../../domain/Subscriptions/SubscriptionContent/SubscriptionContent";
 import {
     TurnOffContentsFilterUseCase,
     TurnOnContentsFilterUseCase
@@ -21,6 +22,13 @@ import { ToggleAllListGroupUseCase } from "../../Subscription/SubscriptionList/u
 import { createReleaseFocusSubscriptionUseCase } from "../../../../../use-case/subscription/ReleaseFocusSubscriptionUseCase";
 import { FaMapSigns as MapSigns } from "react-icons/fa";
 import { createDumpReadContentHistoryToConsole } from "../../../../../use-case/subscription/DumpReadContentHistoryToConsole";
+import {
+    createTranslator,
+    translateElement,
+    isTranslated,
+    restoreElement,
+    type TranslatorHandle
+} from "../../../../../infra/translator/Translator";
 
 const DEBOUNCE_TIME = 32;
 const IGNORE_NODE_NAME_PATTERN = /webview/i;
@@ -54,6 +62,9 @@ export interface ShortcutKeyContainerProps {
 
 export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProps, {}> {
     combokeys: any;
+    translateAbortController: AbortController | null = null;
+    translateMode: boolean = false;
+    cachedTranslator: TranslatorHandle | null = null;
 
     triggerKey(keys: string, action?: string): void {
         if (this.combokeys) {
@@ -64,6 +75,56 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
     registerKey(key: string, handler: (event?: Event) => void): void {
         if (this.combokeys) {
             this.combokeys.bind(key, handler);
+        }
+    }
+
+    turnOffTranslateMode(): void {
+        if (!this.translateMode) return;
+        this.translateMode = false;
+        if (this.translateAbortController) {
+            this.translateAbortController.abort();
+            this.translateAbortController = null;
+        }
+        if (this.cachedTranslator) {
+            this.cachedTranslator.destroy();
+            this.cachedTranslator = null;
+        }
+    }
+
+    /**
+     * Translate a content item by ID. Falls back to focused content if no ID given.
+     */
+    async translateContent(contentId?: SubscriptionContentIdentifier): Promise<void> {
+        const targetId = contentId ?? this.props.subscriptionContents.focusContentId;
+        if (!targetId) return;
+        const contentIdString = targetId.toValue();
+        const contentElement = document.querySelector(`[data-content-id="${contentIdString}"]`);
+        if (!contentElement) return;
+        const bodyElement = contentElement.querySelector(".SubscriptionContentsContainer-contentBody");
+        if (!bodyElement) return;
+        if (isTranslated(bodyElement)) return;
+
+        // Cancel any in-progress translation
+        if (this.translateAbortController) {
+            this.translateAbortController.abort();
+        }
+        const abortController = new AbortController();
+        this.translateAbortController = abortController;
+        try {
+            if (!this.cachedTranslator) {
+                this.cachedTranslator = await createTranslator("en", "ja");
+            }
+            await translateElement(bodyElement, this.cachedTranslator.translateBatch, abortController.signal);
+        } catch (error) {
+            if (!abortController.signal.aborted) {
+                const message = error instanceof Error ? error.message : "Translation failed";
+                this.useCase(createUpdateHeaderMessageUseCase()).execute(message);
+                console.error("Translation error:", error);
+            }
+        } finally {
+            if (this.translateAbortController === abortController) {
+                this.translateAbortController = null;
+            }
         }
     }
 
@@ -96,10 +157,12 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
         };
         let actionMap = {
             "move-next-subscription-feed": debounce(async (_event: Event) => {
+                this.turnOffTranslateMode();
                 const currentSubscriptionId = this.props.subscriptionList.currentSubscriptionId;
                 await loadNext(currentSubscriptionId);
             }, DEBOUNCE_TIME),
             "move-prev-subscription-feed": debounce(async (_event: Event) => {
+                this.turnOffTranslateMode();
                 const currentSubscriptionId = this.props.subscriptionList.currentSubscriptionId;
                 if (!currentSubscriptionId) {
                     return;
@@ -118,30 +181,44 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
                 if (body.scrollTop === 0) {
                     const firstContent = this.props.subscriptionContents.getFirstContent();
                     if (firstContent) {
-                        return this.useCase(new ScrollToNextContentUseCase()).execute(firstContent.id);
+                        this.useCase(new ScrollToNextContentUseCase())
+                            .execute(firstContent.id)
+                            .then(() => {
+                                if (this.translateMode) this.translateContent(firstContent.id);
+                            });
+                        return;
                     }
                 }
                 const currentContent = this.props.subscriptionContents.focusContentId;
                 const nextContent = this.props.subscriptionContents.getNextContent();
                 if (currentContent && !nextContent) {
                     // last item and next
-                    return this.useCase(createUpdateHeaderMessageUseCase()).execute(
+                    this.useCase(createUpdateHeaderMessageUseCase()).execute(
                         <span>
                             <MapSigns /> End of contents
                         </span>
                     );
+                    return;
                 }
                 if (!nextContent) {
                     return;
                 }
-                return this.useCase(new ScrollToNextContentUseCase()).execute(nextContent.id);
+                this.useCase(new ScrollToNextContentUseCase())
+                    .execute(nextContent.id)
+                    .then(() => {
+                        if (this.translateMode) this.translateContent(nextContent.id);
+                    });
             },
             "move-prev-content-item": (_event: Event) => {
                 const prevContent = this.props.subscriptionContents.getPrevContent();
                 if (!prevContent) {
                     return;
                 }
-                this.useCase(new ScrollToPrevContentUseCase()).execute(prevContent.id);
+                this.useCase(new ScrollToPrevContentUseCase())
+                    .execute(prevContent.id)
+                    .then(() => {
+                        if (this.translateMode) this.translateContent(prevContent.id);
+                    });
             },
             "scroll-down-content": (event: Event) => {
                 event.preventDefault();
@@ -208,6 +285,7 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
                 }
             },
             "skip-and-move-next-subscription-feed": async (_event: Event) => {
+                this.turnOffTranslateMode();
                 const currentSubscriptionId = this.props.subscriptionList.currentSubscriptionId;
                 if (!currentSubscriptionId) {
                     return;
@@ -218,6 +296,18 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
             },
             "dump-read-content-history-to-console": async (_event: Event) => {
                 await this.useCase(createDumpReadContentHistoryToConsole()).execute();
+            },
+            "translate-current-content": async (_event: Event) => {
+                if (this.translateMode) {
+                    this.turnOffTranslateMode();
+                    const translatedElements = document.querySelectorAll(".SubscriptionContentsContainer-contentBody");
+                    Array.from(translatedElements).forEach((el) => restoreElement(el));
+                    await this.useCase(createUpdateHeaderMessageUseCase()).execute("Translate mode: OFF");
+                } else {
+                    this.translateMode = true;
+                    await this.useCase(createUpdateHeaderMessageUseCase()).execute("Translate mode: ON");
+                    await this.translateContent();
+                }
             }
         };
         return actionMap;
@@ -239,7 +329,8 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
             z: "toggle-subscription-feed-list",
             space: "scroll-down-content",
             "shift+space": "scroll-up-content",
-            "shift+s": "skip-and-move-next-subscription-feed"
+            "shift+s": "skip-and-move-next-subscription-feed",
+            "shift+t": "translate-current-content"
         };
         Object.keys(keyMap).forEach((key) => {
             this.combokeys.bind(key, (event: Event) => {
@@ -249,6 +340,14 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
                 actionMap[keyMap[key]](event);
             });
         });
+    }
+
+    componentDidUpdate(prevProps: ShortcutKeyContainerProps) {
+        const prevSubId = prevProps.subscriptionList.currentSubscriptionId;
+        const currentSubId = this.props.subscriptionList.currentSubscriptionId;
+        if (currentSubId && (!prevSubId || !prevSubId.equals(currentSubId))) {
+            this.turnOffTranslateMode();
+        }
     }
 
     componentWillUnmount() {
