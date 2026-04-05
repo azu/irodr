@@ -147,9 +147,6 @@ importers:
         specifier: ^2.4.0
         version: 2.4.0
     devDependencies:
-      '@alrra/travis-scripts':
-        specifier: ^3.0.2
-        version: 3.0.2
       '@types/http-proxy-middleware':
         specifier: ^0.19.3
         version: 0.19.3
@@ -186,11 +183,6 @@ packages:
   '@alloc/quick-lru@5.2.0':
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
     engines: {node: '>=10'}
-
-  '@alrra/travis-scripts@3.0.2':
-    resolution: {integrity: sha512-OIloEm8r7ZEcq0um9C9ZvrMfdC5aRFcBKaHwHJ5MCh3U0BTKQQz9uD1rVuuyz6qKkYO/ez3/auUK5eWNDFZMqA==}
-    deprecated: Package no longer supported. Use at your own risk.
-    hasBin: true
 
   '@apideck/better-ajv-errors@0.3.7':
     resolution: {integrity: sha512-TajUJwGWbDwkCx/CZi7tRE8PVB7simCvKJfHUsSdvps+aTM/PDPP4gkLmKnc+x3CE//y9i/nj74GqdL/hwk7Iw==}
@@ -9227,8 +9219,6 @@ packages:
 snapshots:
 
   '@alloc/quick-lru@5.2.0': {}
-
-  '@alrra/travis-scripts@3.0.2': {}
 
   '@apideck/better-ajv-errors@0.3.7(ajv@8.18.0)':
     dependencies:
