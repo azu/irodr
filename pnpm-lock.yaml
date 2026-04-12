@@ -163,8 +163,8 @@ importers:
         specifier: ^13.3.0
         version: 13.3.0(enquirer@2.4.1)
       netlify-cli:
-        specifier: ^24.10.0
-        version: 24.10.0(@types/node@18.19.130)(picomatch@4.0.4)(rollup@2.80.0)
+        specifier: ^24.11.1
+        version: 24.11.1(@types/node@18.19.130)(picomatch@4.0.4)(rollup@2.80.0)
       prettier:
         specifier: ^2.8.7
         version: 2.8.8
@@ -1664,13 +1664,13 @@ packages:
     resolution: {integrity: sha512-03lXstB4xxDKeYs2RTTZrUGRC0ea2nVZvkdGlw2A42AdK7KA6N0ocVmkIn9x91oqFsqK3dWJTAv2bzaLjsehXg==}
     engines: {node: ^14.16.0 || >=16.0.0}
 
-  '@netlify/build-info@10.4.0':
-    resolution: {integrity: sha512-PZ5PurdaZgZdmg969QBiPb56JKQu6EBu2d/2h5ppq7riYOCL2PfgoZQPqTu6g1JCF5my/SRY0+AJIX1YSEzqHg==}
+  '@netlify/build-info@10.5.0':
+    resolution: {integrity: sha512-2h4aXB6tNiT7M3IbPW94Kbx7ujVaXoBnhoJ/S53FCbTg44F1Y4Wr0gnpkSlZCihePlwTaC5vlz1qKp4bw4sAqQ==}
     engines: {node: '>=18.14.0'}
     hasBin: true
 
-  '@netlify/build@35.11.2':
-    resolution: {integrity: sha512-y+Dl2HqNs/5r3z8GBCGRDgjEVaKxJCSIjwQBG9QP/BMOIe18stjhDqECCtFvRvZDqVRF4YjgHZ8Q5VWQ5pFvfA==}
+  '@netlify/build@35.12.0':
+    resolution: {integrity: sha512-3rOq5cbD+QSB9H5YUW5vMSeYRFG6fyHw3MUwrhpc5pHgprSvIU+ravMEdXvHZTHRyUfqvM4rVjyW11qef3Lwcw==}
     engines: {node: '>=18.14.0'}
     hasBin: true
     peerDependencies:
@@ -6396,8 +6396,8 @@ packages:
   neo-async@2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
 
-  netlify-cli@24.10.0:
-    resolution: {integrity: sha512-bW04BXG9P77NrSmdCa6TeundyLTG+vERfwqbWuRmslf6dM5rmPvWt9hoiueHjFAxroKmQEzYEAfjo3QDTy2R9w==}
+  netlify-cli@24.11.1:
+    resolution: {integrity: sha512-UuoA10MAWP4hl/Y5vRWRmhZpcTUlUHq0wPaXGFsXMtfoLInq+blWoTWYSCV5CS4B66TlMGoKpJhskjyn/ujLhw==}
     engines: {node: '>=20.12.2'}
     hasBin: true
 
@@ -10934,7 +10934,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@netlify/build-info@10.4.0':
+  '@netlify/build-info@10.5.0':
     dependencies:
       '@bugsnag/js': 8.8.1
       '@iarna/toml': 2.2.5
@@ -10946,7 +10946,7 @@ snapshots:
       yaml: 2.8.3
       yargs: 17.7.2
 
-  '@netlify/build@35.11.2(@opentelemetry/api@1.8.0)(@types/node@18.19.130)(picomatch@4.0.4)(rollup@2.80.0)':
+  '@netlify/build@35.12.0(@opentelemetry/api@1.8.0)(@types/node@18.19.130)(picomatch@4.0.4)(rollup@2.80.0)':
     dependencies:
       '@bugsnag/js': 8.8.1
       '@netlify/blobs': 10.7.4(supports-color@10.2.2)
@@ -10969,6 +10969,7 @@ snapshots:
       figures: 6.1.0
       filter-obj: 6.1.0
       hot-shots: 11.4.0
+      ignore: 7.0.5
       indent-string: 5.0.0
       is-plain-obj: 4.1.0
       keep-func-props: 6.0.0
@@ -16777,14 +16778,14 @@ snapshots:
 
   neo-async@2.6.2: {}
 
-  netlify-cli@24.10.0(@types/node@18.19.130)(picomatch@4.0.4)(rollup@2.80.0):
+  netlify-cli@24.11.1(@types/node@18.19.130)(picomatch@4.0.4)(rollup@2.80.0):
     dependencies:
       '@fastify/static': 9.0.0
       '@netlify/ai': 0.4.1
       '@netlify/api': 14.0.18
       '@netlify/blobs': 10.7.0
-      '@netlify/build': 35.11.2(@opentelemetry/api@1.8.0)(@types/node@18.19.130)(picomatch@4.0.4)(rollup@2.80.0)
-      '@netlify/build-info': 10.4.0
+      '@netlify/build': 35.12.0(@opentelemetry/api@1.8.0)(@types/node@18.19.130)(picomatch@4.0.4)(rollup@2.80.0)
+      '@netlify/build-info': 10.5.0
       '@netlify/config': 24.4.4
       '@netlify/dev': 4.16.4(rollup@2.80.0)
       '@netlify/dev-utils': 4.4.3
