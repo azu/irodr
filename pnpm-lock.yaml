@@ -163,8 +163,8 @@ importers:
         specifier: ^13.3.0
         version: 13.3.0(enquirer@2.4.1)
       netlify-cli:
-        specifier: ^24.11.1
-        version: 24.11.1(@types/node@18.19.130)(picomatch@4.0.4)(rollup@2.80.0)
+        specifier: ^24.11.2
+        version: 24.11.3(@types/node@18.19.130)(picomatch@4.0.4)(rollup@2.80.0)
       prettier:
         specifier: ^2.8.7
         version: 2.8.8
@@ -1669,8 +1669,8 @@ packages:
     engines: {node: '>=18.14.0'}
     hasBin: true
 
-  '@netlify/build@35.12.0':
-    resolution: {integrity: sha512-3rOq5cbD+QSB9H5YUW5vMSeYRFG6fyHw3MUwrhpc5pHgprSvIU+ravMEdXvHZTHRyUfqvM4rVjyW11qef3Lwcw==}
+  '@netlify/build@35.13.1':
+    resolution: {integrity: sha512-lDAWE2YbSuPURn+AYYFHSppqpLvbxLpx57SPDxyX9/IhCYaMp0UFgNeTOWLnh+YHX7TXX6D0yA1VCpcuzyub9Q==}
     engines: {node: '>=18.14.0'}
     hasBin: true
     peerDependencies:
@@ -1688,8 +1688,8 @@ packages:
     resolution: {integrity: sha512-CL9WZjbxe9/Gkcpfkl6h1F0BkBxUg9b4HHleGjmo0rs/PDUJ2NDQVKtEospllH2+KDUdB6EsPhiJN+v9Jcdv1g==}
     engines: {node: '>=20.6.1'}
 
-  '@netlify/config@24.4.4':
-    resolution: {integrity: sha512-EEg9G5NeWOAibnCBn5/k7HLDg6UoDnHlBW5BsWYTNwmKIjFyUEHsFhPIINfJ90ToPPzlStBRkDyaO7/fRrHPNg==}
+  '@netlify/config@24.5.0':
+    resolution: {integrity: sha512-d9M/H9ouQUlu6OnEYa9z4Sa+RZUn7OioS6bw6kKRtalllkQiSAtbgzjXz/2umgABsJGmxYXyjSOk7P8QcKluJg==}
     engines: {node: '>=18.14.0'}
     hasBin: true
 
@@ -1709,8 +1709,8 @@ packages:
     resolution: {integrity: sha512-IhyLtiEgOFCwpW/qYqCnY0LSwmw4PNgu4hJYIddLpIr/RPHAsDN+Ni3hEEW9RH8wkmvYmbc+xtxHPQZdyDUSgg==}
     engines: {node: '>=20.6.1'}
 
-  '@netlify/edge-bundler@14.9.19':
-    resolution: {integrity: sha512-1jO1vPGM5N6swK+6/p4LkiKDSP0eqRhuhs5BkCvVa7HSyXpeNuOAqk7uhICh8fy2naol0VOWCW9NC1LI4YhrFA==}
+  '@netlify/edge-bundler@14.10.0':
+    resolution: {integrity: sha512-6gWUoPfBuPHATaJScFheyHqLtjYXAa1OSCFPMi7Hyw0p9bJtqj7dmxUlSKen2QRdHLfNF5zZAH060wa2WsZx2Q==}
     engines: {node: '>=18.14.0'}
 
   '@netlify/edge-functions-bootstrap@2.16.0':
@@ -6091,9 +6091,6 @@ packages:
   lodash.uniq@4.5.0:
     resolution: {integrity: sha512-xfBaXQd9ryd9dlSDvnvI0lvxfLJlYAZzXomUYzLKtUeOQvOP5piqAWuGtrhWeqaXK9hhoM/iyJc5AV+XfsX3HQ==}
 
-  lodash@4.17.23:
-    resolution: {integrity: sha512-LgVTMpQtIopCi79SJeDiP0TfWi5CNEc/L/aRdTh3yIvmZXTnheWpKjSZhnvMl8iXbC1tFg9gdHHDMLoV7CnG+w==}
-
   lodash@4.18.1:
     resolution: {integrity: sha512-dMInicTPVE8d1e5otfwmmjlxkZoUpiVLwyeTdUsi/Caj/gfzzblBcCE5sRHV/AsjuCmxWrte2TNGSYuCeCq+0Q==}
 
@@ -6396,8 +6393,8 @@ packages:
   neo-async@2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
 
-  netlify-cli@24.11.1:
-    resolution: {integrity: sha512-UuoA10MAWP4hl/Y5vRWRmhZpcTUlUHq0wPaXGFsXMtfoLInq+blWoTWYSCV5CS4B66TlMGoKpJhskjyn/ujLhw==}
+  netlify-cli@24.11.3:
+    resolution: {integrity: sha512-UbvXw79G85hDC19NXsi4DV/OZtEBvFhCAwywtJnGPu/DHFfBsfcoiJXtdBGqUF0YnSWbEONUjntYb2Hrjuo+Gg==}
     engines: {node: '>=20.12.2'}
     hasBin: true
 
@@ -10950,13 +10947,13 @@ snapshots:
       yaml: 2.8.3
       yargs: 17.7.2
 
-  '@netlify/build@35.12.0(@opentelemetry/api@1.8.0)(@types/node@18.19.130)(picomatch@4.0.4)(rollup@2.80.0)':
+  '@netlify/build@35.13.1(@opentelemetry/api@1.8.0)(@types/node@18.19.130)(picomatch@4.0.4)(rollup@2.80.0)':
     dependencies:
       '@bugsnag/js': 8.8.1
       '@netlify/blobs': 10.7.4(supports-color@10.2.2)
       '@netlify/cache-utils': 6.0.5
-      '@netlify/config': 24.4.4
-      '@netlify/edge-bundler': 14.9.19
+      '@netlify/config': 24.5.0
+      '@netlify/edge-bundler': 14.10.0
       '@netlify/functions-utils': 6.2.29(rollup@2.80.0)(supports-color@10.2.2)
       '@netlify/git-utils': 6.0.4
       '@netlify/opentelemetry-utils': 2.0.2(@opentelemetry/api@1.8.0)
@@ -11030,7 +11027,7 @@ snapshots:
     dependencies:
       '@netlify/runtime-utils': 2.3.0
 
-  '@netlify/config@24.4.4':
+  '@netlify/config@24.5.0':
     dependencies:
       '@iarna/toml': 2.2.5
       '@netlify/api': 14.0.18
@@ -11103,7 +11100,7 @@ snapshots:
     dependencies:
       '@netlify/ai': 0.4.1
       '@netlify/blobs': 10.7.4(supports-color@10.2.2)
-      '@netlify/config': 24.4.4
+      '@netlify/config': 24.5.0
       '@netlify/db-dev': 0.7.0
       '@netlify/dev-utils': 4.4.3
       '@netlify/edge-functions-dev': 1.0.16
@@ -11141,7 +11138,7 @@ snapshots:
       - supports-color
       - uploadthing
 
-  '@netlify/edge-bundler@14.9.19':
+  '@netlify/edge-bundler@14.10.0':
     dependencies:
       '@import-maps/resolve': 2.0.0
       '@sveltejs/acorn-typescript': 1.0.9(acorn@8.16.0)
@@ -11173,7 +11170,7 @@ snapshots:
   '@netlify/edge-functions-dev@1.0.16':
     dependencies:
       '@netlify/dev-utils': 4.4.3
-      '@netlify/edge-bundler': 14.9.19
+      '@netlify/edge-bundler': 14.10.0
       '@netlify/edge-functions': 3.0.6
       '@netlify/edge-functions-bootstrap': 2.16.0
       '@netlify/runtime-utils': 2.3.0
@@ -16507,8 +16504,6 @@ snapshots:
 
   lodash.uniq@4.5.0: {}
 
-  lodash@4.17.23: {}
-
   lodash@4.18.1: {}
 
   log-process-errors@11.0.1:
@@ -16782,18 +16777,18 @@ snapshots:
 
   neo-async@2.6.2: {}
 
-  netlify-cli@24.11.1(@types/node@18.19.130)(picomatch@4.0.4)(rollup@2.80.0):
+  netlify-cli@24.11.3(@types/node@18.19.130)(picomatch@4.0.4)(rollup@2.80.0):
     dependencies:
       '@fastify/static': 9.0.0
       '@netlify/ai': 0.4.1
       '@netlify/api': 14.0.18
       '@netlify/blobs': 10.7.0
-      '@netlify/build': 35.12.0(@opentelemetry/api@1.8.0)(@types/node@18.19.130)(picomatch@4.0.4)(rollup@2.80.0)
+      '@netlify/build': 35.13.1(@opentelemetry/api@1.8.0)(@types/node@18.19.130)(picomatch@4.0.4)(rollup@2.80.0)
       '@netlify/build-info': 10.5.0
-      '@netlify/config': 24.4.4
+      '@netlify/config': 24.5.0
       '@netlify/dev': 4.16.4(rollup@2.80.0)
       '@netlify/dev-utils': 4.4.3
-      '@netlify/edge-bundler': 14.9.19
+      '@netlify/edge-bundler': 14.10.0
       '@netlify/edge-functions': 3.0.6
       '@netlify/edge-functions-bootstrap': 2.17.1
       '@netlify/headers-parser': 9.0.3
@@ -16850,7 +16845,7 @@ snapshots:
       jwt-decode: 4.0.0
       lambda-local: 2.2.0
       locate-path: 8.0.0
-      lodash: 4.17.23
+      lodash: 4.18.1
       log-update: 7.2.0
       maxstache: 1.0.7
       maxstache-stream: 1.0.4
