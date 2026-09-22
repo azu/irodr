@@ -35,6 +35,22 @@ export class SubscriptionRepository extends NullableRepository<Subscription> {
      */
     saveBuild(subscriptions: Subscription[]) {}
 
+    ensureCategory(category: string) {
+        if (this.categoryMap[category] === undefined) {
+            this.categoryMap = { ...this.categoryMap, [category]: [] };
+        }
+    }
+
+    delete(subscription: Subscription) {
+        super.delete(subscription);
+        const next = { ...this.categoryMap };
+        for (const category of Object.keys(next)) {
+            next[category] = next[category].filter((item) => !item.props.id.equals(subscription.props.id));
+            if (next[category].length === 0) delete next[category];
+        }
+        this.categoryMap = next;
+    }
+
     save(aSubscription: Subscription) {
         super.save(aSubscription);
         // Map empty categories to "Uncategorized"

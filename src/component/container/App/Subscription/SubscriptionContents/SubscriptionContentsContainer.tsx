@@ -116,12 +116,16 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
         }
         // disable content filter
         this.useCase(new TurnOffContentsFilterUseCase()).execute();
+        if (subscription.props.sourceId) {
+            return;
+        }
         // fetch more contents
         this.useCase(createFetchMoreSubscriptContentsUseCase()).execute(subscription.props.id);
     };
 
     render() {
         const header = this.makeHeaderContent(this.props.subscriptionContents.subscription);
+        const github = this.props.subscriptionContents.subscription?.props.sourceId === "github-notifications";
         if (!this.props.subscriptionContents.contents) {
             return (
                 <div className="SubscriptionContentsContainer is-noContents">
@@ -146,17 +150,20 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
                 />
                 {header}
                 <div role="main" className="SubscriptionContentsContainer-body">
+                    {github && contents.length === 0 && <p>No unread notifications in this repository.</p>}
                     {contents}
                 </div>
                 <footer className="SubscriptionContentsContainer-footer">
-                    <div className="SubscriptionContentsContainer-readMore">
-                        <DefaultButton
-                            className="SubscriptionContentsContainer-readMoreButton"
-                            onClick={this.onClickReadMore}
-                        >
-                            Read More
-                        </DefaultButton>
-                    </div>
+                    {!github && (
+                        <div className="SubscriptionContentsContainer-readMore">
+                            <DefaultButton
+                                className="SubscriptionContentsContainer-readMoreButton"
+                                onClick={this.onClickReadMore}
+                            >
+                                Read More
+                            </DefaultButton>
+                        </div>
+                    )}
                     <div
                         className="SubscriptionContentsContainer-footerPadding"
                         style={{
@@ -203,7 +210,7 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
         if (!subscription) {
             return null;
         }
-        const editLink = (
+        const editLink = subscription.props.sourceId ? null : (
             <Link
                 className="SubscriptionContentsContainer-subscriptionEditLink"
                 title="Edit subscription"
@@ -235,22 +242,28 @@ export class SubscriptionContentsContainer extends BaseContainer<SubscriptionCon
                         </span>
                         {editLink}
                         <span className="SubscriptionContentsContainer-subscriptionUpdatedDate">
-                            First Item:
-                            <Time dateTime={subscription.lastUpdated.isoString}>
-                                {format(subscription.lastUpdated.date, "YYYY-MM-DD mm:ss")}
-                            </Time>
+                            {subscription.props.sourceId ? "Last synced: " : "First Item: "}
+                            {subscription.props.sourceId && subscription.lastUpdated.millSecond === 0 ? (
+                                "Not synced yet"
+                            ) : (
+                                <Time dateTime={subscription.lastUpdated.isoString}>
+                                    {format(subscription.lastUpdated.date, "YYYY-MM-DD HH:mm:ss")}
+                                </Time>
+                            )}
                         </span>
                     </h2>
                 </div>
                 <div className="SubscriptionContentsContainer-headerRight">
-                    <Toggle
-                        checked={this.props.subscriptionContents.enableContentFilter}
-                        onAriaLabel="Show all contents"
-                        offAriaLabel="Show only unread contents"
-                        onText="Unread"
-                        offText="All"
-                        onChange={this.onChangedToggleContentsFilter}
-                    />
+                    {subscription.props.sourceId !== "github-notifications" && (
+                        <Toggle
+                            checked={this.props.subscriptionContents.enableContentFilter}
+                            onAriaLabel="Show all contents"
+                            offAriaLabel="Show only unread contents"
+                            onText="Unread"
+                            offText="All"
+                            onChange={this.onChangedToggleContentsFilter}
+                        />
+                    )}
                 </div>
             </header>
         );

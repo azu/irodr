@@ -52,10 +52,10 @@ export class AppHeaderContainer extends BaseContainer<AppHeaderContainerProps, {
                                     onClick: this.fetchList
                                 },
                                 {
-                                    key: "inoreader",
-                                    name: "Inoreader",
+                                    key: "sources",
+                                    name: "Sources",
                                     icon: "Cloud",
-                                    ariaLabel: "Inoreader menu",
+                                    ariaLabel: "Sources menu",
                                     subMenuProps: {
                                         items: [
                                             {
@@ -67,8 +67,8 @@ export class AppHeaderContainer extends BaseContainer<AppHeaderContainerProps, {
                                                 }
                                             },
                                             {
-                                                key: "inoreader.auth",
-                                                name: "Authorize",
+                                                key: "sources.settings",
+                                                name: "GitHub / source settings",
                                                 icon: "Rocket",
                                                 onClick: this.showAuthorizePanel
                                             }

@@ -23,6 +23,27 @@ This RSS reader provide a similar experience to [LDR](http://reader.livedoor.com
 2. Click **Connect to Inoreader**
 3. Click **Authorize** on Inoreader site
 
+### GitHub Notifications
+
+Open **Sources → GitHub / source settings** and connect a classic GitHub PAT
+with the `notifications` scope. irodr groups unread notifications of every type by repository under
+**GitHub Notifications**. Moving to another feed marks the departed repository's
+notifications read on GitHub with one repository-wide request, through the latest
+loaded notification timestamp. This includes Issue and Pull Request notifications.
+Other browsers reflect the change on
+their next sync. Use **Shift+S** to skip without marking read, or **m** to mark the
+current feed read without moving. Inoreader login is not required.
+
+Each sync refreshes the current unread inbox, without a date cutoff.
+Repositories with no visible unread notifications disappear; read history and local Star
+controls are not shown. Sources has an optional **Show only Release notifications**
+display filter; read operations still apply to all types in the repository.
+GitHub is identified by the sidebar folder, without settings buttons or sync counters
+in the article view. The token is
+saved in this browser and restored automatically after reload, without a passphrase.
+The token and cached articles are not encrypted.
+See [Source adapters](./docs/source-adapters.md) for setup, architecture and limitations.
+
 ### Keyboard Shortcut 
 
 - <kbd>j</kbd>: move-next-content-item

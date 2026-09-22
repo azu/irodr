@@ -2,6 +2,7 @@ import * as React from "react";
 import { Modal } from "office-ui-fabric-react/lib-amd/components/Modal";
 import { CompoundButton, TextField } from "office-ui-fabric-react";
 import { Authority } from "../../../domain/App/Authority/Authority";
+import { GitHubSourcePanel } from "../GitHubSourcePanel/GitHubSourcePanel";
 
 export interface AuthorizePanelProps {
     isOpen: boolean;
@@ -57,7 +58,8 @@ export class AuthorizeModal extends React.Component<AuthorizePanelProps, Authori
                 containerClassName="AuthorizePanel"
             >
                 <div className="AuthorizePanel-authorizeArea">
-                    <h1 className="AuthorizePanel-panelTitle">Inoreader Authorization</h1>
+                    <h1 className="AuthorizePanel-panelTitle">Sources</h1>
+                    <h2>Inoreader Authorization</h2>
                     <ol>
                         <li>
                             Click <b>Connect to Inoreader</b>
@@ -95,6 +97,7 @@ export class AuthorizeModal extends React.Component<AuthorizePanelProps, Authori
                         });
                     }}
                 />
+                <GitHubSourcePanel />
                 <footer className={"AuthorizeModal-footer"}>
                     <p className={"AuthorizeModal-footerText"}>This site is powered by Netlify.</p>
                     <a href="https://www.netlify.com">

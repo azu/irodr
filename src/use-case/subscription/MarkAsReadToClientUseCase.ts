@@ -20,10 +20,14 @@ export class MarkAsReadToClientUseCase extends UseCase {
         super();
     }
 
-    execute(subscriptionId: SubscriptionIdentifier) {
+    async execute(subscriptionId: SubscriptionIdentifier) {
         const subscription = this.repo.subscriptionRepository.findById(subscriptionId);
         if (!subscription) {
             throw new Error(`Not found subscription:${subscriptionId}`);
+        }
+        if (subscription.props.sourceId) {
+            // Local navigation must never acknowledge a GitHub notification.
+            return;
         }
         const newSubscription = subscription.readAll();
         this.repo.subscriptionRepository.save(newSubscription);

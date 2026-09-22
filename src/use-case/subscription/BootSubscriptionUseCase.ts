@@ -5,6 +5,9 @@ import { AppRepository } from "../../infra/repository/AppRepository";
 import { repositoryContainer } from "../../infra/repository/RepositoryContainer";
 import { createMachineUser } from "../../domain/App/User/AppUserFactory";
 import { createSubscriptionsFromResponses } from "../../domain/Subscriptions/SubscriptionFactory";
+import { sourceRepository } from "../../infra/repository/SourceRepository";
+import { projectSourceSubscriptions } from "../../infra/sources/SourceSubscription";
+import { githubSourceSession } from "../../infra/sources/GitHubSourceService";
 
 export const createBootSubscriptionUseCase = () => {
     return new BootSubscriptionUseCase(repositoryContainer.get());
@@ -29,7 +32,12 @@ export class BootSubscriptionUseCase extends UseCase {
             this.repo.appRepository.save(machineApp);
             return;
         }
+        await sourceRepository.ready();
+        projectSourceSubscriptions(sourceRepository, this.repo.subscriptionRepository);
         const parsedURL = new URL(url);
+        if (!parsedURL.searchParams.has("ci")) {
+            await githubSourceSession.restore();
+        }
         if (parsedURL.searchParams.has("ci")) {
             const machineUser = createMachineUser();
             const machineApp = app.updateUser(machineUser);

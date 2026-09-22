@@ -19,7 +19,6 @@ import {
 } from "../../Subscription/SubscriptionContents/use-case/ToggleFilterContents";
 import { createFetchMoreSubscriptContentsUseCase } from "../../../../../use-case/subscription/FetchMoreSubscriptContentsUseCase";
 import { ToggleAllListGroupUseCase } from "../../Subscription/SubscriptionList/use-case/ToggleAllListGroupUseCase";
-import { createReleaseFocusSubscriptionUseCase } from "../../../../../use-case/subscription/ReleaseFocusSubscriptionUseCase";
 import { FaMapSigns as MapSigns } from "react-icons/fa";
 import { createDumpReadContentHistoryToConsole } from "../../../../../use-case/subscription/DumpReadContentHistoryToConsole";
 import {
@@ -132,7 +131,7 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
      * Default keyMap Object by
      */
     defaultActions = (() => {
-        const loadNext = async (currentSubscriptionId?: SubscriptionIdentifier) => {
+        const loadNext = async (currentSubscriptionId?: SubscriptionIdentifier, skipCurrent = false): Promise<void> => {
             if (!currentSubscriptionId) {
                 const firstItem = this.props.subscriptionList.getFirstItem();
                 if (!firstItem) {
@@ -145,13 +144,13 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
             if (!nextItem) {
                 return console.info("Not found next item");
             }
-            this.useCase(createShowSubscriptionContentsUseCase())
-                .execute(nextItem.props.id)
+            return this.useCase(createShowSubscriptionContentsUseCase())
+                .execute(nextItem.props.id, { skipCurrent })
                 .catch((error) => {
                     return this.useCase(createUpdateHeaderMessageUseCase())
                         .execute(`Can't load... Skip ${nextItem.title}.`)
                         .then(() => {
-                            return loadNext(nextItem.props.id);
+                            return loadNext(nextItem.props.id, skipCurrent);
                         });
                 });
         };
@@ -291,8 +290,9 @@ export class ShortcutKeyContainer extends BaseContainer<ShortcutKeyContainerProp
                     return;
                 }
                 await this.useCase(createUpdateHeaderMessageUseCase()).execute("Skip current subscription");
-                await this.useCase(createReleaseFocusSubscriptionUseCase()).execute();
-                await loadNext(currentSubscriptionId);
+                // Remove the skipped activity only when the destination opens, in
+                // the same use case, so no intermediate feed triggers auto-read.
+                await loadNext(currentSubscriptionId, true);
             },
             "dump-read-content-history-to-console": async (_event: Event) => {
                 await this.useCase(createDumpReadContentHistoryToConsole()).execute();
