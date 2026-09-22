@@ -27,6 +27,11 @@ export class AppSubscriptionActivity {
     }
 
     addItem(item: AppSubscriptionActivityItem) {
+        // Reselecting a feed is not navigation. Duplicate adjacent entries would
+        // otherwise make "skip" remove only one copy and still mark that feed read.
+        if (this.currentItem?.id.equals(item.id)) {
+            return this;
+        }
         return new AppSubscriptionActivity({
             ...(this as AppSubscriptionActivityArgs),
             items: this.items.concat(item)

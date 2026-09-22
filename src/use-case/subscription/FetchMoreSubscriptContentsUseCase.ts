@@ -25,6 +25,9 @@ export class FetchMoreSubscriptContentsUseCase extends UseCase {
         if (!subscription) {
             throw new Error(`Not found subscription: ${subscription}`);
         }
+        if (subscription.props.sourceId) {
+            return;
+        }
         const app = this.repo.appRepository.get();
         if (app.user.isMachine) {
             return;

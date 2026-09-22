@@ -3,6 +3,7 @@ import { Entity, Identifier, Serializer } from "ddd-base";
 import { SubscriptionContentBody } from "./SubscriptionContentBody";
 import { TimeStamp, TimeStampJSON, TimeStampSerializer } from "../TimeStamp";
 import { Enclosure } from "../../../infra/api/StreamContentsResponse";
+import { ItemState } from "../../Sources/SourceAdapter";
 
 export const SubscriptionContentSerializer: Serializer<SubscriptionContent, SubscriptionContentJSON> = {
     toJSON(entity) {
@@ -13,7 +14,9 @@ export const SubscriptionContentSerializer: Serializer<SubscriptionContent, Subs
             updatedDate: TimeStampSerializer.toJSON(entity.updatedDate),
             title: entity.title,
             body: entity.body.toJSON(),
-            url: entity.url
+            url: entity.url,
+            canonicalItemId: entity.canonicalItemId,
+            readerState: entity.readerState
         };
     },
     fromJSON(json) {
@@ -24,12 +27,16 @@ export const SubscriptionContentSerializer: Serializer<SubscriptionContent, Subs
             updatedDate: TimeStampSerializer.fromJSON(json.updatedDate),
             title: json.title,
             body: new SubscriptionContentBody(json.body),
-            url: json.url
+            url: json.url,
+            canonicalItemId: json.canonicalItemId,
+            readerState: json.readerState
         });
     }
 };
 
 export interface SubscriptionContentJSON {
+    canonicalItemId?: string;
+    readerState?: ItemState;
     // See http://www.inoreader.com/developers/article-ids
     id: string;
     author: string;
@@ -47,6 +54,8 @@ export interface SubscriptionContentJSON {
 export class SubscriptionContentIdentifier extends Identifier<string> {}
 
 export interface SubscriptionContentArgs {
+    canonicalItemId?: string;
+    readerState?: ItemState;
     // See http://www.inoreader.com/developers/article-ids
     id: SubscriptionContentIdentifier;
     author: string;
@@ -59,6 +68,8 @@ export interface SubscriptionContentArgs {
 }
 
 export class SubscriptionContent extends Entity<SubscriptionContentArgs> {
+    canonicalItemId?: string;
+    readerState?: ItemState;
     id: SubscriptionContentIdentifier;
     author: string;
     publishedDate: TimeStamp;
@@ -70,6 +81,8 @@ export class SubscriptionContent extends Entity<SubscriptionContentArgs> {
 
     constructor(args: SubscriptionContentArgs) {
         super(args);
+        this.canonicalItemId = args.canonicalItemId;
+        this.readerState = args.readerState;
         this.id = args.id;
         this.author = args.author;
         this.publishedDate = args.publishedDate;

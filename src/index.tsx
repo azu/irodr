@@ -17,6 +17,7 @@ import { createSaveInoreaderTokenUseCase } from "./use-case/inoreader/SaveInorea
 import { createTestInoreaderAuthUseCase } from "./use-case/inoreader/TestInoreaderAuthUseCase";
 import { ShowAuthorizePanelUseCase } from "./component/container/App/Panel/use-case/ToggleAuthorizePanelUseCase";
 import { initializeIcons } from "@uifabric/icons";
+import { sourceRepository } from "./infra/repository/SourceRepository";
 // Register icons and pull the fonts from the default SharePoint cdn:
 initializeIcons();
 
@@ -94,8 +95,10 @@ context
             .useCase(createTestInoreaderAuthUseCase())
             .execute()
             .catch(async (error) => {
-                await context.useCase(new ShowAuthorizePanelUseCase()).execute();
-                return Promise.reject(error);
+                if (sourceRepository.getSources().length === 0) {
+                    await context.useCase(new ShowAuthorizePanelUseCase()).execute();
+                }
+                // Local sources remain readable without an Inoreader login.
             });
     })
     .then(() => {

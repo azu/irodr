@@ -4,8 +4,8 @@ import { SubscriptionContent, SubscriptionContentIdentifier } from "./Subscripti
 import { SubscriptionContentBody } from "./SubscriptionContentBody";
 import { SubscriptionContents } from "./SubscriptionContents";
 import { TimeStamp } from "../TimeStamp";
+import { toInoreaderSourceItem } from "../../../infra/sources/InoreaderSourceAdapter";
 
-const he = require("he");
 export const createSubscriptionContentsFromResponse = (
     streamContentResponse: StreamContentsResponse
 ): SubscriptionContents => {
@@ -23,26 +23,19 @@ export const createSubscriptionContentFromResponse = (
     streamId: string,
     streamContentResponse: StreamContentResponse
 ): SubscriptionContent => {
-    // Inoreader response updated: 0
-    const hasUpdate = streamContentResponse.updated !== undefined && streamContentResponse.updated !== 0;
-    const canonicalHref = streamContentResponse.canonical.map((canonical) => canonical.href).join(",");
-    // some id includes space, it is invalid as css selector, so remote it
-    // e.g. http://feeds.feedburner.com/alistapart/main
-    const identifier = `${streamId}--${streamContentResponse.id}--${canonicalHref}`.replace(/\s+/, "");
+    const item = toInoreaderSourceItem(streamId, streamContentResponse);
+    // Compatibility bridge: RSS keeps its historical IDs and remote read behavior.
+    // Do not opt this view into canonicalItemId or local readerState yet.
     return new SubscriptionContent({
-        // stream.id + content.id + content.href(s)
-        id: new SubscriptionContentIdentifier(identifier),
-        url: streamContentResponse.canonical[0].href,
-        // 2017-10-21~ Inoreader API Response sometimes encode 10 entity
-        title: he.decode(streamContentResponse.title) as string,
-        author: streamContentResponse.author,
+        id: new SubscriptionContentIdentifier(item.metadata.legacyId),
+        url: item.url,
+        title: item.title,
+        author: item.metadata.author,
         body: new SubscriptionContentBody({
-            content: streamContentResponse.summary.content,
-            enclosures: streamContentResponse.enclosure ?? []
+            content: item.content,
+            enclosures: item.metadata.enclosures
         }),
-        publishedDate: TimeStamp.createTimeStampFromSecond(streamContentResponse.published),
-        updatedDate: hasUpdate
-            ? TimeStamp.createTimeStampFromSecond(streamContentResponse.updated)
-            : TimeStamp.createTimeStampFromSecond(streamContentResponse.published)
+        publishedDate: TimeStamp.createTimeStampFromMillisecond(Date.parse(item.publishedAt)),
+        updatedDate: TimeStamp.createTimeStampFromMillisecond(Date.parse(item.updatedAt))
     });
 };

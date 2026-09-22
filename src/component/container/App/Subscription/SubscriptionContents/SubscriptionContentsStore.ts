@@ -85,6 +85,9 @@ export class SubscriptionContentsState {
         if (!this.subscription) {
             return 0;
         }
+        if (this.subscription.props.sourceId) {
+            return 0;
+        }
         const updatedCount = this.contentsCount - this.unreadContentsCount;
         if (updatedCount <= 0) {
             return 0;
@@ -176,18 +179,22 @@ export class SubscriptionContentsState {
         // 1. Search  Last Article that updateTime is larger than point A. (start index 0) - article index
         // 2. slice(0, articleIndex)
         // 3. the display list contains that the article updated time older than point A!
-        const filteredContents = contents.getContentsNewerThanTheTime(
-            // insteadof subscription.unread.readTimestamp
-            // because, want to show old article when next and back ASAP
-            subscription.lastUpdated,
-            subscription.unread.count
-        );
+        const filteredContents = subscription.props.sourceId
+            ? contents.getContentsWithPredicate((item) => !item.readerState?.read)
+            : contents.getContentsNewerThanTheTime(
+                  // insteadof subscription.unread.readTimestamp
+                  // because, want to show old article when next and back ASAP
+                  subscription.lastUpdated,
+                  subscription.unread.count
+              );
         return new SubscriptionContentsState({
             ...(this as SubscriptionContentsStateProps),
             subscription,
             rawContents: contents,
             filteredContents,
-            enableContentFilter: isChangedSubscription // Enable filter again when Update contents
+            enableContentFilter: subscription.props.sourceId
+                ? isChangedSubscription || this.enableContentFilter
+                : isChangedSubscription
         });
     }
 
@@ -267,6 +274,16 @@ export class SubscriptionContentsStore extends Store<SubscriptionContentsState> 
         }
         const subscription = this.repo.subscriptionRepository.findById(currentActivityItem.id);
         if (!subscription) {
+            // The last unread notification can remove the selected repository
+            // from the sidebar. Clear its view too, rather than retaining stale articles.
+            if (this.state.subscription?.props.sourceId && this.state.rawContents?.hasContent) {
+                const contents = new SubscriptionContents({
+                    contents: [],
+                    lastUpdatedTimestamp: this.state.subscription.lastUpdated
+                });
+                const empty = this.state.subscription.updateContents(contents).readAll();
+                this.setState(this.state.update(empty).reduce(payload));
+            }
             return;
         }
         this.setState(this.state.update(subscription).reduce(payload));

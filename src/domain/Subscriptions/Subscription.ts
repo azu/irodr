@@ -20,7 +20,8 @@ export const SubscriptionSerializer: Serializer<Subscription, SubscriptionJSON> 
             categories: entity.categories,
             contents: SubscriptionContentsSerializer.toJSON(entity.contents),
             unread: SubscriptionUnreadSerializer.toJSON(entity.unread),
-            lastUpdated: TimeStampSerializer.toJSON(entity.lastUpdated)
+            lastUpdated: TimeStampSerializer.toJSON(entity.lastUpdated),
+            sourceId: entity.props.sourceId
         };
     },
     fromJSON(json) {
@@ -34,6 +35,7 @@ export const SubscriptionSerializer: Serializer<Subscription, SubscriptionJSON> 
             contents: SubscriptionContentsSerializer.fromJSON(json.contents),
             unread: SubscriptionUnreadSerializer.fromJSON(json.unread),
             lastUpdated: TimeStampSerializer.fromJSON(json.lastUpdated),
+            sourceId: json.sourceId,
             isContentsUpdating: false
         });
     }
@@ -41,6 +43,7 @@ export const SubscriptionSerializer: Serializer<Subscription, SubscriptionJSON> 
 
 export interface SubscriptionJSON {
     id: string;
+    sourceId?: string;
     title: string;
     url: string;
     iconUrl: string;
@@ -55,6 +58,8 @@ export class SubscriptionIdentifier extends Identifier<string> {}
 
 export interface SubscriptionArgs {
     id: SubscriptionIdentifier;
+    // Present for locally stored sources; legacy Inoreader feeds retain their remote state bridge.
+    sourceId?: string;
     title: string;
     url: string;
     iconUrl: string;

@@ -27,6 +27,9 @@ export class PrefetchSubscriptContentsUseCase extends UseCase {
         if (!subscription) {
             throw new Error(`Not found subscription: ${subscriptionId}`);
         }
+        if (subscription.props.sourceId) {
+            return;
+        }
         const specResult = isSatisfiedSubscriptionContentsPrefetchSpec(subscription);
         if (!specResult.ok) {
             return;

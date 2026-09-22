@@ -51,7 +51,7 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
     async componentDidUpdate(prevProp: SubscriptionListContainerProps) {
         const visiblePrevSubscriptionId = prevProp.subscriptionList.currentSubscriptionId;
         const currentSubscriptionId = this.props.subscriptionList.currentSubscriptionId;
-        const isChangedVisibleCurrentSubscriptionId = visiblePrevSubscriptionId !== currentSubscriptionId;
+        const isChangedVisibleCurrentSubscriptionId = !currentSubscriptionId?.equals(visiblePrevSubscriptionId);
         // Prevent infinite loop for updating component
         if (!currentSubscriptionId) {
             return;
@@ -59,22 +59,51 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
         if (!isChangedVisibleCurrentSubscriptionId) {
             return;
         }
-        // If visible is changed ===> Try to update domain model ===>
-        // visible prev is not activity prev
-        // We should mark activity id as read
         const prevSubscriptionId = this.props.subscriptionList.prevSubscriptionId;
-        if (prevSubscriptionId) {
-            await this.useCase(createMarkAsReadToClientUseCase()).execute(prevSubscriptionId);
+        // Skip navigation removes the visible feed from activity. Never mark an
+        // unrelated history entry read in its place.
+        const previous =
+            visiblePrevSubscriptionId && prevSubscriptionId?.equals(visiblePrevSubscriptionId)
+                ? prevProp.subscriptionList.getItem(visiblePrevSubscriptionId)
+                : undefined;
+        // Freeze the loaded GitHub items at departure; a later sync must not add
+        // newly arrived, unseen notifications to this automatic read operation.
+        const loadedItemIds = previous?.props.sourceId
+            ? previous.contents
+                  .getContentList()
+                  .map((item) => item.canonicalItemId)
+                  .filter((id): id is string => id !== undefined)
+            : undefined;
+        const readThrough =
+            previous?.props.sourceId && previous.contents.hasContent
+                ? new Date(
+                      previous.contents
+                          .getContentList()
+                          .reduce((latest, item) => Math.max(latest, item.updatedDate.millSecond), 0)
+                  ).toISOString()
+                : undefined;
+        if (previous && !previous.props.sourceId) {
+            await this.useCase(createMarkAsReadToClientUseCase()).execute(previous.props.id);
         }
         debounceScrollToSubscriptionId(currentSubscriptionId);
-        // prefetch next items
-        await this.prefetchSubscriptions(currentSubscriptionId, this.props.subscriptionList.prefetchSubscriptionCount);
-        await this.useCase(createUpdateHeaderMessageUseCase()).execute(
-            `Complete prefetch ${this.props.subscriptionList.prefetchSubscriptionCount} items`
-        );
-        // complete
-        if (prevSubscriptionId) {
-            await this.useCase(createMarkAsReadToServerUseCase()).execute(prevSubscriptionId);
+        try {
+            await this.prefetchSubscriptions(
+                currentSubscriptionId,
+                this.props.subscriptionList.prefetchSubscriptionCount
+            );
+            await this.useCase(createUpdateHeaderMessageUseCase()).execute(
+                `Complete prefetch ${this.props.subscriptionList.prefetchSubscriptionCount} items`
+            );
+        } catch {
+            await this.useCase(createUpdateHeaderMessageUseCase()).execute("Could not prefetch the next feeds.");
+        } finally {
+            if (previous) {
+                await this.useCase(createMarkAsReadToServerUseCase()).execute(
+                    previous.props.id,
+                    loadedItemIds,
+                    readThrough
+                );
+            }
         }
     }
 

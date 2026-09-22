@@ -4,7 +4,7 @@ import { AuthorizeModal, AuthorizeModalState } from "../../../project/AuthorizeM
 import { AuthorizePanelState } from "./AuthorizePanelStore";
 import { BaseContainer } from "../../BaseContainer";
 import { createAuthInoreaderUseCase } from "../../../../use-case/inoreader/AuthInoreaderUseCase";
-import { DismissAppPreferenceUseCase } from "../Preferences/use-case/ToggleAppPreferenceUseCase";
+import { DismissAuthorizePanelUseCase } from "./use-case/ToggleAuthorizePanelUseCase";
 import { createUpdateAuthorizeUseCase } from "../../../../use-case/app/UpdateAuthorityUseCase";
 
 export interface AuthorizePanelContainerProps {
@@ -20,7 +20,7 @@ export class AuthorizePanelContainer extends BaseContainer<AuthorizePanelContain
     };
 
     private onDismiss = () => {
-        this.useCase(new DismissAppPreferenceUseCase()).execute();
+        this.useCase(new DismissAuthorizePanelUseCase()).execute();
     };
 
     render() {

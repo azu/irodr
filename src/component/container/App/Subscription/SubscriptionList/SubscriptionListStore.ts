@@ -82,6 +82,10 @@ export class SubscriptionListState {
             subscription.props.id.equals(currentSubscriptionId)
         );
         if (index === -1) {
+            // A GitHub repository disappears after its final notification is read.
+            if (currentSubscriptionId.toValue().startsWith("github-notifications/repository/")) {
+                return this.groupSubscriptions[0];
+            }
             return;
         }
         return this.groupSubscriptions[index + 1];
@@ -125,6 +129,11 @@ export class SubscriptionListState {
         const groups: IGroup[] = categoryNames.map((categoryName) => {
             const subscriptions = categoryMap[categoryName];
             const readableSubscriptions = subscriptions.filter((subscription) => {
+                // Keep local archives reachable after all items are read, including
+                // after restart when there is no recent navigation activity.
+                if (subscription.props.sourceId) {
+                    return true;
+                }
                 if (subscription.hasUnreadContents) {
                     return true;
                 }

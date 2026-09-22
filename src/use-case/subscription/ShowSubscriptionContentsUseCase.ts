@@ -31,10 +31,17 @@ export class ShowSubscriptionContentsUseCase extends UseCase {
         super();
     }
 
-    async execute(subscriptionId: SubscriptionIdentifier) {
+    async execute(subscriptionId: SubscriptionIdentifier, options: { skipCurrent?: boolean } = {}) {
         const subscription = this.repo.subscriptionRepository.findById(subscriptionId);
         if (!subscription) {
             throw new Error(`Not found subscription: ${subscriptionId}`);
+        }
+        if (subscription.props.sourceId) {
+            const app = this.repo.appRepository.get();
+            if (options.skipCurrent) app.user.pretendDidNotOpenCurrentSubscription();
+            app.user.openNewSubscription(subscription);
+            await this.repo.appRepository.save(app);
+            return;
         }
         if (subscription.isContentsUpdating) {
             console.info(`This subscription is updating. No more update at once. ${subscription.props.id}`);
@@ -46,6 +53,7 @@ export class ShowSubscriptionContentsUseCase extends UseCase {
         const app = this.repo.appRepository.get();
         if (!specResult.ok) {
             console.log("specResult.reason:", specResult.reason);
+            if (options.skipCurrent) app.user.pretendDidNotOpenCurrentSubscription();
             app.user.openNewSubscription(subscription);
             await this.repo.appRepository.save(app);
             this.dispatch(new FinishLoadingPayload());
@@ -60,6 +68,7 @@ export class ShowSubscriptionContentsUseCase extends UseCase {
                 const newSubscription = subscription.updateContents(subscriptionContents);
                 newSubscription.mutableEndContentUpdating();
                 this.repo.subscriptionRepository.save(newSubscription);
+                if (options.skipCurrent) app.user.pretendDidNotOpenCurrentSubscription();
                 app.user.openNewSubscription(newSubscription);
                 return this.repo.appRepository.save(app);
             })
