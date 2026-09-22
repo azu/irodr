@@ -262,7 +262,7 @@ describe("GitHubSourceSession progress and checkpoints", () => {
         releaseFinished.resolve();
         await syncing;
         expect(store.getItems(GITHUB_SOURCE_ID).map((item) => item.externalId)).toEqual(["2"]);
-        expect(store.getItems(GITHUB_SOURCE_ID)[0].content).toBe("<pre>Notes</pre>");
+        expect(store.getItems(GITHUB_SOURCE_ID)[0].content).toBe("<p>Notes</p>\n");
         expect(store.getSources()[0].lastSyncedAt).toBeDefined();
         expect(session.status.phase).toBe("idle");
         expect(listener).toHaveBeenCalled();

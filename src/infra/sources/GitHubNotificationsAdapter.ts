@@ -1,4 +1,14 @@
 import type { SourceAdapter, SourceItem } from "../../domain/Sources/SourceAdapter";
+import MarkdownIt from "markdown-it";
+
+// Treat raw HTML as text; markdown-it also rejects unsafe link/image schemes.
+// HTMLContent still sanitizes the resulting HTML at the display boundary.
+const markdown = new MarkdownIt({ html: false, linkify: true });
+const validateLink = markdown.validateLink;
+// Relative destinations would resolve against irodr, not the GitHub repository.
+// Require explicit HTTP(S) URLs for both links and images instead of guessing a base.
+markdown.validateLink = (url) => /^https?:\/\//i.test(url) && validateLink(url);
+const contentVersion = 1;
 
 export interface GitHubNotificationsConfig {
     sourceId: string;
@@ -178,6 +188,7 @@ export class GitHubNotificationsAdapter implements SourceAdapter<GitHubNotificat
                 const cached = existing.get(base.externalId);
                 const reusable =
                     (cached?.metadata?.detailsResolved === true || cached?.metadata?.releaseResolved === true) &&
+                    cached.metadata.contentVersion === contentVersion &&
                     cached.metadata.type === base.metadata?.type &&
                     base.updatedAt !== undefined &&
                     cached.updatedAt === base.updatedAt;
@@ -189,7 +200,11 @@ export class GitHubNotificationsAdapter implements SourceAdapter<GitHubNotificat
                           url: cached.url || base.url,
                           content: cached.content,
                           publishedAt: cached.publishedAt,
-                          metadata: { ...base.metadata, detailsResolved: reusable }
+                          metadata: {
+                              ...base.metadata,
+                              contentVersion: cached.metadata?.contentVersion,
+                              detailsResolved: reusable
+                          }
                       }
                     : base;
                 items.set(item.externalId, item);
@@ -288,7 +303,10 @@ export class GitHubNotificationsAdapter implements SourceAdapter<GitHubNotificat
         config: GitHubNotificationsConfig,
         base: SourceItem
     ): Promise<SourceItem> {
-        const item: SourceItem = { ...base, metadata: { ...base.metadata, detailsResolved: true } };
+        const item: SourceItem = {
+            ...base,
+            metadata: { ...base.metadata, detailsResolved: true, contentVersion }
+        };
         const repo = notification.repository?.full_name;
         const validRepo = typeof repo === "string" && /^[\w.-]+\/[\w.-]+$/.test(repo);
         const subject = safeURL(notification.subject.url, "api.github.com");
@@ -322,8 +340,11 @@ export class GitHubNotificationsAdapter implements SourceAdapter<GitHubNotificat
         if (!detail || typeof detail !== "object") throw new Error("Invalid GitHub notification details response.");
         const browserURL = safeURL(detail.html_url, "github.com");
         if (browserURL && browserURL.pathname.startsWith(`/${repo}/`)) item.url = browserURL.toString();
-        const body = typeof detail.body === "string" ? detail.body : detail.commit?.message;
-        if (typeof body === "string") item.content = `<pre>${escapeHTML(body)}</pre>`;
+        if (typeof detail.body === "string") {
+            item.content = markdown.render(detail.body);
+        } else if (typeof detail.commit?.message === "string") {
+            item.content = `<pre>${escapeHTML(detail.commit.message)}</pre>`;
+        }
         item.publishedAt = iso(detail.published_at) || iso(detail.created_at) || iso(detail.commit?.author?.date);
         return item;
     }

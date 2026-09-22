@@ -32,6 +32,7 @@ export class HTMLContent extends React.PureComponent<HTMLContentProps, {}> {
                 "em",
                 "del",
                 "span",
+                "s",
                 "strike",
                 "code",
                 "hr",

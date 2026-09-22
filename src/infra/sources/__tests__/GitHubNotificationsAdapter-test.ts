@@ -72,7 +72,7 @@ describe("GitHubNotificationsAdapter", () => {
             "https://github.com/owner/project/pull/3",
             "https://github.com/owner/project"
         ]);
-        expect(items[0].content).toBe("<pre>Issue notes</pre>");
+        expect(items[0].content).toBe("<p>Issue notes</p>\n");
     });
 
     it.each<Record<string, string>>([
@@ -106,10 +106,16 @@ describe("GitHubNotificationsAdapter", () => {
                 sourceId: config.sourceId,
                 title: "Version 1",
                 url: "https://github.com/owner/project/releases/tag/v1",
-                content: "<pre># Release\n&lt;script&gt;alert(&#39;x&#39;)&lt;/script&gt;&amp;</pre>",
+                content: "<h1>Release</h1>\n<p>&lt;script&gt;alert('x')&lt;/script&gt;&amp;</p>\n",
                 publishedAt: "2026-01-01T00:00:00.000Z",
                 updatedAt: "2026-01-02T11:59:00.000Z",
-                metadata: { type: "Release", repository: "owner/project", githubUnread: true, detailsResolved: true }
+                metadata: {
+                    type: "Release",
+                    repository: "owner/project",
+                    githubUnread: true,
+                    detailsResolved: true,
+                    contentVersion: 1
+                }
             }
         ]);
         expect(fetchMock.mock.calls.every(([, init]) => init.method === "GET" && init.redirect === "error")).toBe(true);
@@ -151,13 +157,64 @@ describe("GitHubNotificationsAdapter", () => {
         });
         const repeated = await next.sync({ config });
         expect(fetchMock).toHaveBeenCalledTimes(1);
-        expect(repeated.items[0].content).toBe("<pre>Cached notes</pre>");
+        expect(repeated.items[0].content).toBe("<p>Cached notes</p>\n");
         expect(checkpoints).toHaveBeenCalledWith([
             expect.objectContaining({
-                content: "<pre>Cached notes</pre>",
+                content: "<p>Cached notes</p>\n",
                 url: "https://github.com/owner/project/releases/tag/v1"
             })
         ]);
+        // Cache provenance must survive reuse, not only the initial resolution.
+        await new GitHubNotificationsAdapter({
+            fetch: fetchMock,
+            now: () => now,
+            existingItems: repeated.items
+        }).sync({ config });
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+
+    it.each(["detailsResolved", "releaseResolved"])("refreshes legacy %s bodies once", async (resolvedFlag) => {
+        const fetchMock = jest
+            .fn()
+            .mockResolvedValueOnce(response([release]))
+            .mockResolvedValueOnce(response({ body: "# Cached notes" }));
+        const adapter = new GitHubNotificationsAdapter({
+            fetch: fetchMock,
+            now: () => now,
+            existingItems: [
+                {
+                    sourceId: config.sourceId,
+                    externalId: release.id,
+                    title: release.subject.title,
+                    content: "<pre># Cached notes</pre>",
+                    updatedAt: "2026-01-02T11:59:00.000Z",
+                    metadata: { type: "Release", [resolvedFlag]: true }
+                }
+            ]
+        });
+        const result = await adapter.sync({ config });
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(result.items[0].content).toBe("<h1>Cached notes</h1>\n");
+    });
+
+    it("keeps commit messages as escaped plain text", async () => {
+        const { adapter } = setup(
+            response([
+                {
+                    ...release,
+                    subject: {
+                        type: "Commit",
+                        title: "Commit",
+                        url: "https://api.github.com/repos/owner/project/commits/abcdef0"
+                    }
+                }
+            ]),
+            response({ commit: { message: "# Not a heading\n<script>alert('x')</script>" } })
+        );
+        const result = await adapter.sync({ config });
+        expect(result.items[0].content).toBe(
+            "<pre># Not a heading\n&lt;script&gt;alert(&#39;x&#39;)&lt;/script&gt;</pre>"
+        );
     });
 
     it("keeps successful detail checkpoints on failure and retries only unresolved items", async () => {
@@ -200,7 +257,7 @@ describe("GitHubNotificationsAdapter", () => {
         const result = await retry.sync({ config });
         expect(retryFetch).toHaveBeenCalledTimes(2);
         expect(retryFetch.mock.calls[1][0]).toBe("https://api.github.com/repos/owner/project/releases/2");
-        expect(result.items.map((item) => item.content)).toEqual(["<pre>First notes</pre>", "<pre>Second notes</pre>"]);
+        expect(result.items.map((item) => item.content)).toEqual(["<p>First notes</p>\n", "<p>Second notes</p>\n"]);
     });
 
     it("does not poll before nextPollAt", async () => {
