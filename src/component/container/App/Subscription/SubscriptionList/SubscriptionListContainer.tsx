@@ -14,12 +14,12 @@ import { createMarkAsReadToServerUseCase } from "../../../../../use-case/subscri
 import { createUpdateHeaderMessageUseCase } from "../../../../../use-case/app/UpdateHeaderMessageUseCase";
 import debounce from "lodash.debounce";
 
-function scrollToSubscriptionId(subscriptionId: SubscriptionIdentifier) {
+function scrollToSubscriptionId(subscriptionId: SubscriptionIdentifier, block: ScrollLogicalPosition = "start") {
     const targetElement = document.querySelector(
         `.SubscriptionListContainer-item[data-feedid="${subscriptionId.toValue()}"]`
     );
     if (targetElement) {
-        targetElement.scrollIntoView();
+        targetElement.scrollIntoView({ block });
     }
 }
 
@@ -57,6 +57,18 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
             return;
         }
         if (!isChangedVisibleCurrentSubscriptionId) {
+            // Marking a GitHub feed read removes it from the list. The rows above the
+            // current feed shift up without moving scrollTop, hiding the current feed.
+            // Re-align it instead of re-running the navigation side effects.
+            const prevIndex = prevProp.subscriptionList.groupSubscriptions.findIndex((subscription) =>
+                subscription.props.id.equals(currentSubscriptionId)
+            );
+            const currentIndex = this.props.subscriptionList.groupSubscriptions.findIndex((subscription) =>
+                subscription.props.id.equals(currentSubscriptionId)
+            );
+            if (currentIndex !== -1 && prevIndex !== -1 && prevIndex !== currentIndex) {
+                debounceScrollToSubscriptionId(currentSubscriptionId, "nearest");
+            }
             return;
         }
         const prevSubscriptionId = this.props.subscriptionList.prevSubscriptionId;
