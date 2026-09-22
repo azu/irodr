@@ -107,6 +107,27 @@ acknowledgements intentionally trade per-type selection for far fewer write requ
 The proposed four logical collections are represented in existing localforage
 storage, not a new SQL database:
 
+There are **two separate localforage instances**, not four separate tables.
+In browsers using the default IndexedDB driver, the exact layout is:
+
+| IndexedDB database | Object store | Record key | Stored value |
+| --- | --- | --- | --- |
+| `irodr-sources` | `keyvaluepairs` | `snapshot` | One object containing `sources`, `items`, and `states` arrays |
+| `irodr-source-credentials` | `keyvaluepairs` | `credential:github-notifications` | `{ version: 2, token: ... }` |
+
+Credential keys are built as `credential:${encodeURIComponent(sourceId)}`;
+the GitHub source ID is `github-notifications`. The `keyvaluepairs` object-store
+name is localforage's default. Source config and cached items never contain the PAT.
+Splitting the databases is organizational, not a security boundary.
+
+Storage belongs to the browser profile and origin. For local development, inspect
+the `http://localhost:8888` origin in the browser's Storage/Application panel,
+under IndexedDB. Port `13245` and the production origin have separate data.
+The driver is not pinned: if localforage falls back to localStorage, the keys are
+`irodr-sources/snapshot` and
+`irodr-source-credentials/credential:github-notifications`.
+Tests explicitly switch to an in-memory driver.
+
 - `irodr-sources` has a single atomic snapshot containing source configuration and
   cached items. Its generic item-state collection is not authoritative for GitHub.
   Completing the unread list atomically replaces that source's cached inbox.
