@@ -86,7 +86,11 @@ GitHub collection:
   conditional `Last-Modified` requests are not used for unread reconciliation.
 - Known Release, Issue, PullRequest, Discussion and Commit subjects are resolved
   individually for a browser URL and body. Unknown types still appear with their
-  title and repository link. Bodies display as escaped plain text, not rendered Markdown.
+  title and repository link. Markdown bodies are rendered with raw HTML disabled
+  and sanitized again at display time; commit messages remain escaped plain text.
+  Explicit HTTP(S) links and images are supported, and bare web URLs become links.
+  Relative destinations and other URL schemes remain text instead of links or images.
+  Previously cached unread bodies are refreshed on a subsequent sync to use this format.
 - Read acknowledgements use **one `PUT /repos/{owner}/{repo}/notifications` per
   repository**, with `last_read_at` frozen from the loaded notifications' update
   timestamps at departure. All types through that timestamp are included.

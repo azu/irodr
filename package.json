@@ -70,6 +70,7 @@
     "lodash.sortby": "^4.7.0",
     "lodash.throttle": "^4.1.1",
     "map-like": "^2.0.0",
+    "markdown-it": "^14.3.2",
     "most-visible": "^1.5.0",
     "office-ui-fabric-react": "^7.204.1",
     "popsicle": "^9.2.0",
@@ -83,6 +84,7 @@
   },
   "devDependencies": {
     "@types/http-proxy-middleware": "^0.19.3",
+    "@types/markdown-it": "^14.1.2",
     "assert": "npm:assert@^2.1.0",
     "dotenv-cli": "^3.2.0",
     "http-proxy-middleware": "^0.21.0",
@@ -110,6 +112,15 @@
     "printWidth": 120,
     "tabWidth": 4,
     "trailingComma": "none"
+  },
+  "jest": {
+    "moduleNameMapper": {
+      "^entities/(decode|escape)$": "entities/dist/$1.js"
+    },
+    "transformIgnorePatterns": [
+      "node_modules/(?!(?:\\.pnpm/)?(?:htmlparser2|domhandler|domutils|domelementtype|dom-serializer|entities)(?:@|/))",
+      "^.+\\.module\\.(css|sass|scss)$"
+    ]
   },
   "packageManager": "pnpm@10.34.5"
 }

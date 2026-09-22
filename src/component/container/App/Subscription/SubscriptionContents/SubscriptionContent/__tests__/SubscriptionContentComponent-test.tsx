@@ -11,13 +11,6 @@ import {
     githubRepositorySubscriptionId
 } from "../../../../../../../infra/sources/SourceSubscription";
 
-// These tests exercise article presentation, not HTML sanitization. Its ESM-only parser
-// dependency is handled by webpack but not by the legacy Jest transform.
-jest.mock("../../../../../../ui-kit/HTMLContent", () => {
-    const React = require("react");
-    return { HTMLContent: ({ children }: { children: string }) => React.createElement("div", null, children) };
-});
-
 describe("Article presentation without read buttons", () => {
     let container: HTMLDivElement;
     let root: Root;
