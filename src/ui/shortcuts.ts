@@ -1,5 +1,5 @@
 import type { Reader } from "../app/reader.ts";
-import { KeyBindings } from "../lib/keybindings.ts";
+import { createKeyBindings, type KeyBindings } from "../lib/keybindings.ts";
 import { articleScroller, scrollByPage } from "./dom.ts";
 import type { TranslateMode } from "./translate.ts";
 
@@ -35,7 +35,7 @@ export interface Shortcuts {
 export function createShortcuts(reader: Reader, translate: TranslateMode): Shortcuts {
     const focusItem = (itemId: string) => {
         reader.scrollToItem(itemId);
-        if (translate.enabled) void translate.translate(itemId);
+        if (translate.enabled()) void translate.translate(itemId);
     };
 
     const actions: Record<ActionName, ShortcutAction> = {
@@ -98,7 +98,7 @@ export function createShortcuts(reader: Reader, translate: TranslateMode): Short
         }
     };
 
-    const bindings = new KeyBindings();
+    const bindings = createKeyBindings();
     for (const [combo, name] of Object.entries(KEY_MAP)) {
         bindings.bind(combo, (event) => actions[name](event));
     }

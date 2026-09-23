@@ -1,28 +1,32 @@
 /** A minimal external store for `useSyncExternalStore` and source snapshots. */
-export class Store<T> {
-    #state: T;
-    readonly #listeners = new Set<() => void>();
+export interface Store<T> {
+    get: () => T;
+    /** Returns a function that unsubscribes `listener`. */
+    subscribe: (listener: () => void) => () => void;
+    /** Replace the value and notify the subscribers. Setting the current value (`Object.is`) does nothing. */
+    set: (next: T) => void;
+    update: (change: (current: T) => T) => void;
+}
 
-    constructor(initial: T) {
-        this.#state = initial;
-    }
+export function createStore<T>(initial: T): Store<T> {
+    const cell = { value: initial };
+    const listeners = new Set<() => void>();
 
-    get = (): T => this.#state;
-
-    subscribe = (listener: () => void): (() => void) => {
-        this.#listeners.add(listener);
-        return () => {
-            this.#listeners.delete(listener);
-        };
+    const set = (next: T): void => {
+        if (Object.is(next, cell.value)) return;
+        cell.value = next;
+        for (const listener of Array.from(listeners)) listener();
     };
 
-    set(next: T): void {
-        if (Object.is(next, this.#state)) return;
-        this.#state = next;
-        for (const listener of Array.from(this.#listeners)) listener();
-    }
-
-    update(change: (current: T) => T): void {
-        this.set(change(this.#state));
-    }
+    return {
+        get: () => cell.value,
+        subscribe: (listener) => {
+            listeners.add(listener);
+            return () => {
+                listeners.delete(listener);
+            };
+        },
+        set,
+        update: (change) => set(change(cell.value))
+    };
 }

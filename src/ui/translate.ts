@@ -68,64 +68,50 @@ function bodyOf(itemId: string): Element | null {
 }
 
 /** Shift+T translate mode: translates the focused article, and each article moved to while on. */
-export class TranslateMode {
-    #enabled = false;
-    #abort?: AbortController;
-    /** Shared while being created, so turning the mode off can destroy it once it exists. */
-    #translator?: Promise<TranslatorHandle>;
-    private readonly notify: (message: string) => void;
+export interface TranslateMode {
+    enabled: () => boolean;
+    off: () => void;
+    toggle: (focusedItemId: string | undefined) => Promise<void>;
+    translate: (itemId: string) => Promise<void>;
+}
 
-    constructor(notify: (message: string) => void) {
-        this.notify = notify;
-    }
+export function createTranslateMode(notify: (message: string) => void): TranslateMode {
+    const mode: {
+        enabled: boolean;
+        abort: AbortController | undefined;
+        /** Shared while being created, so turning the mode off can destroy it once it exists. */
+        translator: Promise<TranslatorHandle> | undefined;
+    } = { enabled: false, abort: undefined, translator: undefined };
 
-    get enabled(): boolean {
-        return this.#enabled;
-    }
-
-    off(): void {
-        if (!this.#enabled) return;
-        this.#enabled = false;
-        this.#abort?.abort();
-        this.#abort = undefined;
-        const translator = this.#translator;
-        this.#translator = undefined;
+    const off = (): void => {
+        if (!mode.enabled) return;
+        mode.enabled = false;
+        mode.abort?.abort();
+        mode.abort = undefined;
+        const translator = mode.translator;
+        mode.translator = undefined;
         void translator?.then((handle) => handle.destroy()).catch(() => undefined);
-    }
+    };
 
-    async #getTranslator(): Promise<TranslatorHandle> {
-        const pending = (this.#translator ??= createTranslator("en", "ja"));
+    const getTranslator = async (): Promise<TranslatorHandle> => {
+        const pending = (mode.translator ??= createTranslator("en", "ja"));
         try {
             return await pending;
         } catch (error) {
             // Try again for the next article, e.g. after a translator user script is installed.
-            if (this.#translator === pending) this.#translator = undefined;
+            if (mode.translator === pending) mode.translator = undefined;
             throw error;
         }
-    }
+    };
 
-    async toggle(focusedItemId: string | undefined): Promise<void> {
-        if (this.#enabled) {
-            this.off();
-            for (const span of document.querySelectorAll(`[${ORIGINAL}]`)) {
-                span.replaceWith(document.createTextNode(span.getAttribute(ORIGINAL) ?? ""));
-            }
-            this.notify("Translate mode: OFF");
-            return;
-        }
-        this.#enabled = true;
-        this.notify("Translate mode: ON");
-        if (focusedItemId) await this.translate(focusedItemId);
-    }
-
-    async translate(itemId: string): Promise<void> {
+    const translate = async (itemId: string): Promise<void> => {
         const body = bodyOf(itemId);
         if (!body || body.querySelector(`[${ORIGINAL}]`)) return;
-        this.#abort?.abort();
+        mode.abort?.abort();
         const abort = new AbortController();
-        this.#abort = abort;
+        mode.abort = abort;
         try {
-            const translator = await this.#getTranslator();
+            const translator = await getTranslator();
             const nodes = textNodes(body);
             if (nodes.length === 0 || abort.signal.aborted) return;
             const originals = nodes.map((node) => node.textContent ?? "");
@@ -138,9 +124,25 @@ export class TranslateMode {
                 node.replaceWith(span);
             });
         } catch (error) {
-            if (!abort.signal.aborted) this.notify(error instanceof Error ? error.message : "Translation failed");
+            if (!abort.signal.aborted) notify(error instanceof Error ? error.message : "Translation failed");
         } finally {
-            if (this.#abort === abort) this.#abort = undefined;
+            if (mode.abort === abort) mode.abort = undefined;
         }
-    }
+    };
+
+    const toggle = async (focusedItemId: string | undefined): Promise<void> => {
+        if (mode.enabled) {
+            off();
+            for (const span of document.querySelectorAll(`[${ORIGINAL}]`)) {
+                span.replaceWith(document.createTextNode(span.getAttribute(ORIGINAL) ?? ""));
+            }
+            notify("Translate mode: OFF");
+            return;
+        }
+        mode.enabled = true;
+        notify("Translate mode: ON");
+        if (focusedItemId) await translate(focusedItemId);
+    };
+
+    return { enabled: () => mode.enabled, off, toggle, translate };
 }

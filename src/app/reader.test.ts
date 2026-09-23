@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { Store } from "../lib/store.ts";
+import { createStore, type Store } from "../lib/store.ts";
 import type {
     Feed,
     Item,
@@ -30,7 +30,7 @@ class MemorySource implements Source {
         this.id = id;
         this.title = id;
         this.capabilities = { loadMore: true, unreadFilter: true, liveItems: false, ...capabilities };
-        this.#store = new Store<SourceSnapshot>({
+        this.#store = createStore<SourceSnapshot>({
             connected: true,
             status: { phase: "idle", message: "" },
             feeds: [],

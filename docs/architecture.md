@@ -23,6 +23,23 @@ lib/
 Dependencies point downwards only: `ui → app → sources → lib`. The UI and the reader never import a
 specific source; `src/main.tsx` is the only place that knows which sources exist.
 
+## Code style: functional and immutable
+
+- **No classes**, except `class … extends Error` (kept for `instanceof` and stack traces).
+- **A module with behavior is a factory function**, `createX(options): X`. `X` is an exported type of arrow
+  functions and readonly values, so callers can pass its functions around without binding `this`.
+- **State is an immutable value.** Data that changes over time lives in a store (`createStore` in
+  `src/lib/store.ts`) and is replaced with a new value (`store.update((state) => ({ ...state, field }))`).
+  State types use `readonly`, `ReadonlyArray`, `ReadonlyMap` and `ReadonlySet`. Never mutate an object that is part
+  of the state; build a new one.
+- **Transitions are pure functions**, `(state, input) => state` at module scope, so they are tested without sources,
+  timers or the network. The factory applies them and then performs the side effects.
+- **Side effects stay inside the factory's closure**: network requests, timers, subscriptions. Runtime handles that are
+  not state (in-flight promises, `AbortController`s, timer cancel functions, listener sets) may live in a `const`
+  `Map` or `Set` there.
+- No `let` or `var`, no reassigned parameters, no `Object.assign`. `lib/oxlint-plugin-immutable` and the lint
+  configuration in `vite.config.ts` enforce these.
+
 ## Sources
 
 A `Source` (see `src/sources/source.ts`) adapts one provider to the reader:

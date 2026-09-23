@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { comboFromEvent, KeyBindings, normalizeCombo } from "./keybindings.ts";
+import { comboFromEvent, createKeyBindings, normalizeCombo } from "./keybindings.ts";
 
 const key = (
     value: string,
@@ -37,7 +37,7 @@ describe("key bindings", () => {
     });
 
     it("binds, triggers and unbinds handlers", () => {
-        const bindings = new KeyBindings();
+        const bindings = createKeyBindings();
         const calls: string[] = [];
         const unbind = bindings.bind("Shift+S", () => calls.push("skip"));
         bindings.bind("s", () => calls.push("next"));
@@ -50,7 +50,7 @@ describe("key bindings", () => {
     });
 
     it("replaces existing handlers when asked, like Combokeys", () => {
-        const bindings = new KeyBindings();
+        const bindings = createKeyBindings();
         const calls: string[] = [];
         bindings.bind("v", () => calls.push("default"));
         bindings.bind("v", () => calls.push("user script"), { replace: true });

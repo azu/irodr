@@ -4,7 +4,7 @@ import { hasSavedPreferences, legacyPreferences, loadPreferences, savePreference
 import { Reader } from "./app/reader.ts";
 import { type AppConfig, loadConfig } from "./config.ts";
 import "./global.css";
-import { Emitter } from "./lib/emitter.ts";
+import { createEmitter } from "./lib/emitter.ts";
 import { browserWriteLock, createIndexedDBStore, readAllValues } from "./lib/kv-store.ts";
 import { safeUrl } from "./lib/sanitize.ts";
 import { GitHubSource } from "./sources/github/github-source.ts";
@@ -12,7 +12,7 @@ import { InoreaderSource } from "./sources/inoreader/inoreader-source.ts";
 import { App } from "./ui/App.tsx";
 import { ReaderContext, UserScriptEventsContext } from "./ui/context.tsx";
 import { createShortcuts } from "./ui/shortcuts.ts";
-import { TranslateMode } from "./ui/translate.ts";
+import { createTranslateMode } from "./ui/translate.ts";
 import { installUserScriptApi } from "./ui/userscript.ts";
 
 declare global {
@@ -64,9 +64,9 @@ const reader = new Reader({
     }
 });
 
-const translate = new TranslateMode((message) => reader.setMessage(message));
+const translate = createTranslateMode((message) => reader.setMessage(message));
 const shortcuts = createShortcuts(reader, translate);
-const events = new Emitter();
+const events = createEmitter();
 shortcuts.attach(document);
 
 // Leaving a feed turns translate mode off, however the feed was left.

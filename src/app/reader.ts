@@ -1,5 +1,5 @@
 import { shallowEqual } from "../lib/equal.ts";
-import { Store } from "../lib/store.ts";
+import { createStore, type Store } from "../lib/store.ts";
 import type { Feed, Item, SettingValues, Source, SourceCapabilities, SourceSnapshot } from "../sources/source.ts";
 import { DEFAULT_PREFERENCES, normalizePreferences, type Preferences } from "./preferences.ts";
 
@@ -148,7 +148,7 @@ export class Reader {
         this.#options = options;
         this.#sources = options.sources;
         this.#preferences = options.preferences ?? DEFAULT_PREFERENCES;
-        this.#store = new Store<ReaderState>({
+        this.#store = createStore<ReaderState>({
             sources: [],
             list: EMPTY_LIST,
             loading: false,

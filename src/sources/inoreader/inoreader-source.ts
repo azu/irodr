@@ -1,6 +1,6 @@
 import { shallowEqual } from "../../lib/equal.ts";
 import { decodeEntities, escapeHtml } from "../../lib/html.ts";
-import { Store } from "../../lib/store.ts";
+import { createStore, type Store } from "../../lib/store.ts";
 import type {
     Feed,
     Item,
@@ -82,7 +82,7 @@ export class InoreaderSource implements Source {
         this.options = options;
         this.#oauth = new InoreaderOAuth(options);
         this.homeUrl = options.baseUrl;
-        this.#store = new Store(
+        this.#store = createStore(
             this.createSnapshot([], this.#oauth.token ? idle("Inoreader is connected.") : disconnected())
         );
     }

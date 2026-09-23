@@ -1,8 +1,13 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import type { AddressInfo } from "node:net";
-import { FakeGitHub, type GitHubNotificationSeed, type GitHubScenario } from "./github.ts";
+import { createFakeGitHub, type FakeGitHub, type GitHubNotificationSeed, type GitHubScenario } from "./github.ts";
 import { type FakeRequest, type FakeResponse, json, text } from "./http.ts";
-import { FakeInoreader, type InoreaderItemSeed, type InoreaderScenario } from "./inoreader.ts";
+import {
+    createFakeInoreader,
+    type FakeInoreader,
+    type InoreaderItemSeed,
+    type InoreaderScenario
+} from "./inoreader.ts";
 
 export interface Scenario {
     inoreader?: InoreaderScenario;
@@ -10,20 +15,21 @@ export interface Scenario {
 }
 
 export interface LoggedRequest {
-    method: string;
-    service: "inoreader" | "github";
-    path: string;
-    query: Record<string, string>;
-    body: string;
+    readonly method: string;
+    readonly service: "inoreader" | "github";
+    readonly path: string;
+    readonly query: Readonly<Record<string, string>>;
+    readonly body: string;
 }
 
 export interface FakeApiServer {
     readonly origin: string;
     readonly inoreader: FakeInoreader;
     readonly github: FakeGitHub;
-    readonly log: LoggedRequest[];
-    reset(scenario?: Scenario): void;
-    close(): Promise<void>;
+    /** Requests to the fake services since the last reset, oldest first. */
+    log: () => readonly LoggedRequest[];
+    reset: (scenario?: Scenario) => void;
+    close: () => Promise<void>;
 }
 
 // Mirrors the headers GitHub exposes to browsers.
@@ -44,16 +50,16 @@ async function readBody(request: IncomingMessage): Promise<string> {
  * `/__control/*` lets tests seed data and inspect requests.
  */
 export async function startFakeApi(options: { port?: number; host?: string } = {}): Promise<FakeApiServer> {
-    const inoreader = new FakeInoreader();
-    const github = new FakeGitHub();
-    const log: LoggedRequest[] = [];
+    const inoreader = createFakeInoreader();
+    const github = createFakeGitHub();
+    const recorded: { log: readonly LoggedRequest[] } = { log: [] };
     // Known once the server listens.
     const listening = { origin: "" };
 
     const reset = (scenario: Scenario = {}) => {
         inoreader.reset(scenario.inoreader);
         github.reset(scenario.github);
-        log.length = 0;
+        recorded.log = [];
     };
     reset();
 
@@ -66,7 +72,7 @@ export async function startFakeApi(options: { port?: number; host?: string } = {
                 reset(body);
                 return json({ ok: true });
             case "GET /log":
-                return json(log);
+                return json(recorded.log);
             case "POST /inoreader/items":
                 inoreader.addItems(String(body.streamId), body.items as InoreaderItemSeed[]);
                 return json({ ok: true });
@@ -74,16 +80,16 @@ export async function startFakeApi(options: { port?: number; host?: string } = {
                 inoreader.expireTokens();
                 return json({ ok: true });
             case "POST /inoreader/config":
-                if (Array.isArray(body.failingStreams))
-                    inoreader.failingStreams = new Set(body.failingStreams as string[]);
-                if (Array.isArray(body.failingMarkRead)) {
-                    inoreader.failingMarkRead = new Set(body.failingMarkRead as string[]);
-                }
+                // Only array values replace the failing streams; other keys and values are ignored.
+                inoreader.configure({
+                    ...(Array.isArray(body.failingStreams) ? { failingStreams: body.failingStreams as string[] } : {}),
+                    ...(Array.isArray(body.failingMarkRead)
+                        ? { failingMarkRead: body.failingMarkRead as string[] }
+                        : {})
+                });
                 return json({ ok: true });
             case "GET /inoreader/unread":
-                return json(
-                    Object.fromEntries([...inoreader.streams.keys()].map((id) => [id, inoreader.unreadCount(id)]))
-                );
+                return json(Object.fromEntries(inoreader.streamIds().map((id) => [id, inoreader.unreadCount(id)])));
             case "POST /github/notifications":
                 github.add(body.notifications as GitHubNotificationSeed[]);
                 return json({ ok: true });
@@ -93,7 +99,7 @@ export async function startFakeApi(options: { port?: number; host?: string } = {
             case "GET /github/unread":
                 return json(github.unread());
             case "POST /github/config":
-                for (const [key, value] of Object.entries(body ?? {})) Reflect.set(github, key, value);
+                github.configure(body);
                 return json({ ok: true });
             default:
                 return json({ error: `Unknown control ${request.method} ${path}` }, 404);
@@ -110,13 +116,16 @@ export async function startFakeApi(options: { port?: number; host?: string } = {
               : undefined;
         if (!service) return json({ error: "not found" }, 404);
         const rest = path.slice(service.length + 1);
-        log.push({
-            method: request.method,
-            service,
-            path: rest,
-            query: Object.fromEntries(request.url.searchParams),
-            body: request.body
-        });
+        recorded.log = [
+            ...recorded.log,
+            {
+                method: request.method,
+                service,
+                path: rest,
+                query: Object.fromEntries(request.url.searchParams),
+                body: request.body
+            }
+        ];
         return service === "inoreader"
             ? inoreader.handle(request, rest)
             : github.handle(request, rest, `${listening.origin}/github`);
@@ -161,7 +170,7 @@ export async function startFakeApi(options: { port?: number; host?: string } = {
         origin: listening.origin,
         inoreader,
         github,
-        log,
+        log: () => recorded.log,
         reset,
         close: () =>
             new Promise((resolve, reject) => {

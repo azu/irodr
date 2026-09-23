@@ -38,10 +38,12 @@ describe("GitHubSource", () => {
     it("syncs every unread notification page and groups them by repository", async () => {
         const { source } = await connected();
         expect(titles(source)).toEqual(["acme/rocket (2)", "acme/tools (1)", "octo/docs (1)"]);
-        expect(server.log.filter((entry) => entry.path === "/notifications").map((entry) => entry.query.page)).toEqual([
-            undefined,
-            "2"
-        ]);
+        expect(
+            server
+                .log()
+                .filter((entry) => entry.path === "/notifications")
+                .map((entry) => entry.query.page)
+        ).toEqual([undefined, "2"]);
         expect(source.getSnapshot().status).toEqual({
             phase: "idle",
             message: "GitHub sync complete: 4 unread notifications."
@@ -63,13 +65,13 @@ describe("GitHubSource", () => {
 
     it("waits for the poll interval before syncing again", async () => {
         const { source, advance } = await connected();
-        const requests = server.log.length;
+        const requests = server.log().length;
         await source.sync();
-        expect(server.log).toHaveLength(requests);
+        expect(server.log()).toHaveLength(requests);
         expect(source.getSnapshot().status.phase).toBe("waiting");
         advance(61_000);
         await source.sync();
-        expect(server.log.length).toBeGreaterThan(requests);
+        expect(server.log().length).toBeGreaterThan(requests);
     });
 
     it("marks a repository read through the loaded timestamp", async () => {
@@ -79,7 +81,7 @@ describe("GitHubSource", () => {
             { id: "103", repository: "acme/rocket", type: "Issue", title: "Late", updated_at: iso(0.5) }
         ]);
         await source.markRead(githubFeedId("acme/rocket"), items);
-        const put = server.log.find((entry) => entry.method === "PUT");
+        const put = server.log().find((entry) => entry.method === "PUT");
         expect(put?.path).toBe("/repos/acme/rocket/notifications");
         expect(JSON.parse(put?.body ?? "{}")).toEqual({ last_read_at: iso(1) });
         expect(server.github.unread().sort()).toEqual(["103", "201", "301"]);
@@ -88,7 +90,7 @@ describe("GitHubSource", () => {
     });
 
     it("keeps notifications while GitHub marks them read asynchronously (202)", async () => {
-        server.github.markReadStatus = { "acme/rocket": 202 };
+        server.github.configure({ markReadStatus: { "acme/rocket": 202 } });
         const { source } = await connected();
         const { items } = await source.loadItems(githubFeedId("acme/rocket"));
         await source.markRead(githubFeedId("acme/rocket"), items);
@@ -97,7 +99,7 @@ describe("GitHubSource", () => {
     });
 
     it("keeps notifications unread when marking read fails", async () => {
-        server.github.markReadStatus = { "acme/rocket": 403 };
+        server.github.configure({ markReadStatus: { "acme/rocket": 403 } });
         const { source } = await connected();
         const { items } = await source.loadItems(githubFeedId("acme/rocket"));
         await expect(source.markRead(githubFeedId("acme/rocket"), items)).rejects.toThrow();
@@ -115,19 +117,19 @@ describe("GitHubSource", () => {
 
     it("backs off after a failure", async () => {
         const { source, advance } = await connected();
-        server.github.notificationsStatus = 500;
+        server.github.configure({ notificationsStatus: 500 });
         advance(61_000);
         await expect(source.sync()).rejects.toThrow();
         expect(source.getSnapshot().status.message).toMatch(/^GitHub request failed \(HTTP 500\)/);
-        const requests = server.log.length;
+        const requests = server.log().length;
         await source.sync();
-        expect(server.log).toHaveLength(requests);
+        expect(server.log()).toHaveLength(requests);
         // Cached notifications stay readable.
         expect(titles(source)).toHaveLength(3);
     });
 
     it("rejects another account for the same browser inbox", async () => {
-        server.github.accounts = { ghp_valid: { id: 1, login: "a" }, ghp_other: { id: 2, login: "b" } };
+        server.github.configure({ accounts: { ghp_valid: { id: 1, login: "a" }, ghp_other: { id: 2, login: "b" } } });
         const { source } = await connected();
         await expect(source.connect("ghp_other")).rejects.toThrow(/another GitHub account/);
         expect(source.getSnapshot().connected).toBe(false);

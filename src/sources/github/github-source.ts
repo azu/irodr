@@ -1,6 +1,6 @@
 import { shallowEqual } from "../../lib/equal.ts";
 import type { KeyValueStore, WriteLock } from "../../lib/kv-store.ts";
-import { Store } from "../../lib/store.ts";
+import { createStore, type Store } from "../../lib/store.ts";
 import type {
     Feed,
     Item,
@@ -126,7 +126,7 @@ export class GitHubSource implements Source {
         this.#api = new GitHubApi(options);
         this.#cache = new GitHubCache(options.cache, options.lock);
         this.homeUrl = `${options.webBaseUrl.replace(/\/$/, "")}/notifications`;
-        this.#store = new Store(this.createSnapshot([]));
+        this.#store = createStore(this.createSnapshot([]));
     }
 
     getSnapshot = (): SourceSnapshot => this.#store.get();

@@ -138,7 +138,7 @@ describe("InoreaderSource", () => {
         const page = await source.loadItems(`inoreader:${ALPHA}`, { count: 20 });
         await source.markRead(`inoreader:${ALPHA}`, page.items);
         // The unread count lags behind the mark-read request.
-        for (const item of server.inoreader.streams.get(ALPHA)?.items ?? []) item.read = false;
+        server.inoreader.markUnread(ALPHA);
         await source.sync();
         expect(alpha()).toBe(0);
         clock.offset = 6 * 60 * 1000;
@@ -154,7 +154,7 @@ describe("InoreaderSource", () => {
         await source.markRead(`inoreader:${ALPHA}`, page.items);
         await source.sync();
         expect(alpha()).toBe(0);
-        for (const item of server.inoreader.streams.get(ALPHA)?.items ?? []) item.read = false;
+        server.inoreader.markUnread(ALPHA);
         await source.sync();
         expect(alpha()).toBe(3);
     });
@@ -163,7 +163,8 @@ describe("InoreaderSource", () => {
         const { source } = await connected();
         server.inoreader.expireTokens();
         await source.sync();
-        const grants = server.log
+        const grants = server
+            .log()
             .filter((entry) => entry.path === "/oauth2/token")
             .map((entry) => new URLSearchParams(entry.body).get("grant_type"));
         expect(grants).toEqual(["authorization_code", "refresh_token"]);
@@ -173,12 +174,12 @@ describe("InoreaderSource", () => {
     it("keeps the session when the token endpoint is temporarily unavailable", async () => {
         const { source, storage } = await connected();
         server.inoreader.expireTokens();
-        server.inoreader.tokenFailure = 503;
+        server.inoreader.configure({ tokenFailure: 503 });
         await expect(source.sync()).rejects.toThrow("Inoreader is unavailable (HTTP 503). Try again later.");
         expect(source.getSnapshot().connected).toBe(true);
         expect(source.getSnapshot().status.phase).toBe("error");
         expect(storage.getItem("inoreader-token")).not.toBeNull();
-        server.inoreader.tokenFailure = undefined;
+        server.inoreader.configure({ tokenFailure: undefined });
         await source.sync();
         expect(source.getSnapshot().feeds).toHaveLength(5);
     });
@@ -189,7 +190,7 @@ describe("InoreaderSource", () => {
         server.inoreader.expireTokens();
         await otherTab.sync();
         await source.sync();
-        const grants = server.log.filter((entry) => entry.path === "/oauth2/token");
+        const grants = server.log().filter((entry) => entry.path === "/oauth2/token");
         expect(grants).toHaveLength(2);
         expect(source.getSnapshot().feeds).toHaveLength(5);
     });
@@ -197,7 +198,7 @@ describe("InoreaderSource", () => {
     it("marks nothing read when no item was loaded", async () => {
         const { source } = await connected();
         await source.markRead(`inoreader:${ALPHA}`, []);
-        expect(server.log.some((entry) => entry.path.endsWith("/mark-all-as-read"))).toBe(false);
+        expect(server.log().some((entry) => entry.path.endsWith("/mark-all-as-read"))).toBe(false);
         expect(server.inoreader.unreadCount(ALPHA)).toBe(3);
     });
 

@@ -43,34 +43,41 @@ export function isEditableTarget(target: EventTarget | null): boolean {
 }
 
 /** A tiny replacement for Combokeys: one listener, exact-modifier matching. */
-export class KeyBindings {
-    readonly #handlers = new Map<string, KeyHandler[]>();
-
+export interface KeyBindings {
     /** Add a handler. With `replace`, it replaces the handlers already bound to `combo`, like Combokeys. */
-    bind(combo: string, handler: KeyHandler, options: { replace?: boolean } = {}): () => void {
-        const key = normalizeCombo(combo);
-        this.#handlers.set(key, [...(options.replace ? [] : (this.#handlers.get(key) ?? [])), handler]);
-        return () => {
-            this.#handlers.set(
-                key,
-                (this.#handlers.get(key) ?? []).filter((candidate) => candidate !== handler)
-            );
-        };
-    }
-
-    has(combo: string): boolean {
-        return (this.#handlers.get(normalizeCombo(combo))?.length ?? 0) > 0;
-    }
-
+    bind: (combo: string, handler: KeyHandler, options?: { replace?: boolean }) => () => void;
+    has: (combo: string) => boolean;
     /** Run the handlers bound to `combo`, as if the keys were pressed. */
-    trigger(combo: string, event: KeyboardEvent = new KeyboardEvent("keydown")): boolean {
-        const handlers = this.#handlers.get(normalizeCombo(combo)) ?? [];
-        for (const handler of handlers) handler(event);
-        return handlers.length > 0;
-    }
+    trigger: (combo: string, event?: KeyboardEvent) => boolean;
+    handleEvent: (event: KeyboardEvent) => void;
+}
 
-    handleEvent(event: KeyboardEvent): void {
-        if (event.defaultPrevented || event.isComposing || isEditableTarget(event.target)) return;
-        this.trigger(comboFromEvent(event), event);
-    }
+export function createKeyBindings(): KeyBindings {
+    // Bound handlers are replaced, never mutated, so a trigger runs the handlers bound when it started.
+    const handlers = new Map<string, readonly KeyHandler[]>();
+
+    const trigger = (combo: string, event: KeyboardEvent = new KeyboardEvent("keydown")): boolean => {
+        const bound = handlers.get(normalizeCombo(combo)) ?? [];
+        for (const handler of bound) handler(event);
+        return bound.length > 0;
+    };
+
+    return {
+        bind: (combo, handler, options = {}) => {
+            const key = normalizeCombo(combo);
+            handlers.set(key, [...(options.replace ? [] : (handlers.get(key) ?? [])), handler]);
+            return () => {
+                handlers.set(
+                    key,
+                    (handlers.get(key) ?? []).filter((candidate) => candidate !== handler)
+                );
+            };
+        },
+        has: (combo) => (handlers.get(normalizeCombo(combo))?.length ?? 0) > 0,
+        trigger,
+        handleEvent: (event) => {
+            if (event.defaultPrevented || event.isComposing || isEditableTarget(event.target)) return;
+            trigger(comboFromEvent(event), event);
+        }
+    };
 }
