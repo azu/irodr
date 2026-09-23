@@ -106,8 +106,9 @@ projection keeps unchanged parts of `ReaderState` as the same objects, which is 
 
 ## UI
 
-- React 19 function components and hooks only. React Compiler memoizes components; the build fails if a
-  component cannot be compiled (`panicThreshold: "all_errors"`), and Oxlint runs the React Compiler rules.
+- React 19 function components and hooks only. React Compiler memoizes components: Oxc's Rust port of it
+  (`oxc-transform-react`) through `react({ compiler: true })`, without Babel. Oxlint's built-in React Compiler rules
+  (`react/purity`, `react/refs`, ...) run the compiler's checks in `vp check` and reject components it would skip.
 - StyleX for styles. Stable class names such as `SubscriptionContentsContainer-content` are kept for user
   scripts (`src/ui/dom.ts`). Article HTML is sanitized with an allowlist (`src/lib/sanitize.ts`) and styled by
   `src/global.css`.

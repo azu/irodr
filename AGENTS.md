@@ -34,8 +34,9 @@ See [docs/architecture.md](docs/architecture.md).
 
 - Never branch on a source ID in `src/app` or `src/ui`. Express differences with `SourceCapabilities`,
   `SourceSettings` or inside the source.
-- Components are function components with hooks. They must compile with React Compiler (the build fails otherwise):
-  no mutation during render, no `try/finally` in components, no reading refs during render.
+- Components are function components with hooks. They must compile with React Compiler (Oxc's port,
+  `react({ compiler: true })`); Oxlint's React Compiler rules (`react/purity`, `react/refs`, ...) fail `vp check`
+  otherwise: no mutation during render, no `try/finally` in components, no reading refs during render.
 - Styles use StyleX `stylex.create` with longhand properties (`borderWidth`, not `border`); `stylex/valid-styles`
   reports what StyleX would silently drop. Keep the stable class names in `src/ui/dom.ts`; user scripts use them.
 - Functional, immutable style (see docs/architecture.md, enforced by lint): no classes except errors, use factory

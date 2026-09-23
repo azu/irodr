@@ -28,10 +28,8 @@
     "react-dom": "catalog:"
   },
   "devDependencies": {
-    "@babel/core": "catalog:",
     "@irodr/oxlint-plugin-immutable": "workspace:*",
     "@playwright/test": "catalog:",
-    "@rolldown/plugin-babel": "catalog:",
     "@stylexjs/eslint-plugin": "catalog:",
     "@stylexjs/unplugin": "catalog:",
     "@types/markdown-it": "catalog:",
@@ -39,9 +37,8 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
-    "babel-plugin-react-compiler": "catalog:",
     "eslint-plugin-baseline-js": "catalog:",
-    "eslint-plugin-react-hooks": "catalog:",
+    "oxc-transform-react": "catalog:",
     "vite-plus": "catalog:"
   },
   "packageManager": "pnpm@10.34.5"

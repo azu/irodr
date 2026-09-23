@@ -1,6 +1,5 @@
-import babel from "@rolldown/plugin-babel";
 import stylex from "@stylexjs/unplugin/vite";
-import react, { reactCompilerPreset } from "@vitejs/plugin-react";
+import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite-plus";
 
 // Inoreader does not allow CORS. Production uses the Netlify edge function
@@ -25,17 +24,15 @@ export default defineConfig({
         ? []
         : [
               stylex({ useCSSLayers: true }),
-              react(),
-              // Fail the build when a component cannot be compiled by React Compiler.
-              babel({ presets: [reactCompilerPreset({ panicThreshold: "all_errors" })] })
+              // React Compiler, Oxc's Rust port of it (oxc-transform-react). Oxlint's React Compiler rules
+              // (react/purity, react/refs, ... below) reject components it would have to skip.
+              react({ compiler: true })
           ],
     server: { port: 8888, strictPort: true, proxy: corsProxy },
     preview: { port: 8888, strictPort: true, proxy: corsProxy },
     lint: {
         plugins: ["eslint", "typescript", "unicorn", "oxc", "react", "jsx-a11y", "import"],
-        // React Compiler diagnostics (purity, refs, set-state-in-effect, ...).
         jsPlugins: [
-            { name: "react-compiler", specifier: "eslint-plugin-react-hooks" },
             // StyleX drops unsupported values silently; catch them at lint time.
             { name: "stylex", specifier: "@stylexjs/eslint-plugin" },
             { name: "immutable", specifier: "@irodr/oxlint-plugin-immutable" },
@@ -59,20 +56,20 @@ export default defineConfig({
             "react/react-in-jsx-scope": "off",
             "react/rules-of-hooks": "error",
             "react/exhaustive-deps": "error",
-            "react-compiler/purity": "error",
-            "react-compiler/refs": "error",
-            "react-compiler/immutability": "error",
-            "react-compiler/set-state-in-render": "error",
-            "react-compiler/set-state-in-effect": "error",
-            "react-compiler/static-components": "error",
-            "react-compiler/globals": "error",
-            "react-compiler/use-memo": "error",
-            "react-compiler/unsupported-syntax": "error",
-            "react-compiler/preserve-manual-memoization": "error",
-            "react-compiler/incompatible-library": "error",
-            "react-compiler/error-boundaries": "error",
-            "react-compiler/config": "error",
-            "react-compiler/gating": "error",
+            // React Compiler diagnostics, built into Oxlint (the same checks as the compiler).
+            "react/error-boundaries": "error",
+            "react/globals": "error",
+            "react/immutability": "error",
+            "react/incompatible-library": "error",
+            "react/preserve-manual-memoization": "error",
+            "react/purity": "error",
+            "react/refs": "error",
+            "react/set-state-in-effect": "error",
+            "react/set-state-in-render": "error",
+            "react/static-components": "error",
+            "react/unsupported-syntax": "error",
+            "react/use-memo": "error",
+            "react/void-use-memo": "error",
             "stylex/valid-styles": "error",
             "stylex/valid-shorthands": "error",
             "stylex/no-unused": "error",
