@@ -29,7 +29,7 @@ export interface GitHubConfig {
     /** Items per notifications page, regardless of per_page (to exercise pagination). */
     readonly pageSize?: number;
     readonly pollInterval: number;
-    /** Repository → status of PUT /repos/{repo}/notifications. Default 205. */
+    /** Notification ID or repository → status of PATCH /notifications/threads/{id}. Default 205. */
     readonly markReadStatus: Readonly<Record<string, number>>;
     /** Status of GET /notifications, e.g. 500 or 403. */
     readonly notificationsStatus?: number;
@@ -198,16 +198,14 @@ function subjectDetails(state: State, repository: string, kind: string, number: 
 export function createFakeGitHub(): FakeGitHub {
     const current = { state: scenarioState({}) };
 
-    const markRepository = (repository: string, request: FakeRequest): FakeResponse => {
-        const status = current.state.config.markReadStatus[repository] ?? 205;
-        if (status !== 205 && status !== 202) return json({ message: "Forbidden" }, status);
-        const body = request.body ? (JSON.parse(request.body) as { last_read_at?: string }) : {};
-        const cutoff = body.last_read_at ? Date.parse(body.last_read_at) : Date.now();
-        // A 202 means GitHub finishes asynchronously; this fake applies it immediately either way.
-        current.state = withRead(
-            current.state,
-            (notification) => notification.repository === repository && Date.parse(notification.updated_at) <= cutoff
-        );
+    const markThread = (id: string): FakeResponse => {
+        const notification = current.state.notifications.find((candidate) => candidate.id === id);
+        if (!notification) return json({ message: "Not Found" }, 404);
+        const { markReadStatus } = current.state.config;
+        const status = markReadStatus[notification.id] ?? markReadStatus[notification.repository] ?? 205;
+        if (status !== 205) return json({ message: "Forbidden" }, status);
+        if (!notification.unread) return { status: 304 };
+        current.state = withRead(current.state, (candidate) => candidate.id === id);
         return { status };
     };
 
@@ -219,8 +217,8 @@ export function createFakeGitHub(): FakeGitHub {
         if (path === "/notifications" && request.method === "GET") {
             return listNotifications(current.state, request, base);
         }
-        const repoRead = /^\/repos\/([\w.-]+\/[\w.-]+)\/notifications$/.exec(path);
-        if (repoRead?.[1] && request.method === "PUT") return markRepository(repoRead[1], request);
+        const threadRead = /^\/notifications\/threads\/(\w+)$/.exec(path);
+        if (threadRead?.[1] && request.method === "PATCH") return markThread(threadRead[1]);
         const subject = /^\/repos\/([\w.-]+\/[\w.-]+)\/(releases|issues|pulls|discussions|commits)\/([\w]+)$/.exec(
             path
         );

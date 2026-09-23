@@ -63,16 +63,18 @@ Another account is rejected to avoid mixing private inboxes; use a separate brow
   Unknown types still appear with their title and a repository link. Markdown is rendered with raw HTML disabled and
   sanitized again at display time; commit messages are escaped plain text. Only explicit HTTP(S) links and images
   are kept.
-- Read acknowledgements use **one `PUT /repos/{owner}/{repo}/notifications` per repository**, with `last_read_at`
-  frozen at the newest loaded notification when you leave the feed.
-- A `205` response removes the covered cached items; a `202` leaves them until a later sync confirms GitHub's
-  asynchronous operation. Failures keep them unread. Removal compares with the latest stored timestamps, so an update
-  that arrives meanwhile is kept, and a sync already in flight cannot bring read items back.
+- Read acknowledgements use **one `PATCH /notifications/threads/{id}` per notification** (4 at a time): every
+  stored notification of the repository updated through the newest loaded notification when you leave the feed,
+  including types the display filter hides. `PUT /repos/{owner}/{repo}/notifications` is not used: it can answer
+  `205` and still leave notifications unread.
+- Each `205` (or `304`, already read) removes that cached item; failed notifications stay unread. Removal compares
+  with the latest stored timestamps, so an update that arrives meanwhile is kept, and a sync already in flight
+  cannot bring read items back.
 - A failed sync keeps the cache and backs off before retrying (at least 5 minutes, honoring `Retry-After` and
   rate-limit reset headers).
 
-The public GraphQL schema has no notification-read mutation. Repository-wide REST acknowledgements intentionally
-trade per-type selection for far fewer write requests.
+The public GraphQL schema has no notification-read mutation, so marking read takes one REST request per
+notification.
 
 ### Storage and security
 

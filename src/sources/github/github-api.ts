@@ -91,15 +91,10 @@ export interface GitHubApi {
         signal?: AbortSignal
     ) => Promise<NotificationDetails>;
     /**
-     * https://docs.github.com/en/rest/activity/notifications#mark-repository-notifications-as-read
-     * Resolves `true` when GitHub finished (205), `false` when it continues asynchronously (202).
+     * https://docs.github.com/en/rest/activity/notifications#mark-a-thread-as-read
+     * Resolves when GitHub marked the thread read (205) or it already was (304).
      */
-    readonly markRepositoryRead: (
-        repository: string,
-        lastReadAt: string,
-        token: string,
-        signal?: AbortSignal
-    ) => Promise<boolean>;
+    readonly markThreadRead: (threadId: string, token: string, signal?: AbortSignal) => Promise<void>;
 }
 
 export function createGitHubApi(options: GitHubApiOptions): GitHubApi {
@@ -221,15 +216,18 @@ export function createGitHubApi(options: GitHubApiOptions): GitHubApi {
             };
         },
 
-        markRepositoryRead: async (repository, lastReadAt, token, signal) => {
-            const response = await send(`${apiRoot}/repos/${repository}/notifications`, token, signal, {
-                method: "PUT",
-                body: JSON.stringify({ last_read_at: lastReadAt })
-            });
-            if (response.status !== 205 && response.status !== 202) {
+        markThreadRead: async (threadId, token, signal) => {
+            const response = await send(
+                `${apiRoot}/notifications/threads/${encodeURIComponent(threadId)}`,
+                token,
+                signal,
+                {
+                    method: "PATCH"
+                }
+            );
+            if (response.status !== 205 && response.status !== 304) {
                 throw new GitHubRequestError("mark-read", response.status, response.headers, options.now());
             }
-            return response.status === 205;
         }
     };
 }

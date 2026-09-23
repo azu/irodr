@@ -159,15 +159,38 @@ export function withInbox(snapshot: CacheSnapshot, sourceId: string, items: read
     return withItems({ ...snapshot, items: kept }, sourceId, items);
 }
 
-/** Whether a repository-wide read through `readThrough` (repository → epoch milliseconds) covers `item`. */
+/**
+ * The notifications of `sourceId` in `repository` updated through `cutoff` (epoch milliseconds), as a read
+ * through their stored timestamps (external ID → epoch milliseconds).
+ */
+export function readThroughOf(
+    snapshot: CacheSnapshot,
+    sourceId: string,
+    repository: string,
+    cutoff: number
+): ReadonlyMap<string, number> {
+    return new Map(
+        snapshot.items.flatMap((item) => {
+            const updated = Date.parse(item.updatedAt ?? "");
+            return item.sourceId === sourceId &&
+                item.metadata?.githubUnread !== false &&
+                validRepository(item.metadata?.repository) === repository &&
+                Number.isFinite(updated) &&
+                updated <= cutoff
+                ? [[item.externalId, updated] as const]
+                : [];
+        })
+    );
+}
+
+/** Whether a read through `readThrough` (external ID → epoch milliseconds) covers `item`: later updates stay unread. */
 export function isCoveredByRead(item: CachedItem, readThrough: ReadonlyMap<string, number>): boolean {
-    const repository = validRepository(item.metadata?.repository);
-    const cutoff = repository ? readThrough.get(repository) : undefined;
+    const cutoff = readThrough.get(item.externalId);
     const updated = Date.parse(item.updatedAt ?? "");
     return cutoff !== undefined && Number.isFinite(updated) && updated <= cutoff;
 }
 
-/** Remove the items of `sourceId` that a repository-wide read through `readThrough` covers. */
+/** Remove the items of `sourceId` that a read through `readThrough` covers. */
 export function withoutRead(
     snapshot: CacheSnapshot,
     sourceId: string,

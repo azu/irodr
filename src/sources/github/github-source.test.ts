@@ -14,7 +14,7 @@ import {
     readCutoff,
     syncEntry,
     unreadDuringSync,
-    withRepositoryRead,
+    withThreadsRead,
     withSyncFinished,
     withSyncStarted
 } from "./github-source.ts";
@@ -190,28 +190,52 @@ describe("createGitHubSource", () => {
         expect(server.log().length).toBeGreaterThan(requests);
     });
 
-    it("marks a repository read through the loaded timestamp", async () => {
+    it("marks each notification of a repository read through the loaded timestamp", async () => {
         const { source } = await connected();
         const { items } = await source.loadItems(githubFeedId("acme/rocket"));
         server.github.add([
             { id: "103", repository: "acme/rocket", type: "Issue", title: "Late", updated_at: iso(0.5) }
         ]);
         await source.markRead(githubFeedId("acme/rocket"), items);
-        const put = server.log().find((entry) => entry.method === "PUT");
-        expect(put?.path).toBe("/repos/acme/rocket/notifications");
-        expect(JSON.parse(put?.body ?? "{}")).toEqual({ last_read_at: iso(1) });
+        const patches = server.log().filter((entry) => entry.method === "PATCH");
+        expect(patches.map((entry) => entry.path).sort()).toEqual([
+            "/notifications/threads/101",
+            "/notifications/threads/102"
+        ]);
+        expect(server.log().filter((entry) => entry.method === "PUT")).toEqual([]);
         expect(server.github.unread().sort()).toEqual(["103", "201", "301"]);
         // The repository stays listed as read until reload, like a read RSS feed.
         expect(titles(source)).toEqual(["acme/rocket (0)", "acme/tools (1)", "octo/docs (1)"]);
     });
 
-    it("keeps notifications while GitHub marks them read asynchronously (202)", async () => {
-        server.github.configure({ markReadStatus: { "acme/rocket": 202 } });
+    it("marks notifications hidden by the display filter read too", async () => {
         const { source } = await connected();
+        await source.runAction("setting:releaseOnly", { releaseOnly: true });
         const { items } = await source.loadItems(githubFeedId("acme/rocket"));
+        expect(items.map((item) => item.title)).toEqual(["v2.0.0"]);
         await source.markRead(githubFeedId("acme/rocket"), items);
-        expect(titles(source)[0]).toBe("acme/rocket (2)");
-        expect(source.getSnapshot().status.phase).toBe("waiting");
+        expect(server.github.unread().sort()).toEqual(["201", "301"]);
+    });
+
+    it("keeps an update that arrived after loading unread", async () => {
+        const { source, advance } = await connected();
+        const { items } = await source.loadItems(githubFeedId("acme/rocket"));
+        server.github.add([
+            {
+                id: "101",
+                repository: "acme/rocket",
+                type: "Release",
+                title: "v2.0.1",
+                number: "3",
+                updated_at: iso(0.5)
+            }
+        ]);
+        advance(61_000);
+        await source.sync();
+        await source.markRead(githubFeedId("acme/rocket"), items);
+        const patches = server.log().filter((entry) => entry.method === "PATCH");
+        expect(patches.map((entry) => entry.path)).toEqual(["/notifications/threads/102"]);
+        expect(titles(source)[0]).toBe("acme/rocket (1)");
     });
 
     it("refuses to mark a repository read without GitHub's timestamps", async () => {
@@ -241,8 +265,26 @@ describe("createGitHubSource", () => {
         await expect(source.markRead(githubFeedId("acme/cache"), items)).rejects.toThrow(
             "Cannot safely mark a repository read without its notification timestamp."
         );
-        expect(server.log().filter((entry) => entry.method === "PUT")).toEqual([]);
+        expect(server.log().filter((entry) => entry.method === "PATCH")).toEqual([]);
         expect(titles(source)).toEqual(["acme/cache (1)"]);
+    });
+
+    it("keeps only the failed notifications unread", async () => {
+        server.github.configure({ markReadStatus: { "102": 403 } });
+        const { source } = await connected();
+        const { items } = await source.loadItems(githubFeedId("acme/rocket"));
+        await expect(source.markRead(githubFeedId("acme/rocket"), items)).rejects.toThrow();
+        expect(server.github.unread().sort()).toEqual(["102", "201", "301"]);
+        expect(titles(source)[0]).toBe("acme/rocket (1)");
+        expect(source.getSnapshot().status.message).toMatch(/Failed notifications remain unread\.$/);
+    });
+
+    it("treats a notification already read on GitHub (304) as read", async () => {
+        const { source } = await connected();
+        const { items } = await source.loadItems(githubFeedId("acme/rocket"));
+        server.github.markRead(["101"]);
+        await source.markRead(githubFeedId("acme/rocket"), items);
+        expect(titles(source)[0]).toBe("acme/rocket (0)");
     });
 
     it("keeps notifications unread when marking read fails", async () => {
@@ -322,38 +364,47 @@ describe("createGitHubSource", () => {
 
     // The sync's writes, in order: the page (a single one here), the inbox, then the details of 103.
     it.each([
-        { write: "page", skipped: 0 },
-        { write: "inbox", skipped: 1 }
-    ])("filters the queued $write write with the repositories read while it waited", async ({ skipped }) => {
-        server.github.configure({ pageSize: 100 });
-        const put = pausing(/\/repos\/acme\/rocket\/notifications$/);
-        const writes = holdingWrites();
-        const { source, advance, stored } = await connected({ fetch: put.fetch, lock: writes.lock });
-        const { items } = await source.loadItems(githubFeedId("acme/rocket"));
-        // Marked unread again on GitHub: older than the loaded notifications, so reading them covers it.
-        server.github.add([
-            { id: "103", repository: "acme/rocket", type: "Issue", title: "Reopened", updated_at: iso(1.5) }
-        ]);
-        advance(61_000);
-        writes.arm(skipped);
-        put.arm();
-        const syncing = source.sync();
-        // A write with 103 waits in the queue while acme/rocket is marked read.
-        await writes.reached;
-        const written = stored.length;
-        const marking = source.markRead(githubFeedId("acme/rocket"), items);
-        await put.reached;
-        put.release();
-        // GitHub answered: the read is recorded, and its own write queues behind the held one.
-        await idle();
-        writes.release();
-        await Promise.all([marking, syncing]);
-        // No write that ran after the read stored 103: the read covers it.
-        expect(
-            stored.slice(written).flatMap((snapshot) => snapshot.items.map((item) => item.externalId))
-        ).not.toContain("103");
-        expect(titles(source)).toEqual(["acme/rocket (0)", "acme/tools (1)", "octo/docs (1)"]);
-    });
+        // 103 is read with the others only when it was stored before they were marked read.
+        { write: "page", skipped: 0, unread: ["103", "201", "301"], rocket: "acme/rocket (1)" },
+        { write: "inbox", skipped: 1, unread: ["201", "301"], rocket: "acme/rocket (0)" }
+    ])(
+        "filters the queued $write write with the notifications read while it waited",
+        async ({ skipped, unread, rocket }) => {
+            server.github.configure({ pageSize: 100 });
+            const patch = pausing(/\/notifications\/threads\/\w+$/);
+            const writes = holdingWrites();
+            const { source, advance, stored } = await connected({ fetch: patch.fetch, lock: writes.lock });
+            const { items } = await source.loadItems(githubFeedId("acme/rocket"));
+            // Marked unread again on GitHub after the repository was loaded, older than the loaded notifications.
+            server.github.add([
+                { id: "103", repository: "acme/rocket", type: "Issue", title: "Reopened", updated_at: iso(1.5) }
+            ]);
+            advance(61_000);
+            writes.arm(skipped);
+            patch.arm();
+            const syncing = source.sync();
+            // A write with 101 and 102 waits in the queue while they are marked read.
+            await writes.reached;
+            const written = stored.length;
+            const marking = source.markRead(githubFeedId("acme/rocket"), items);
+            await patch.reached;
+            patch.release();
+            // GitHub answered: the reads are recorded, and their own write queues behind the held one.
+            await idle();
+            writes.release();
+            await Promise.all([marking, syncing]);
+            // Once 101 and 102 are removed, no later write of the sync stores them again.
+            const stale = stored
+                .slice(written)
+                .map((snapshot) =>
+                    snapshot.items.some((item) => item.externalId === "101" || item.externalId === "102")
+                );
+            expect(stale.at(-1)).toBe(false);
+            expect(stale.slice(stale.indexOf(false))).not.toContain(true);
+            expect(server.github.unread().sort()).toEqual(unread);
+            expect(titles(source)).toEqual([rocket, "acme/tools (1)", "octo/docs (1)"]);
+        }
+    );
 
     it("shares a running sync between callers", async () => {
         const { source, advance } = await connected();
@@ -548,18 +599,27 @@ describe("GitHub source state", () => {
         expect(state.items.size).toBe(0);
     });
 
-    it("filters the writes of a running sync with the repositories read since it started", () => {
-        const items = [cachedItem("1", "acme/rocket"), cachedItem("3", "acme/rocket"), cachedItem("2", "octo/docs")];
-        const cutoff = Date.parse(iso(2));
+    it("filters the writes of a running sync with the notifications read since it started", () => {
+        const items = [
+            cachedItem("1", "acme/rocket"),
+            cachedItem("3", "acme/rocket"),
+            cachedItem("2", "octo/docs"),
+            // Updated after it was read.
+            cachedItem("4", "acme/rocket", { updatedAt: iso(0.5) })
+        ];
+        const read3 = new Map([
+            ["3", Date.parse(iso(3))],
+            ["4", Date.parse(iso(4))]
+        ]);
         const running = withSyncStarted(withSyncStarted(INITIAL_STATE, 1), 2);
-        const read = withRepositoryRead(withRepositoryRead(running, "acme/rocket", cutoff), "acme/rocket", 0);
-        expect(read.readsDuringSync.get(1)).toEqual(new Map([["acme/rocket", cutoff]]));
-        expect(unreadDuringSync(read, 2, items).map((item) => item.externalId)).toEqual(["1", "2"]);
+        const read = withThreadsRead(withThreadsRead(running, read3), new Map([["3", 0]]));
+        expect(read.readsDuringSync.get(1)).toEqual(read3);
+        expect(unreadDuringSync(read, 2, items).map((item) => item.externalId)).toEqual(["1", "2", "4"]);
         const finished = withSyncFinished(read, 1);
         expect([...finished.readsDuringSync.keys()]).toEqual([2]);
         // A sync started later ignores earlier reads, and no reads are recorded without a running sync.
         expect(withSyncStarted(finished, 3).readsDuringSync.get(3)).toEqual(new Map());
-        expect(withRepositoryRead(INITIAL_STATE, "acme/rocket", cutoff).readsDuringSync.size).toBe(0);
+        expect(withThreadsRead(INITIAL_STATE, read3).readsDuringSync.size).toBe(0);
         expect(INITIAL_STATE.readsDuringSync.size).toBe(0);
     });
 

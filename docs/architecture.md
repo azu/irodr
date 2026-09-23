@@ -65,7 +65,7 @@ Differences between providers are absorbed inside each source:
 
 - Inoreader loads items lazily per feed and marks a whole stream read with `mark-all-as-read`.
 - GitHub loads the whole unread inbox into IndexedDB (`liveItems`), and marks a repository read with one
-  `PUT /repos/{owner}/{repo}/notifications`.
+  `PATCH /notifications/threads/{id}` per notification.
 - Settings are described as data (`SourceSettings`), so the Sources dialog renders every source the same way.
 
 ### Adding a source

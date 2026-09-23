@@ -7,6 +7,7 @@ import {
     cachedSource,
     createGitHubCache,
     isCoveredByRead,
+    readThroughOf,
     withInbox,
     withItems,
     withoutRead,
@@ -92,12 +93,17 @@ describe("cache snapshot transitions", () => {
         expect(after.items[1]?.title).toBe("Updated");
     });
 
-    it("removes the items a repository read covers", () => {
-        const readThrough = new Map([["acme/rocket", Date.parse("2026-09-01T10:00:00.000Z")]]);
+    it("removes the items a read covers unless they were updated since", () => {
+        const readThrough = new Map([
+            ["1", Date.parse("2026-09-01T10:00:00.000Z")],
+            ["2", Date.parse("2026-09-01T10:00:00.000Z")],
+            ["4", Date.parse("2026-09-01T10:00:00.000Z")],
+            ["5", Date.parse("2026-09-01T10:00:00.000Z")]
+        ]);
         const before = snapshotOf([
             item("1"),
             item("2", { updatedAt: "2026-09-01T10:00:01.000Z" }),
-            item("3", { metadata: { repository: "acme/tools" } }),
+            item("3"),
             item("4", { updatedAt: undefined }),
             item("5", { sourceId: "other" })
         ]);
@@ -107,7 +113,26 @@ describe("cache snapshot transitions", () => {
             "github-notifications:4",
             "other:5"
         ]);
-        expect(isCoveredByRead(item("6", { metadata: { repository: "../rocket" } }), readThrough)).toBe(false);
+    });
+
+    it("selects the notifications of a repository updated through a cutoff", () => {
+        const snapshot = snapshotOf([
+            item("1"),
+            item("2", { updatedAt: "2026-09-01T10:00:01.000Z" }),
+            item("3", { metadata: { repository: "acme/tools" } }),
+            item("4", { updatedAt: undefined }),
+            item("5", { sourceId: "other" }),
+            item("6", { metadata: { repository: "acme/rocket", githubUnread: false } }),
+            item("7", { updatedAt: "2026-09-01T09:00:00.000Z" })
+        ]);
+        const cutoff = Date.parse("2026-09-01T10:00:00.000Z");
+        expect(readThroughOf(snapshot, "github-notifications", "acme/rocket", cutoff)).toEqual(
+            new Map([
+                ["1", cutoff],
+                ["7", Date.parse("2026-09-01T09:00:00.000Z")]
+            ])
+        );
+        expect(isCoveredByRead(item("1"), new Map([["1", cutoff - 1]]))).toBe(false);
     });
 
     it("adds and changes source records", () => {
