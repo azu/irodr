@@ -64,17 +64,21 @@ const reader = createReader({
     }
 });
 
-const translate = createTranslateMode((message) => reader.setMessage(message));
+const translate = createTranslateMode((message, options) => reader.setMessage(message, options));
 const shortcuts = createShortcuts(reader, translate);
 const events = createEmitter();
 shortcuts.attach(document);
 
-// Leaving a feed turns translate mode off, however the feed was left.
-const last = { feedId: reader.getState().list.currentFeedId };
+// Leaving a feed turns translate mode off, however the feed was left. While it is on, the focused article is
+// translated, whether it was reached with the keyboard or by ordinary scrolling.
+const last = { feedId: reader.getState().list.currentFeedId, itemId: reader.getState().focusItemId };
 reader.subscribe(() => {
-    const next = reader.getState().list.currentFeedId;
-    if (next !== last.feedId) translate.off();
-    last.feedId = next;
+    const state = reader.getState();
+    const changedItem = state.focusItemId !== last.itemId;
+    if (state.list.currentFeedId !== last.feedId) translate.off();
+    last.feedId = state.list.currentFeedId;
+    last.itemId = state.focusItemId;
+    if (changedItem && state.focusItemId && translate.enabled()) void translate.translate(state.focusItemId);
 });
 
 const root = document.getElementById("root");

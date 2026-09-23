@@ -1,21 +1,53 @@
-import { CLASS, itemElement } from "./dom.ts";
+import { articleScroller, CLASS, itemElement } from "./dom.ts";
+import { applyVisibleTexts, nextTranslationBatch, restoreOriginals } from "./translate-dom.ts";
 
-type TranslateBatch = (texts: string[]) => Promise<string[]>;
+/** One completed input text, not a token or a partial sentence. */
+interface TranslationResult {
+    readonly index: number;
+    readonly text: string;
+}
+
+export interface TranslationOptions {
+    readonly onResult: (result: TranslationResult) => void;
+    readonly signal?: AbortSignal;
+}
 
 interface TranslatorHandle {
-    translateBatch: TranslateBatch;
+    translate: (texts: string[], options: TranslationOptions) => Promise<void>;
+    batchCharacters: number;
     destroy: () => void;
 }
 
-const ORIGINAL = "data-original-text";
-const SKIPPED = new Set(["PRE", "CODE", "KBD", "SAMP", "VAR"]);
+/**
+ * Characters per batch. A translator returning each text as it completes can take more at once;
+ * one returning the whole batch at the end needs smaller batches for an early first result.
+ */
+const STREAM_CHARACTERS = 1000;
+const BATCH_CHARACTERS = 300;
+
+function fromBatch(translate: (texts: string[]) => Promise<string[]>): TranslatorHandle {
+    return {
+        batchCharacters: BATCH_CHARACTERS,
+        translate: async (texts, { onResult, signal }) => {
+            signal?.throwIfAborted();
+            const translated = await translate(texts);
+            signal?.throwIfAborted();
+            texts.forEach((source, index) => onResult({ index, text: translated[index] ?? source }));
+        },
+        destroy: () => undefined
+    };
+}
 
 function fromInstance(instance: { translate(text: string): Promise<string>; destroy(): void }): TranslatorHandle {
     return {
-        translateBatch: async (texts: string[]) => {
-            const results: string[] = [];
-            for (const text of texts) results.push(await instance.translate(text));
-            return results;
+        batchCharacters: STREAM_CHARACTERS,
+        translate: async (texts, { onResult, signal }) => {
+            for (const [index, source] of texts.entries()) {
+                signal?.throwIfAborted();
+                const text = await instance.translate(source);
+                signal?.throwIfAborted();
+                onResult({ index, text });
+            }
         },
         destroy: () => instance.destroy()
     };
@@ -41,33 +73,11 @@ async function createTranslator(sourceLanguage: string, targetLanguage: string):
     }
     const userScript = window.irodrTranslator;
     if (userScript) {
-        return {
-            translateBatch: (texts) => userScript.translateBatch(texts, sourceLanguage, targetLanguage),
-            destroy: () => undefined
-        };
+        return fromBatch((texts) => userScript.translateBatch(texts, sourceLanguage, targetLanguage));
     }
     throw new Error(
         "No translator available. Install the irodr-translate userscript or use a browser with Translation API support."
     );
-}
-
-/** Whether `node` is inside a skipped element (code, ...) below `root`. */
-function insideSkipped(node: Node, root: Element): boolean {
-    const parent = node.parentElement;
-    if (!parent || parent === root) return false;
-    return SKIPPED.has(parent.tagName) || insideSkipped(parent, root);
-}
-
-function textNodes(element: Element): Text[] {
-    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
-    const nodes: Text[] = [];
-    while (walker.nextNode()) {
-        const node = walker.currentNode;
-        if (!(node instanceof Text) || !node.textContent?.trim()) continue;
-        if (insideSkipped(node, element)) continue;
-        nodes.push(node);
-    }
-    return nodes;
 }
 
 function bodyOf(itemId: string): Element | null {
@@ -82,7 +92,7 @@ export interface TranslateMode {
     translate: (itemId: string) => Promise<void>;
 }
 
-export function createTranslateMode(notify: (message: string) => void): TranslateMode {
+export function createTranslateMode(notify: (message: string, options?: { error?: boolean }) => void): TranslateMode {
     const mode: {
         enabled: boolean;
         abort: AbortController | undefined;
@@ -112,37 +122,77 @@ export function createTranslateMode(notify: (message: string) => void): Translat
     };
 
     const translate = async (itemId: string): Promise<void> => {
-        const body = bodyOf(itemId);
-        if (!body || body.querySelector(`[${ORIGINAL}]`)) return;
         mode.abort?.abort();
         const abort = new AbortController();
         mode.abort = abort;
         try {
+            // Reader state can change just before React mounts a newly loaded article.
+            const body =
+                bodyOf(itemId) ??
+                (await new Promise<Element | null>((resolve) => {
+                    requestAnimationFrame(() => resolve(bodyOf(itemId)));
+                }));
+            if (!body || abort.signal.aborted) return;
             const translator = await getTranslator();
-            const nodes = textNodes(body);
-            if (nodes.length === 0 || abort.signal.aborted) return;
-            const originals = nodes.map((node) => node.textContent ?? "");
-            const translated = await translator.translateBatch(originals);
             if (abort.signal.aborted) return;
-            nodes.forEach((node, index) => {
-                const span = document.createElement("span");
-                span.setAttribute(ORIGINAL, originals[index] ?? "");
-                span.textContent = translated[index] ?? "";
-                node.replaceWith(span);
-            });
+            const work = { running: false, frame: 0 };
+            const pump = async () => {
+                if (work.running || abort.signal.aborted) return;
+                work.running = true;
+                try {
+                    // Only one bounded batch is in flight. Do not fill the engine with invisible work.
+                    while (!abort.signal.aborted) {
+                        const groups = nextTranslationBatch(body, translator.batchCharacters);
+                        const nodes = groups.flat();
+                        if (nodes.length === 0) return;
+                        const groupOf = new Map(groups.flatMap((group) => group.map((node) => [node, group] as const)));
+                        const completed = new Map<Text, string>();
+                        await translator.translate(
+                            nodes.map((node) => node.data),
+                            {
+                                signal: abort.signal,
+                                onResult: ({ index, text }) => {
+                                    const node = nodes[index];
+                                    if (!node || abort.signal.aborted) return;
+                                    completed.set(node, text);
+                                    const group = groupOf.get(node) ?? [];
+                                    // A paragraph appears together; other paragraphs do not wait for it.
+                                    if (group.every((part) => completed.has(part))) {
+                                        applyVisibleTexts(
+                                            body,
+                                            group.map((part) => ({ node: part, text: completed.get(part)! }))
+                                        );
+                                    }
+                                }
+                            }
+                        );
+                    }
+                } catch (error) {
+                    if (!abort.signal.aborted)
+                        notify(error instanceof Error ? error.message : "Translation failed", { error: true });
+                    abort.abort();
+                } finally {
+                    work.running = false;
+                }
+            };
+            const schedule = () => {
+                cancelAnimationFrame(work.frame);
+                work.frame = requestAnimationFrame(() => void pump());
+            };
+            articleScroller()?.addEventListener("scroll", schedule, { passive: true, signal: abort.signal });
+            window.addEventListener("resize", schedule, { passive: true, signal: abort.signal });
+            abort.signal.addEventListener("abort", () => cancelAnimationFrame(work.frame), { once: true });
+            await pump();
         } catch (error) {
-            if (!abort.signal.aborted) notify(error instanceof Error ? error.message : "Translation failed");
-        } finally {
-            if (mode.abort === abort) mode.abort = undefined;
+            if (!abort.signal.aborted)
+                notify(error instanceof Error ? error.message : "Translation failed", { error: true });
         }
     };
 
     const toggle = async (focusedItemId: string | undefined): Promise<void> => {
         if (mode.enabled) {
             off();
-            for (const span of document.querySelectorAll(`[${ORIGINAL}]`)) {
-                span.replaceWith(document.createTextNode(span.getAttribute(ORIGINAL) ?? ""));
-            }
+            restoreOriginals(document);
             notify("Translate mode: OFF");
             return;
         }
