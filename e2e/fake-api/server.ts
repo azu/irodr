@@ -1,7 +1,6 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import type { AddressInfo } from "node:net";
 import { createFakeGitHub, type FakeGitHub, type GitHubNotificationSeed, type GitHubScenario } from "./github.ts";
-import { handleGoogleTranslate } from "./google-translate.ts";
 import { type FakeRequest, type FakeResponse, json, text } from "./http.ts";
 import {
     createFakeInoreader,
@@ -17,7 +16,7 @@ export interface Scenario {
 
 export interface LoggedRequest {
     readonly method: string;
-    readonly service: "inoreader" | "github" | "google-translate";
+    readonly service: "inoreader" | "github";
     readonly path: string;
     readonly query: Readonly<Record<string, string>>;
     readonly body: string;
@@ -47,8 +46,7 @@ async function readBody(request: IncomingMessage): Promise<string> {
 }
 
 /**
- * Starts fake Inoreader (`/inoreader`), GitHub API (`/github`) and Google Translate (`/google-translate`) services
- * on one port.
+ * Starts fake Inoreader (`/inoreader`) and GitHub API (`/github`) services on one port.
  * `/__control/*` lets tests seed data and inspect requests.
  */
 export async function startFakeApi(options: { port?: number; host?: string } = {}): Promise<FakeApiServer> {
@@ -111,9 +109,11 @@ export async function startFakeApi(options: { port?: number; host?: string } = {
     const route = (request: FakeRequest): FakeResponse => {
         const path = request.url.pathname;
         if (path.startsWith("/__control/")) return control(request, path.slice("/__control".length));
-        const service = (["inoreader", "github", "google-translate"] as const).find((name) =>
-            path.startsWith(`/${name}/`)
-        );
+        const service = path.startsWith("/inoreader/")
+            ? "inoreader"
+            : path.startsWith("/github/")
+              ? "github"
+              : undefined;
         if (!service) return json({ error: "not found" }, 404);
         const rest = path.slice(service.length + 1);
         recorded.log = [
@@ -126,7 +126,6 @@ export async function startFakeApi(options: { port?: number; host?: string } = {
                 body: request.body
             }
         ];
-        if (service === "google-translate") return handleGoogleTranslate(request, rest);
         return service === "inoreader"
             ? inoreader.handle(request, rest)
             : github.handle(request, rest, `${listening.origin}/github`);
