@@ -6,35 +6,35 @@ export const CONTENT_VERSION = 1;
 
 export interface GitHubApiOptions {
     /** https://api.github.com */
-    apiBaseUrl: string;
+    readonly apiBaseUrl: string;
     /** https://github.com */
-    webBaseUrl: string;
-    fetch: typeof fetch;
-    now: () => number;
+    readonly webBaseUrl: string;
+    readonly fetch: typeof fetch;
+    readonly now: () => number;
 }
 
 /** The subset of https://docs.github.com/en/rest/activity/notifications irodr reads. */
 export interface GitHubNotification {
-    id: string;
-    unread?: boolean;
-    updated_at?: string;
-    subject: { title: string; url?: string | null; type?: string };
-    repository?: { full_name?: string };
+    readonly id: string;
+    readonly unread?: boolean;
+    readonly updated_at?: string;
+    readonly subject: { readonly title: string; readonly url?: string | null; readonly type?: string };
+    readonly repository?: { readonly full_name?: string };
 }
 
 export interface NotificationPage {
-    notifications: GitHubNotification[];
+    readonly notifications: readonly GitHubNotification[];
     /** From X-Poll-Interval. */
-    pollSeconds?: number;
-    next?: string;
+    readonly pollSeconds?: number;
+    readonly next?: string;
 }
 
 export interface NotificationDetails {
-    url?: string;
-    content?: string;
-    publishedAt?: string;
+    readonly url?: string;
+    readonly content?: string;
+    readonly publishedAt?: string;
     /** False when a later token with more access may resolve the details. */
-    resolved: boolean;
+    readonly resolved: boolean;
 }
 
 export class GitHubRequestError extends Error {
@@ -78,34 +78,44 @@ export function isoDate(value: unknown): string | undefined {
     return new Date(value).toISOString();
 }
 
-export class GitHubApi {
-    readonly #api: URL;
-    readonly #web: URL;
-    private readonly options: GitHubApiOptions;
+/** The GitHub REST endpoints irodr uses. Requests carry the token; errors and results never do. */
+export interface GitHubApi {
+    readonly getUser: (token: string, signal?: AbortSignal) => Promise<{ id: number; login?: string }>;
+    readonly firstNotificationsUrl: () => string;
+    /** One page of the unread inbox: https://docs.github.com/en/rest/activity/notifications */
+    readonly notificationPage: (url: string, token: string, signal?: AbortSignal) => Promise<NotificationPage>;
+    /** Resolve the browser URL and body of a Release, Issue, PullRequest, Discussion or Commit. */
+    readonly details: (
+        notification: GitHubNotification,
+        token: string,
+        signal?: AbortSignal
+    ) => Promise<NotificationDetails>;
+    /**
+     * https://docs.github.com/en/rest/activity/notifications#mark-repository-notifications-as-read
+     * Resolves `true` when GitHub finished (205), `false` when it continues asynchronously (202).
+     */
+    readonly markRepositoryRead: (
+        repository: string,
+        lastReadAt: string,
+        token: string,
+        signal?: AbortSignal
+    ) => Promise<boolean>;
+}
 
-    constructor(options: GitHubApiOptions) {
-        this.options = options;
-        this.#api = new URL(options.apiBaseUrl.replace(/\/$/, ""));
-        this.#web = new URL(options.webBaseUrl.replace(/\/$/, ""));
-    }
+export function createGitHubApi(options: GitHubApiOptions): GitHubApi {
+    const api = new URL(options.apiBaseUrl.replace(/\/$/, ""));
+    const web = new URL(options.webBaseUrl.replace(/\/$/, ""));
+    const apiRoot = api.href.replace(/\/$/, "");
+    const apiPath = api.pathname.replace(/\/$/, "");
 
-    private get apiPath(): string {
-        return this.#api.pathname.replace(/\/$/, "");
-    }
-
-    /** An URL on the configured API origin, without credentials or fragments. */
-    private apiUrl(value: unknown): URL | undefined {
-        return safeUrl(value, this.#api.origin);
-    }
-
-    private async send(
+    const send = async (
         url: string,
         token: string,
         signal: AbortSignal | undefined,
         init: { method?: string; body?: string } = {}
-    ): Promise<Response> {
+    ): Promise<Response> => {
         try {
-            return await this.options.fetch(url, {
+            return await options.fetch(url, {
                 method: init.method ?? "GET",
                 redirect: "error",
                 signal,
@@ -121,140 +131,132 @@ export class GitHubApi {
             // Never expose request URLs or credentials in errors.
             throw new Error("GitHub request failed. Check your connection.");
         }
-    }
+    };
 
-    async getUser(token: string, signal?: AbortSignal): Promise<{ id: number; login?: string }> {
-        const response = await this.send(`${this.#api.href.replace(/\/$/, "")}/user`, token, signal);
-        if (!response.ok) {
-            throw new Error(`GitHub authentication failed (HTTP ${response.status}). Check your classic PAT.`);
+    return {
+        getUser: async (token, signal) => {
+            const response = await send(`${apiRoot}/user`, token, signal);
+            if (!response.ok) {
+                throw new Error(`GitHub authentication failed (HTTP ${response.status}). Check your classic PAT.`);
+            }
+            const user = (await response.json()) as { id?: unknown; login?: unknown };
+            if (typeof user.id !== "number") throw new Error("GitHub returned an invalid account.");
+            return { id: user.id, login: typeof user.login === "string" ? user.login : undefined };
+        },
+
+        firstNotificationsUrl: () => {
+            const url = new URL(`${apiRoot}/notifications`);
+            url.searchParams.set("all", "false");
+            url.searchParams.set("per_page", "100");
+            return url.toString();
+        },
+
+        notificationPage: async (url, token, signal) => {
+            const response = await send(url, token, signal);
+            const interval = Number(response.headers.get("X-Poll-Interval"));
+            if (!response.ok) {
+                throw new GitHubRequestError("notifications", response.status, response.headers, options.now());
+            }
+            const notifications = await readJson(response, "Invalid GitHub notifications response.");
+            if (!Array.isArray(notifications)) throw new Error("Invalid GitHub notifications response.");
+            for (const notification of notifications as GitHubNotification[]) {
+                if (typeof notification?.id !== "string" || typeof notification.subject?.title !== "string") {
+                    throw new Error("Invalid GitHub notification.");
+                }
+            }
+            return {
+                notifications: notifications as GitHubNotification[],
+                pollSeconds: Number.isFinite(interval) && interval > 0 ? interval : undefined,
+                next: nextPage(response.headers.get("Link"), api.origin, apiPath)
+            };
+        },
+
+        details: async (notification, token, signal) => {
+            const repository = validRepository(notification.repository?.full_name);
+            const subject = safeUrl(notification.subject.url, api.origin);
+            const prefix = `${apiPath}/repos/${repository}/`;
+            if (
+                !repository ||
+                !subject ||
+                subject.search ||
+                !subject.pathname.startsWith(prefix) ||
+                !/^(?:(?:releases|issues|pulls|discussions)\/\d+|commits\/[a-fA-F0-9]{7,40})$/.test(
+                    subject.pathname.slice(prefix.length)
+                )
+            ) {
+                return { resolved: true };
+            }
+            const response = await send(subject.toString(), token, signal);
+            const rateLimited =
+                response.status === 403 &&
+                (response.headers.get("X-RateLimit-Remaining") === "0" || response.headers.get("Retry-After") !== null);
+            if (!rateLimited && [403, 404, 410].includes(response.status)) {
+                // A later PAT with repo access may resolve an ordinary permission denial.
+                return { resolved: response.status !== 403 };
+            }
+            if (!response.ok) {
+                throw new GitHubRequestError("notification details", response.status, response.headers, options.now());
+            }
+            const detail = (await readJson(response, "Invalid GitHub notification details response.")) as {
+                html_url?: unknown;
+                body?: unknown;
+                published_at?: unknown;
+                created_at?: unknown;
+                commit?: { message?: unknown; author?: { date?: unknown } };
+            };
+            if (!detail || typeof detail !== "object") throw new Error("Invalid GitHub notification details response.");
+            const browserUrl = safeUrl(detail.html_url, web.origin);
+            const content =
+                typeof detail.body === "string"
+                    ? renderMarkdown(detail.body)
+                    : typeof detail.commit?.message === "string"
+                      ? `<pre>${escapeHtml(detail.commit.message)}</pre>`
+                      : undefined;
+            return {
+                url: browserUrl?.pathname.startsWith(`/${repository}/`) ? browserUrl.toString() : undefined,
+                content,
+                publishedAt:
+                    isoDate(detail.published_at) ?? isoDate(detail.created_at) ?? isoDate(detail.commit?.author?.date),
+                resolved: true
+            };
+        },
+
+        markRepositoryRead: async (repository, lastReadAt, token, signal) => {
+            const response = await send(`${apiRoot}/repos/${repository}/notifications`, token, signal, {
+                method: "PUT",
+                body: JSON.stringify({ last_read_at: lastReadAt })
+            });
+            if (response.status !== 205 && response.status !== 202) {
+                throw new GitHubRequestError("mark-read", response.status, response.headers, options.now());
+            }
+            return response.status === 205;
         }
-        const user = (await response.json()) as { id?: unknown; login?: unknown };
-        if (typeof user.id !== "number") throw new Error("GitHub returned an invalid account.");
-        return { id: user.id, login: typeof user.login === "string" ? user.login : undefined };
-    }
+    };
+}
 
-    firstNotificationsUrl(): string {
-        const url = new URL(`${this.#api.href.replace(/\/$/, "")}/notifications`);
-        url.searchParams.set("all", "false");
-        url.searchParams.set("per_page", "100");
+/**
+ * Follow only well-formed `rel="next"` links to the same unread query
+ * on the API origin `origin` under the path `apiPath`.
+ */
+function nextPage(link: string | null, origin: string, apiPath: string): string | undefined {
+    if (!link) return undefined;
+    for (const part of link.split(",")) {
+        if (!/;\s*rel\s*=\s*"next"/i.test(part)) continue;
+        const url = safeUrl(part.match(/^\s*<([^>]+)>/)?.[1], origin);
+        if (
+            !url ||
+            url.pathname !== `${apiPath}/notifications` ||
+            url.searchParams.getAll("all").some((value) => value !== "false") ||
+            url.searchParams.get("per_page") !== "100" ||
+            url.searchParams.has("since") ||
+            url.searchParams.has("before") ||
+            url.searchParams.has("participating")
+        ) {
+            throw new Error("Invalid GitHub pagination.");
+        }
         return url.toString();
     }
-
-    /** One page of the unread inbox: https://docs.github.com/en/rest/activity/notifications */
-    async notificationPage(url: string, token: string, signal?: AbortSignal): Promise<NotificationPage> {
-        const response = await this.send(url, token, signal);
-        const interval = Number(response.headers.get("X-Poll-Interval"));
-        if (!response.ok) {
-            throw new GitHubRequestError("notifications", response.status, response.headers, this.options.now());
-        }
-        const notifications = await readJson(response, "Invalid GitHub notifications response.");
-        if (!Array.isArray(notifications)) throw new Error("Invalid GitHub notifications response.");
-        for (const notification of notifications as GitHubNotification[]) {
-            if (typeof notification?.id !== "string" || typeof notification.subject?.title !== "string") {
-                throw new Error("Invalid GitHub notification.");
-            }
-        }
-        return {
-            notifications: notifications as GitHubNotification[],
-            pollSeconds: Number.isFinite(interval) && interval > 0 ? interval : undefined,
-            next: this.nextPage(response.headers.get("Link"))
-        };
-    }
-
-    /** Follow only well-formed `rel="next"` links to the same unread query. */
-    private nextPage(link: string | null): string | undefined {
-        if (!link) return undefined;
-        for (const part of link.split(",")) {
-            if (!/;\s*rel\s*=\s*"next"/i.test(part)) continue;
-            const url = this.apiUrl(part.match(/^\s*<([^>]+)>/)?.[1]);
-            if (
-                !url ||
-                url.pathname !== `${this.apiPath}/notifications` ||
-                url.searchParams.getAll("all").some((value) => value !== "false") ||
-                url.searchParams.get("per_page") !== "100" ||
-                url.searchParams.has("since") ||
-                url.searchParams.has("before") ||
-                url.searchParams.has("participating")
-            ) {
-                throw new Error("Invalid GitHub pagination.");
-            }
-            return url.toString();
-        }
-        return undefined;
-    }
-
-    /** Resolve the browser URL and body of a Release, Issue, PullRequest, Discussion or Commit. */
-    async details(notification: GitHubNotification, token: string, signal?: AbortSignal): Promise<NotificationDetails> {
-        const repository = validRepository(notification.repository?.full_name);
-        const subject = this.apiUrl(notification.subject.url);
-        const prefix = `${this.apiPath}/repos/${repository}/`;
-        if (
-            !repository ||
-            !subject ||
-            subject.search ||
-            !subject.pathname.startsWith(prefix) ||
-            !/^(?:(?:releases|issues|pulls|discussions)\/\d+|commits\/[a-fA-F0-9]{7,40})$/.test(
-                subject.pathname.slice(prefix.length)
-            )
-        ) {
-            return { resolved: true };
-        }
-        const response = await this.send(subject.toString(), token, signal);
-        const rateLimited =
-            response.status === 403 &&
-            (response.headers.get("X-RateLimit-Remaining") === "0" || response.headers.get("Retry-After") !== null);
-        if (!rateLimited && [403, 404, 410].includes(response.status)) {
-            // A later PAT with repo access may resolve an ordinary permission denial.
-            return { resolved: response.status !== 403 };
-        }
-        if (!response.ok) {
-            throw new GitHubRequestError("notification details", response.status, response.headers, this.options.now());
-        }
-        const detail = (await readJson(response, "Invalid GitHub notification details response.")) as {
-            html_url?: unknown;
-            body?: unknown;
-            published_at?: unknown;
-            created_at?: unknown;
-            commit?: { message?: unknown; author?: { date?: unknown } };
-        };
-        if (!detail || typeof detail !== "object") throw new Error("Invalid GitHub notification details response.");
-        const browserUrl = safeUrl(detail.html_url, this.#web.origin);
-        const content =
-            typeof detail.body === "string"
-                ? renderMarkdown(detail.body)
-                : typeof detail.commit?.message === "string"
-                  ? `<pre>${escapeHtml(detail.commit.message)}</pre>`
-                  : undefined;
-        return {
-            url: browserUrl?.pathname.startsWith(`/${repository}/`) ? browserUrl.toString() : undefined,
-            content,
-            publishedAt:
-                isoDate(detail.published_at) ?? isoDate(detail.created_at) ?? isoDate(detail.commit?.author?.date),
-            resolved: true
-        };
-    }
-
-    /**
-     * https://docs.github.com/en/rest/activity/notifications#mark-repository-notifications-as-read
-     * Resolves `true` when GitHub finished (205), `false` when it continues asynchronously (202).
-     */
-    async markRepositoryRead(
-        repository: string,
-        lastReadAt: string,
-        token: string,
-        signal?: AbortSignal
-    ): Promise<boolean> {
-        const response = await this.send(
-            `${this.#api.href.replace(/\/$/, "")}/repos/${repository}/notifications`,
-            token,
-            signal,
-            { method: "PUT", body: JSON.stringify({ last_read_at: lastReadAt }) }
-        );
-        if (response.status !== 205 && response.status !== 202) {
-            throw new GitHubRequestError("mark-read", response.status, response.headers, this.options.now());
-        }
-        return response.status === 205;
-    }
+    return undefined;
 }
 
 /** Parse a JSON body, reporting malformed JSON as `message`. */
@@ -266,6 +268,7 @@ async function readJson(response: Response, message: string): Promise<unknown> {
     }
 }
 
+/** An URL on `origin`, without credentials or fragments. */
 function safeUrl(value: unknown, origin: string): URL | undefined {
     if (typeof value !== "string") return undefined;
     try {

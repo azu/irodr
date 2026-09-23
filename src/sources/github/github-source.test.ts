@@ -1,30 +1,60 @@
 import { afterAll, beforeEach, describe, expect, it } from "vite-plus/test";
 import { githubNotifications, iso } from "../../../e2e/fake-api/fixtures.ts";
 import { startFakeApi } from "../../../e2e/fake-api/server.ts";
-import { createMemoryStore, noWriteLock } from "../../lib/kv-store.ts";
-import { GitHubApi } from "./github-api.ts";
-import { githubFeedId, GitHubSource } from "./github-source.ts";
+import { createMemoryStore, noWriteLock, type WriteLock } from "../../lib/kv-store.ts";
+import { CONTENT_VERSION, createGitHubApi, type GitHubNotification } from "./github-api.ts";
+import type { CachedItem, CachedSource, CacheSnapshot } from "./github-cache.ts";
+import {
+    createGitHubSource,
+    githubFeedId,
+    type GitHubSource,
+    type GitHubState,
+    INITIAL_STATE,
+    projectFeeds,
+    readCutoff,
+    syncEntry,
+    unreadDuringSync,
+    withRepositoryRead,
+    withSyncFinished,
+    withSyncStarted
+} from "./github-source.ts";
 
 const server = await startFakeApi();
 afterAll(() => server.close());
 beforeEach(() => server.reset({ github: { notifications: githubNotifications(), pageSize: 2 } }));
 
-function createSource(options: { cache?: Record<string, unknown>; credentials?: Record<string, unknown> } = {}) {
-    const clock = { now: Date.now() };
-    const source = new GitHubSource({
-        apiBaseUrl: `${server.origin}/github`,
-        webBaseUrl: "https://github.com",
-        fetch: (input, init) => fetch(input, init),
-        now: () => clock.now,
-        cache: createMemoryStore(options.cache),
-        credentials: createMemoryStore(options.credentials),
-        lock: noWriteLock
-    });
-    return { source, advance: (ms: number) => (clock.now += ms) };
+interface SourceSetup {
+    cache?: Record<string, unknown>;
+    credentials?: Record<string, unknown>;
+    fetch?: typeof fetch;
+    lock?: WriteLock;
 }
 
-async function connected() {
-    const setup = createSource();
+function createSource(options: SourceSetup = {}) {
+    const clock = { now: Date.now() };
+    const cache = createMemoryStore(options.cache);
+    // Every snapshot written to the cache, in order.
+    const stored: CacheSnapshot[] = [];
+    const source = createGitHubSource({
+        apiBaseUrl: `${server.origin}/github`,
+        webBaseUrl: "https://github.com",
+        fetch: options.fetch ?? ((input, init) => fetch(input, init)),
+        now: () => clock.now,
+        cache: {
+            ...cache,
+            set: async (key, value) => {
+                stored.push(value as CacheSnapshot);
+                await cache.set(key, value);
+            }
+        },
+        credentials: createMemoryStore(options.credentials),
+        lock: options.lock ?? noWriteLock
+    });
+    return { source, stored, advance: (ms: number) => (clock.now += ms) };
+}
+
+async function connected(options: SourceSetup = {}) {
+    const setup = createSource(options);
     await setup.source.restore();
     await setup.source.connect("ghp_valid");
     await setup.source.sync();
@@ -34,7 +64,65 @@ async function connected() {
 const titles = (source: GitHubSource) =>
     source.getSnapshot().feeds.map((feed) => `${feed.title} (${feed.unreadCount})`);
 
-describe("GitHubSource", () => {
+/** Once armed, `wait()` holds its callers until released. `reached` resolves when the first one waits. */
+function gate() {
+    const armed = { value: false };
+    const reached = Promise.withResolvers<void>();
+    const released = Promise.withResolvers<void>();
+    return {
+        arm: () => {
+            armed.value = true;
+        },
+        wait: async () => {
+            if (!armed.value) return;
+            reached.resolve();
+            await released.promise;
+        },
+        reached: reached.promise,
+        release: () => released.resolve()
+    };
+}
+
+const SECOND_PAGE = /\/notifications\?.*\bpage=2\b/;
+
+/** A fetch that, once armed, holds the responses from URLs matching `pattern` until released. */
+function pausing(pattern: RegExp) {
+    const held = gate();
+    const pausingFetch: typeof fetch = async (input, init) => {
+        const response = await fetch(input, init);
+        const url = input instanceof Request ? input.url : input.toString();
+        if (pattern.test(url)) await held.wait();
+        return response;
+    };
+    return { ...held, fetch: pausingFetch };
+}
+
+/**
+ * A write lock that, once armed, lets `skipped` cache writes through, then holds the next ones until released.
+ * Later writes of the same tab queue behind the held one.
+ */
+function holdingWrites() {
+    const held = gate();
+    const skips = { remaining: 0 };
+    const lock: WriteLock = async (_name, write) => {
+        if (skips.remaining > 0) skips.remaining -= 1;
+        else await held.wait();
+        return write();
+    };
+    return {
+        ...held,
+        arm: (skipped: number) => {
+            skips.remaining = skipped;
+            held.arm();
+        },
+        lock
+    };
+}
+
+/** Resolves once pending promise callbacks have run. */
+const idle = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+describe("createGitHubSource", () => {
     it("syncs every unread notification page and groups them by repository", async () => {
         const { source } = await connected();
         expect(titles(source)).toEqual(["acme/rocket (2)", "acme/tools (1)", "octo/docs (1)"]);
@@ -61,6 +149,34 @@ describe("GitHubSource", () => {
         expect(items[0]?.contentHtml).toContain("&lt;script&gt;");
         const docs = await source.loadItems(githubFeedId("octo/docs"));
         expect(docs.items[0]?.contentHtml).toBe("<pre>Fix typo in &lt;README&gt;</pre>");
+    });
+
+    it("requests details again only for updated notifications", async () => {
+        const { source, advance } = await connected();
+        server.github.add([
+            {
+                id: "102",
+                repository: "acme/rocket",
+                type: "Issue",
+                title: "Launch fails on Tuesdays",
+                number: "7",
+                updated_at: iso(0.5),
+                body: "Tuesdays too."
+            }
+        ]);
+        advance(61_000);
+        const requests = server.log().length;
+        await source.sync();
+        const details = server
+            .log()
+            .slice(requests)
+            .filter((entry) => entry.method === "GET" && entry.path.startsWith("/repos/"));
+        expect(details.map((entry) => entry.path)).toEqual(["/repos/acme/rocket/issues/7"]);
+        const { items } = await source.loadItems(githubFeedId("acme/rocket"));
+        expect(items.map((item) => item.title)).toEqual(["Launch fails on Tuesdays", "v2.0.0"]);
+        expect(items[0]?.contentHtml).toContain("Tuesdays too.");
+        // Reused details stay.
+        expect(items[1]?.contentHtml).toContain("<h2>Highlights</h2>");
     });
 
     it("waits for the poll interval before syncing again", async () => {
@@ -98,6 +214,37 @@ describe("GitHubSource", () => {
         expect(source.getSnapshot().status.phase).toBe("waiting");
     });
 
+    it("refuses to mark a repository read without GitHub's timestamps", async () => {
+        const { source } = createSource({
+            cache: {
+                snapshot: {
+                    sources: [
+                        { id: "github-notifications", adapterType: "github-notifications", config: { accountId: 1 } }
+                    ],
+                    items: [
+                        {
+                            externalId: "9",
+                            sourceId: "github-notifications",
+                            title: "Cached release",
+                            publishedAt: iso(1),
+                            metadata: { type: "Release", repository: "acme/cache", githubUnread: true }
+                        }
+                    ],
+                    states: []
+                }
+            },
+            credentials: { "credential:github-notifications": { version: 2, token: "ghp_valid" } }
+        });
+        await source.restore();
+        const { items } = await source.loadItems(githubFeedId("acme/cache"));
+        expect(items.map((item) => item.updatedAt)).toEqual([Date.parse(iso(1))]);
+        await expect(source.markRead(githubFeedId("acme/cache"), items)).rejects.toThrow(
+            "Cannot safely mark a repository read without its notification timestamp."
+        );
+        expect(server.log().filter((entry) => entry.method === "PUT")).toEqual([]);
+        expect(titles(source)).toEqual(["acme/cache (1)"]);
+    });
+
     it("keeps notifications unread when marking read fails", async () => {
         server.github.configure({ markReadStatus: { "acme/rocket": 403 } });
         const { source } = await connected();
@@ -126,6 +273,117 @@ describe("GitHubSource", () => {
         expect(server.log()).toHaveLength(requests);
         // Cached notifications stay readable.
         expect(titles(source)).toHaveLength(3);
+    });
+
+    it("does not bring back notifications marked read during a sync", async () => {
+        const pause = pausing(SECOND_PAGE);
+        const { source, advance } = await connected({ fetch: pause.fetch });
+        const { items } = await source.loadItems(githubFeedId("acme/rocket"));
+        advance(61_000);
+        pause.arm();
+        const syncing = source.sync();
+        // Every page, including the acme/rocket notifications, is loaded before they are marked read.
+        await pause.reached;
+        await source.markRead(githubFeedId("acme/rocket"), items);
+        pause.release();
+        await syncing;
+        expect(titles(source)).toEqual(["acme/rocket (0)", "acme/tools (1)", "octo/docs (1)"]);
+    });
+
+    it("does not bring back a notification marked read while its details load", async () => {
+        const pause = pausing(/\/repos\/acme\/rocket\/issues\/7$/);
+        const { source, advance } = await connected({ fetch: pause.fetch });
+        server.github.add([
+            {
+                id: "102",
+                repository: "acme/rocket",
+                type: "Issue",
+                title: "Launch fails on Tuesdays",
+                number: "7",
+                updated_at: iso(0.5),
+                body: "Tuesdays too."
+            }
+        ]);
+        advance(61_000);
+        pause.arm();
+        const syncing = source.sync();
+        // The inbox is written; the details of the updated notification are on their way.
+        await pause.reached;
+        const { items } = await source.loadItems(githubFeedId("acme/rocket"));
+        expect(items.map((item) => item.title)).toEqual(["Launch fails on Tuesdays", "v2.0.0"]);
+        await source.markRead(githubFeedId("acme/rocket"), items);
+        expect(titles(source)).toEqual(["acme/rocket (0)", "acme/tools (1)", "octo/docs (1)"]);
+        pause.release();
+        await syncing;
+        // The details checkpoint, the last write of the sync, leaves the repository read.
+        expect(titles(source)).toEqual(["acme/rocket (0)", "acme/tools (1)", "octo/docs (1)"]);
+        expect(source.getSnapshot().status.message).toBe("GitHub sync complete: 2 unread notifications.");
+    });
+
+    // The sync's writes, in order: the page (a single one here), the inbox, then the details of 103.
+    it.each([
+        { write: "page", skipped: 0 },
+        { write: "inbox", skipped: 1 }
+    ])("filters the queued $write write with the repositories read while it waited", async ({ skipped }) => {
+        server.github.configure({ pageSize: 100 });
+        const put = pausing(/\/repos\/acme\/rocket\/notifications$/);
+        const writes = holdingWrites();
+        const { source, advance, stored } = await connected({ fetch: put.fetch, lock: writes.lock });
+        const { items } = await source.loadItems(githubFeedId("acme/rocket"));
+        // Marked unread again on GitHub: older than the loaded notifications, so reading them covers it.
+        server.github.add([
+            { id: "103", repository: "acme/rocket", type: "Issue", title: "Reopened", updated_at: iso(1.5) }
+        ]);
+        advance(61_000);
+        writes.arm(skipped);
+        put.arm();
+        const syncing = source.sync();
+        // A write with 103 waits in the queue while acme/rocket is marked read.
+        await writes.reached;
+        const written = stored.length;
+        const marking = source.markRead(githubFeedId("acme/rocket"), items);
+        await put.reached;
+        put.release();
+        // GitHub answered: the read is recorded, and its own write queues behind the held one.
+        await idle();
+        writes.release();
+        await Promise.all([marking, syncing]);
+        // No write that ran after the read stored 103: the read covers it.
+        expect(
+            stored.slice(written).flatMap((snapshot) => snapshot.items.map((item) => item.externalId))
+        ).not.toContain("103");
+        expect(titles(source)).toEqual(["acme/rocket (0)", "acme/tools (1)", "octo/docs (1)"]);
+    });
+
+    it("shares a running sync between callers", async () => {
+        const { source, advance } = await connected();
+        advance(61_000);
+        const requests = server.log().length;
+        const first = source.sync();
+        expect(source.sync()).toBe(first);
+        await first;
+        const pages = server
+            .log()
+            .slice(requests)
+            .filter((entry) => entry.path === "/notifications");
+        expect(pages).toHaveLength(2);
+    });
+
+    it("cancels a running sync on disconnect", async () => {
+        const pause = pausing(SECOND_PAGE);
+        const { source, advance } = await connected({ fetch: pause.fetch });
+        advance(61_000);
+        pause.arm();
+        const syncing = source.sync();
+        await pause.reached;
+        const requests = server.log().length;
+        await source.runAction("disconnect", {});
+        pause.release();
+        await expect(syncing).resolves.toBeUndefined();
+        expect(server.log()).toHaveLength(requests);
+        expect(source.getSnapshot()).toMatchObject({ connected: false, status: { phase: "disconnected" } });
+        // The cached inbox stays readable.
+        expect(titles(source)).toEqual(["acme/rocket (2)", "acme/tools (1)", "octo/docs (1)"]);
     });
 
     it("rejects another account for the same browser inbox", async () => {
@@ -177,7 +435,7 @@ describe("GitHubSource", () => {
     it("stores the token only in the credential store", async () => {
         const credentials = createMemoryStore();
         const cache = createMemoryStore();
-        const source = new GitHubSource({
+        const source = createGitHubSource({
             apiBaseUrl: `${server.origin}/github`,
             webBaseUrl: "https://github.com",
             fetch: (input, init) => fetch(input, init),
@@ -194,9 +452,230 @@ describe("GitHubSource", () => {
     });
 });
 
-describe("GitHubApi", () => {
+const WEB = "https://github.com";
+const cachedItem = (externalId: string, repository: string, overrides: Partial<CachedItem> = {}): CachedItem => ({
+    externalId,
+    sourceId: "github-notifications",
+    title: `Notification ${externalId}`,
+    updatedAt: iso(Number(externalId)),
+    metadata: { type: "Issue", repository, githubUnread: true },
+    ...overrides
+});
+const cacheSnapshot = (
+    items: readonly CachedItem[],
+    config: CachedSource["config"] = { accountId: 1 }
+): CacheSnapshot => ({
+    sources: [{ id: "github-notifications", adapterType: "github-notifications", config }],
+    items,
+    states: []
+});
+const feedTitles = (state: GitHubState) => state.feeds.map((feed) => `${feed.title} (${feed.unreadCount})`);
+
+describe("GitHub source state", () => {
+    it("lists repositories in first-seen order and keeps read ones until reload", () => {
+        const first = projectFeeds(
+            INITIAL_STATE,
+            cacheSnapshot([
+                cachedItem("3", "acme/rocket"),
+                cachedItem("2", "octo/docs"),
+                cachedItem("1", "acme/rocket")
+            ]),
+            WEB
+        );
+        expect(feedTitles(first)).toEqual(["acme/rocket (2)", "octo/docs (1)"]);
+        // Newest first.
+        expect(first.items.get(githubFeedId("acme/rocket"))?.map((item) => item.title)).toEqual([
+            "Notification 1",
+            "Notification 3"
+        ]);
+        const second = projectFeeds(
+            first,
+            cacheSnapshot([cachedItem("4", "acme/tools"), cachedItem("2", "octo/docs")]),
+            WEB
+        );
+        expect(feedTitles(second)).toEqual(["acme/rocket (0)", "octo/docs (1)", "acme/tools (1)"]);
+        // Unchanged feeds and items stay the same objects.
+        expect(second.feeds[1]).toBe(first.feeds[1]);
+        expect(second.items.get(githubFeedId("octo/docs"))).toEqual(first.items.get(githubFeedId("octo/docs")));
+        expect(second.items.get(githubFeedId("octo/docs"))?.[0]).toBe(first.items.get(githubFeedId("octo/docs"))?.[0]);
+        expect(first.feeds.map((feed) => feed.title)).toEqual(["acme/rocket", "octo/docs"]);
+    });
+
+    it("skips read, foreign and malformed notifications", () => {
+        const state = projectFeeds(
+            INITIAL_STATE,
+            cacheSnapshot([
+                cachedItem("1", "acme/rocket", { metadata: { repository: "acme/rocket", githubUnread: false } }),
+                cachedItem("2", "acme/rocket", { sourceId: "other" }),
+                cachedItem("3", "../rocket"),
+                cachedItem("4", "octo/docs")
+            ]),
+            WEB
+        );
+        expect(feedTitles(state)).toEqual(["octo/docs (1)"]);
+        expect(state.feeds[0]).toMatchObject({
+            id: githubFeedId("octo/docs"),
+            sourceId: "github-notifications",
+            category: "GitHub Notifications",
+            htmlUrl: "https://github.com/octo/docs"
+        });
+    });
+
+    it("shows only repositories with releases in the release-only display", () => {
+        const state = projectFeeds(
+            INITIAL_STATE,
+            cacheSnapshot(
+                [
+                    cachedItem("1", "acme/rocket", { metadata: { type: "Release", repository: "acme/rocket" } }),
+                    cachedItem("2", "acme/rocket"),
+                    cachedItem("3", "octo/docs")
+                ],
+                { accountId: 1, releaseOnly: true }
+            ),
+            WEB
+        );
+        expect(feedTitles(state)).toEqual(["acme/rocket (1)"]);
+        expect([...state.repositories]).toEqual(["acme/rocket", "octo/docs"]);
+    });
+
+    it("has no feeds without a connected account", () => {
+        const state = projectFeeds(
+            projectFeeds(INITIAL_STATE, cacheSnapshot([cachedItem("1", "acme/rocket")]), WEB),
+            { sources: [], items: [cachedItem("1", "acme/rocket")], states: [] },
+            WEB
+        );
+        expect(state.feeds).toEqual([]);
+        expect(state.items.size).toBe(0);
+    });
+
+    it("filters the writes of a running sync with the repositories read since it started", () => {
+        const items = [cachedItem("1", "acme/rocket"), cachedItem("3", "acme/rocket"), cachedItem("2", "octo/docs")];
+        const cutoff = Date.parse(iso(2));
+        const running = withSyncStarted(withSyncStarted(INITIAL_STATE, 1), 2);
+        const read = withRepositoryRead(withRepositoryRead(running, "acme/rocket", cutoff), "acme/rocket", 0);
+        expect(read.readsDuringSync.get(1)).toEqual(new Map([["acme/rocket", cutoff]]));
+        expect(unreadDuringSync(read, 2, items).map((item) => item.externalId)).toEqual(["1", "2"]);
+        const finished = withSyncFinished(read, 1);
+        expect([...finished.readsDuringSync.keys()]).toEqual([2]);
+        // A sync started later ignores earlier reads, and no reads are recorded without a running sync.
+        expect(withSyncStarted(finished, 3).readsDuringSync.get(3)).toEqual(new Map());
+        expect(withRepositoryRead(INITIAL_STATE, "acme/rocket", cutoff).readsDuringSync.size).toBe(0);
+        expect(INITIAL_STATE.readsDuringSync.size).toBe(0);
+    });
+
+    it("reuses cached details only for the same type, update and content version", () => {
+        const notification: GitHubNotification = {
+            id: "7",
+            unread: true,
+            updated_at: iso(1),
+            subject: { title: "Launch fails", type: "Issue", url: "https://api.github.com/repos/acme/rocket/issues/7" },
+            repository: { full_name: "acme/rocket" }
+        };
+        const resolved = cachedItem("7", "acme/rocket", {
+            title: "Old title",
+            url: "https://github.com/acme/rocket/issues/7",
+            content: "<p>Body</p>",
+            publishedAt: iso(5),
+            updatedAt: iso(1),
+            metadata: {
+                type: "Issue",
+                repository: "acme/rocket",
+                githubUnread: true,
+                detailsResolved: true,
+                contentVersion: CONTENT_VERSION
+            }
+        });
+        const reused = syncEntry(notification, resolved, WEB);
+        expect(reused.reusable).toBe(true);
+        expect(reused.notification).toBe(notification);
+        expect(reused.item).toEqual({
+            externalId: "7",
+            sourceId: "github-notifications",
+            title: "Launch fails",
+            url: "https://github.com/acme/rocket/issues/7",
+            content: "<p>Body</p>",
+            publishedAt: iso(5),
+            updatedAt: iso(1),
+            metadata: {
+                type: "Issue",
+                repository: "acme/rocket",
+                githubUnread: true,
+                contentVersion: CONTENT_VERSION,
+                detailsResolved: true
+            }
+        });
+        // Details resolved by irodr 1.x are marked `releaseResolved`.
+        const legacy = {
+            ...resolved,
+            metadata: { type: "Issue", releaseResolved: true, contentVersion: CONTENT_VERSION }
+        };
+        expect(syncEntry(notification, legacy, WEB).reusable).toBe(true);
+        const stale = [
+            syncEntry({ ...notification, updated_at: iso(0.5) }, resolved, WEB),
+            syncEntry({ ...notification, subject: { ...notification.subject, type: "PullRequest" } }, resolved, WEB),
+            syncEntry(
+                notification,
+                { ...resolved, metadata: { ...resolved.metadata, contentVersion: CONTENT_VERSION - 1 } },
+                WEB
+            ),
+            syncEntry(notification, { ...resolved, metadata: { ...resolved.metadata, detailsResolved: false } }, WEB),
+            syncEntry({ ...notification, updated_at: undefined }, { ...resolved, updatedAt: undefined }, WEB)
+        ];
+        expect(stale.map((entry) => entry.reusable)).toEqual([false, false, false, false, false]);
+        // Cached details stay visible until refreshed details arrive.
+        for (const entry of stale) {
+            expect(entry.item).toMatchObject({
+                title: "Launch fails",
+                url: "https://github.com/acme/rocket/issues/7",
+                content: "<p>Body</p>",
+                publishedAt: iso(5),
+                metadata: { detailsResolved: false }
+            });
+        }
+        expect(stale.map((entry) => entry.item.updatedAt)).toEqual([iso(0.5), iso(1), iso(1), iso(1), undefined]);
+        expect(stale[1]?.item.metadata?.type).toBe("PullRequest");
+        // Without a cached item, the repository page is the URL until details arrive.
+        expect(syncEntry(notification, undefined, WEB)).toEqual({
+            notification,
+            reusable: false,
+            item: {
+                externalId: "7",
+                sourceId: "github-notifications",
+                title: "Launch fails",
+                url: "https://github.com/acme/rocket",
+                updatedAt: iso(1),
+                metadata: { type: "Issue", repository: "acme/rocket", githubUnread: true }
+            }
+        });
+    });
+
+    it("marks read through the newest loaded notification with GitHub's timestamp", () => {
+        const snapshot = cacheSnapshot([
+            cachedItem("1", "acme/rocket"),
+            cachedItem("2", "acme/rocket"),
+            cachedItem("3", "acme/rocket", { updatedAt: undefined, publishedAt: iso(0.5) })
+        ]);
+        const loaded = projectFeeds(INITIAL_STATE, snapshot, WEB).items.get(githubFeedId("acme/rocket")) ?? [];
+        expect(loaded.map((item) => item.title)).toEqual(["Notification 3", "Notification 1", "Notification 2"]);
+        // Not the publish-date fallback of notification 3.
+        expect(readCutoff(snapshot, loaded)).toBe(Date.parse(iso(1)));
+        expect(readCutoff(snapshot, loaded.slice(2))).toBe(Date.parse(iso(2)));
+        // An update cached after loading stays unread.
+        const updated = cacheSnapshot([cachedItem("1", "acme/rocket", { updatedAt: iso(0.25) })]);
+        expect(readCutoff(updated, loaded)).toBe(Date.parse(iso(1)));
+        // None of them is cached any more: they were read in another browser.
+        expect(readCutoff(cacheSnapshot([]), loaded)).toBeUndefined();
+        expect(
+            readCutoff(cacheSnapshot([cachedItem("1", "acme/rocket", { sourceId: "other" })]), loaded)
+        ).toBeUndefined();
+        // No safe timestamp.
+        expect(readCutoff(snapshot, loaded.slice(0, 1))).toBe(-Infinity);
+    });
+});
+
+describe("createGitHubApi", () => {
     it("refuses pagination links to other hosts", async () => {
-        const api = new GitHubApi({
+        const api = createGitHubApi({
             apiBaseUrl: "https://api.github.com",
             webBaseUrl: "https://github.com",
             now: () => Date.now(),
@@ -211,7 +690,7 @@ describe("GitHubApi", () => {
     });
 
     it("honors Retry-After when rate limited", async () => {
-        const api = new GitHubApi({
+        const api = createGitHubApi({
             apiBaseUrl: "https://api.github.com",
             webBaseUrl: "https://github.com",
             now: () => Date.now(),

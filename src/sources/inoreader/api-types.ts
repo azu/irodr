@@ -1,81 +1,81 @@
 // Inoreader API responses. See https://www.inoreader.com/developers/
 
 export interface InoreaderCategory {
-    id: string;
-    label: string;
+    readonly id: string;
+    readonly label: string;
 }
 
 /** https://www.inoreader.com/developers/subscription-list */
 export interface SubscriptionResponse {
     /** Stream ID, e.g. `feed/https://example.com/rss` */
-    id: string;
-    title: string;
-    categories: InoreaderCategory[];
-    sortid?: string;
+    readonly id: string;
+    readonly title: string;
+    readonly categories: readonly InoreaderCategory[];
+    readonly sortid?: string;
     /** Microseconds. Articles older than this cannot be marked unread. */
-    firstitemmsec?: number;
-    url: string;
-    htmlUrl: string;
-    iconUrl: string;
+    readonly firstitemmsec?: number;
+    readonly url: string;
+    readonly htmlUrl: string;
+    readonly iconUrl: string;
 }
 
 export interface SubscriptionsResponse {
-    subscriptions: SubscriptionResponse[];
+    readonly subscriptions: readonly SubscriptionResponse[];
 }
 
 /** https://www.inoreader.com/developers/unread-counts */
 export interface UnreadCountResponse {
-    id: string;
-    count: number | string;
+    readonly id: string;
+    readonly count: number | string;
     /** Microseconds, as a string. */
-    newestItemTimestampUsec: string;
+    readonly newestItemTimestampUsec: string;
 }
 
 export interface UnreadCountsResponse {
-    max: string | number;
-    unreadcounts: UnreadCountResponse[];
+    readonly max: string | number;
+    readonly unreadcounts: readonly UnreadCountResponse[];
 }
 
 export interface Enclosure {
-    href: string;
-    type?: string;
-    length?: string;
+    readonly href: string;
+    readonly type?: string;
+    readonly length?: string;
 }
 
 /** https://www.inoreader.com/developers/stream-contents */
 export interface StreamItemResponse {
-    id: string;
-    title: string;
+    readonly id: string;
+    readonly title: string;
     /** Seconds. Missing for some items. */
-    published?: number;
+    readonly published?: number;
     /** Seconds. 0 or absent when never updated. */
-    updated?: number;
+    readonly updated?: number;
     /** Microseconds, as a string. Used by mark-all-as-read. */
-    timestampUsec: string;
-    crawlTimeMsec?: string;
-    categories?: string[];
-    canonical?: { href: string }[];
-    alternate?: { href: string; type?: string }[];
-    enclosure?: Enclosure[];
-    author?: string;
-    summary?: { content: string; direction?: string };
-    origin?: { streamId: string; title: string; htmlUrl: string };
+    readonly timestampUsec: string;
+    readonly crawlTimeMsec?: string;
+    readonly categories?: readonly string[];
+    readonly canonical?: readonly { readonly href: string }[];
+    readonly alternate?: readonly { readonly href: string; readonly type?: string }[];
+    readonly enclosure?: readonly Enclosure[];
+    readonly author?: string;
+    readonly summary?: { readonly content: string; readonly direction?: string };
+    readonly origin?: { readonly streamId: string; readonly title: string; readonly htmlUrl: string };
 }
 
 export interface StreamContentsResponse {
-    id: string;
-    title?: string;
+    readonly id: string;
+    readonly title?: string;
     /** Seconds. */
-    updated?: number;
-    continuation?: string;
-    items: StreamItemResponse[];
+    readonly updated?: number;
+    readonly continuation?: string;
+    readonly items: readonly StreamItemResponse[];
 }
 
 /** https://www.inoreader.com/developers/oauth */
 export interface TokenResponse {
-    access_token: string;
-    token_type?: string;
-    expires_in?: number;
-    refresh_token?: string;
-    scope?: string;
+    readonly access_token: string;
+    readonly token_type?: string;
+    readonly expires_in?: number;
+    readonly refresh_token?: string;
+    readonly scope?: string;
 }

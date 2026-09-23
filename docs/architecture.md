@@ -75,7 +75,15 @@ Nothing in `src/app` or `src/ui` needs to change.
 
 ## Reader
 
-`src/app/reader.ts` holds the reading state and implements the LDR behavior on top of any sources:
+The reader implements the LDR behavior on top of any sources, in three files:
+
+| File                      | Role                                                                                     |
+| ------------------------- | ---------------------------------------------------------------------------------------- |
+| `src/app/reader-model.ts` | `ReaderModel`, the immutable reading state, and pure transitions over it                 |
+| `src/app/reader-view.ts`  | The pure projection from the model and source snapshots to `ReaderState` for the UI      |
+| `src/app/reader.ts`       | `createReader`: stores, source subscriptions, loading, prefetch, mark-read, auto refresh |
+
+Its behavior:
 
 - Feeds with unread items are listed by category. Feeds visited within the last 5 navigations stay listed
   after they are read, so the list does not shift while reading.
@@ -86,7 +94,8 @@ Nothing in `src/app` or `src/ui` needs to change.
 - A failed mark-read keeps the feed unread and shows the error in the header.
 
 The reader is framework independent. React reads it with `useSyncExternalStore`
-(`src/ui/context.tsx`), selecting slices so that, for example, scrolling does not re-render the feed list.
+(`src/ui/context.tsx`), selecting slices so that, for example, scrolling does not re-render the feed list. The
+projection keeps unchanged parts of `ReaderState` as the same objects, which is what makes that selection work.
 
 ## UI
 

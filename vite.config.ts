@@ -48,6 +48,7 @@ export default defineConfig({
             "no-console": ["error", { allow: ["info", "warn", "error"] }],
             // Immutable style: no reassignment, no in-place merging.
             "immutable/no-let": "error",
+            "immutable/no-class": "error",
             "no-var": "error",
             "no-param-reassign": "error",
             "no-restricted-properties": [

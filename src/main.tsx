@@ -1,14 +1,14 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { hasSavedPreferences, legacyPreferences, loadPreferences, savePreferences } from "./app/preferences.ts";
-import { Reader } from "./app/reader.ts";
+import { createReader, type Reader } from "./app/reader.ts";
 import { type AppConfig, loadConfig } from "./config.ts";
 import "./global.css";
 import { createEmitter } from "./lib/emitter.ts";
 import { browserWriteLock, createIndexedDBStore, readAllValues } from "./lib/kv-store.ts";
 import { safeUrl } from "./lib/sanitize.ts";
-import { GitHubSource } from "./sources/github/github-source.ts";
-import { InoreaderSource } from "./sources/inoreader/inoreader-source.ts";
+import { createGitHubSource } from "./sources/github/github-source.ts";
+import { createInoreaderSource } from "./sources/inoreader/inoreader-source.ts";
 import { App } from "./ui/App.tsx";
 import { ReaderContext, UserScriptEventsContext } from "./ui/context.tsx";
 import { createShortcuts } from "./ui/shortcuts.ts";
@@ -27,7 +27,7 @@ const now = () => Date.now();
 
 // Register sources here. The reader and UI work with any `Source`.
 const sources = [
-    new InoreaderSource({
+    createInoreaderSource({
         baseUrl: config.inoreader.baseUrl,
         corsProxy: config.inoreader.corsProxy,
         redirectUri: config.redirectUri,
@@ -38,7 +38,7 @@ const sources = [
         now,
         navigate: (url) => location.assign(url)
     }),
-    new GitHubSource({
+    createGitHubSource({
         apiBaseUrl: config.github.apiBaseUrl,
         webBaseUrl: config.github.webBaseUrl,
         fetch: fetcher,
@@ -49,7 +49,7 @@ const sources = [
     })
 ];
 
-const reader = new Reader({
+const reader = createReader({
     sources,
     preferences: loadPreferences(localStorage),
     savePreferences: (preferences) => savePreferences(localStorage, preferences),
