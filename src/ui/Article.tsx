@@ -19,19 +19,32 @@ const styles = stylex.create({
         borderLeftWidth: 2,
         borderLeftStyle: "solid",
         borderLeftColor: "transparent",
+        // Like irodr 1.x: article HTML renders with the browser defaults. The `medium` keyword (16px) keeps
+        // the default 13px for monospace text, which an explicit pixel size would override.
+        fontFamily: "sans-serif",
+        fontSize: "medium",
         lineHeight: 1.5,
         scrollMarginTop: 0
     },
     unread: { borderLeftColor: colors.newItem },
     focused: { backgroundColor: colors.focus },
-    title: { margin: 0, paddingTop: "0.5em", fontSize: "1.25rem", lineHeight: 1.4 },
-    titleLink: { color: colors.link, textDecorationLine: { default: "none", ":hover": "underline" } },
-    meta: { color: colors.muted, fontSize: 13 },
-    metaLink: { color: colors.muted },
+    title: { margin: 0, paddingTop: "0.5em", fontSize: "1.5em" },
+    // irodr 1.x drew these links with Office UI Fabric's font and color.
+    titleLink: {
+        color: colors.itemLink,
+        fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif',
+        textDecorationLine: { default: "none", ":hover": "underline" }
+    },
+    meta: { color: colors.text },
+    metaLink: {
+        color: colors.itemLink,
+        fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif',
+        textDecorationLine: { default: "none", ":hover": "underline" }
+    },
     author: { color: colors.text },
     footer: {
         color: colors.muted,
-        fontSize: 13,
+        fontSize: 14,
         padding: 6,
         borderTopWidth: 1,
         borderTopStyle: "dotted",
@@ -105,7 +118,7 @@ export function Article({ item, focused }: { item: Item; focused: boolean }) {
                 </div>
             </header>
             <HtmlContent html={item.contentHtml} className={`${CLASS.itemBody} irodr-article-body`} />
-            <footer {...stylex.props(styles.footer)}>
+            <footer {...withClass(CLASS.itemFooter, styles.footer)}>
                 {"Posted: "}
                 <time dateTime={isoDateTime(item.publishedAt)}>{formatDateTime(item.publishedAt)}</time>
                 {updated ? (

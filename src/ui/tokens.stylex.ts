@@ -4,6 +4,8 @@ export const colors = stylex.defineVars({
     text: "#1b1b1b",
     muted: "#747474",
     link: "#00308f",
+    /** Article title and "Original" links, as irodr 1.x (Office UI Fabric) drew them. */
+    itemLink: "#0078d4",
     border: "#e5e5e5",
     background: "#ffffff",
     subtle: "#f4f4f4",

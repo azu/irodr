@@ -72,14 +72,15 @@ The built-in actions by name, e.g. `getDefaultActions()["move-next-content-item"
 
 These class names and attributes are stable for user scripts:
 
-| Selector                                      | Element                         |
-| --------------------------------------------- | ------------------------------- |
-| `.SubscriptionContentsContainer`              | The scrolling article view      |
-| `.SubscriptionContentsContainer-content`      | An item, with `data-content-id` |
-| `.SubscriptionContentsContainer-contentTitle` | An item's title                 |
-| `.SubscriptionContentsContainer-contentBody`  | An item's body                  |
-| `.SubscriptionListContainer-item`             | A feed, with `data-feedid`      |
-| `.ng-content`                                 | Hides an item's content         |
+| Selector                                       | Element                         |
+| ---------------------------------------------- | ------------------------------- |
+| `.SubscriptionContentsContainer`               | The scrolling article view      |
+| `.SubscriptionContentsContainer-content`       | An item, with `data-content-id` |
+| `.SubscriptionContentsContainer-contentTitle`  | An item's title                 |
+| `.SubscriptionContentsContainer-contentBody`   | An item's body                  |
+| `.SubscriptionContentsContainer-contentFooter` | An item's footer (dates)        |
+| `.SubscriptionListContainer-item`              | A feed, with `data-feedid`      |
+| `.ng-content`                                  | Hides an item's content         |
 
 ## Example
 
