@@ -1,0 +1,4 @@
+# Format, lint and type-check staged files, then run the unit tests.
+# Integration tests (pnpm run test:e2e) run in CI.
+vp staged
+vp test

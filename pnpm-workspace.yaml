@@ -1,0 +1,11 @@
+# Keep plugins that import `vite` or `vitest` on the copies bundled by Vite+.
+# https://viteplus.dev/guide/local-cli#manual-installation
+overrides:
+  vite: npm:@voidzero-dev/vite-plus-core@1.0.0-rc.0
+  vitest: 5.0.1
+peerDependencyRules:
+  # The vite alias above reports the Vite+ version instead of Vite's.
+  allowedVersions:
+    vite: "*"
+onlyBuiltDependencies:
+  - vite-plus

@@ -1,177 +1,94 @@
 # Source adapters
 
+Irodr reads from sources that implement `Source` (`src/sources/source.ts`); see [Architecture](./architecture.md).
+This document describes the behavior of each source.
+
+## Inoreader
+
+`src/sources/inoreader/`. Uses the [Inoreader API](https://www.inoreader.com/developers/).
+
+- **Login**: OAuth 2.0 authorization code flow with a random `state`. The token is stored in
+  `localStorage["inoreader-token"]` (the irodr 1.x format, so existing logins keep working) and refreshed
+  with the refresh token when it expires or a request returns 401. If refreshing fails, the source
+  disconnects and asks you to connect again.
+- **Custom app**: a Client ID and secret entered in Sources are stored in `localStorage["irodr:inoreader-client"]`.
+- **Feeds**: `subscription/list` and `unread-count`. A feed is listed under its first category.
+- **Items**: `stream/contents` with `n` = "Fetch subscription contents Count" (default 20). `Shift+J` and
+  **Read More** load older items with the continuation. The Unread/All toggle (`t`) switches between items that
+  were unread when loaded and all loaded items.
+- **Mark read**: leaving a feed (or `m`) calls `mark-all-as-read` with `ts` just after the newest loaded item,
+  so items that arrived afterwards stay unread. Until the next unread count reflects it, the feed shows 0.
+- **CORS**: requests go through `VITE_CORS_PROXY` (`/cors-proxy/`), unless `localStorage["REACT_APP_CORS_PROXY"]`
+  overrides it (see `resources/userScript/irodr-cors.js`).
+
 ## GitHub Notifications
 
-irodr remains a browser-only application. GitHub Notifications is the source of
-truth for unread notifications of every type; browser storage is only a cache.
-Inoreader continues to work with its existing lazy fetching and remote read
-behavior.
+`src/sources/github/`. GitHub Notifications is the source of truth for unread notifications of every type;
+browser storage is only a cache.
 
 ### Use
 
-1. Configure repository Watch settings on GitHub. **Custom → Releases** is an
-   option for release-only watching, not a requirement.
-2. Open irodr's **Sources → GitHub / source settings**.
-3. Supply a **classic personal access token** with the `notifications` scope.
-   Fine-grained tokens are not supported by the Notifications endpoint.
-   Private notification subjects additionally require `repo` access; inaccessible
-   subjects still appear with a repository link.
-4. Click **Connect GitHub**. The PAT is saved in this browser without encryption
-   or a passphrase and restored automatically after reload.
-5. Open **GitHub Notifications** in the sidebar. Each repository with visible
-   unread notifications appears as a feed (`owner/repository`).
-6. Moving to another feed marks the departed repository's notifications read on
-   GitHub, through the latest loaded notification timestamp. **Shift+S** skips the
-   feed without marking it read; `m` marks the current repository's notifications read
-   without moving. There are no per-article or repository read buttons.
-   **Issue/PR and other types up to that timestamp are also marked read**, including
-   ones hidden by the display filter. Newer updates are not modified.
-7. Repositories disappear when they have no visible unread notifications. GitHub
-   feeds have no All/Mark unread/Star controls; this is an unread inbox, not an archive.
-8. **Show only Release notifications** is an optional display-only setting in
-   Sources. The default shows all types; toggling it does not discard cached items.
+1. Configure repository Watch settings on GitHub. **Custom → Releases** is an option for release-only watching,
+   not a requirement.
+2. Open irodr's **Sources**.
+3. Supply a **classic personal access token** with the `notifications` scope. Fine-grained tokens are not
+   supported by the Notifications endpoint. Private notification subjects additionally require `repo` access;
+   inaccessible subjects still appear with a repository link.
+4. Click **Connect GitHub**. The token is saved in this browser without encryption and restored after reload.
+5. Each repository with unread notifications appears as a feed (`owner/repository`) under **GitHub Notifications**.
+6. Moving to another feed marks the departed repository's notifications read on GitHub, through the latest loaded
+   notification timestamp. **Shift+S** skips the feed without marking it read; `m` marks the current repository
+   read without moving. **Issue/PR and other types up to that timestamp are also marked read**, including ones hidden
+   by the display filter. Newer updates are not modified.
+7. A read repository stays in the list with 0 unread while it is among the recently visited feeds, like a read RSS
+   feed, and disappears after that. GitHub feeds have no Unread/All toggle and no Read More.
+8. **Show only Release notifications** is an optional display-only setting in Sources.
 
-Refresh and the existing automatic refresh scheduler sync connected sources.
-Every sync fetches the **current unread inbox**, without a `since` date or
-seven-day cutoff. Old incremental cursors are ignored. After all notification
-pages succeed, cached notifications absent from GitHub are removed. Thus a
-notification read in another browser disappears on the next successful sync.
-GitHub's polling interval and rate limits still apply; this is not real-time push.
+Refresh and the automatic refresh sync connected sources. Every sync fetches the **current unread inbox**, without
+a `since` date. After all notification pages succeed, cached notifications absent from GitHub are removed, so a
+notification read in another browser disappears on the next successful sync. GitHub's `X-Poll-Interval` (at least
+60 seconds) and rate limits apply; this is not real-time push.
 
-The sidebar folder identifies GitHub as the source. The article view deliberately
-has no GitHub settings button or sync statistics, matching ordinary feeds.
-Errors use the existing header. Titles appear page by page before subject details
-finish loading; details are fetched with bounded concurrency.
-After reload, stored articles and state are available immediately; the saved
-token is restored and collection resumes automatically. No background collection
-runs when the app is closed. Notifications no longer returned by GitHub cannot
-be recovered; this is not a complete release-history importer.
+Only one GitHub account is supported per browser profile. Rotating the token of that account preserves its cache.
+Another account is rejected to avoid mixing private inboxes; use a separate browser profile for it.
 
-Only one GitHub account is supported per browser profile. PAT rotation for that
-account preserves its cache. Another account is rejected to
-avoid mixing private inboxes; use a separate browser profile for it.
+### API usage
 
-### Boundaries
+- `GET /notifications?all=false&per_page=100`, following `Link: rel="next"` pages that keep the same query on the
+  same host. All subject types become items. Pages are saved and displayed as they arrive.
+- Release, Issue, PullRequest, Discussion and Commit subjects are resolved (4 at a time) for a browser URL and body.
+  Unknown types still appear with their title and a repository link. Markdown is rendered with raw HTML disabled and
+  sanitized again at display time; commit messages are escaped plain text. Only explicit HTTP(S) links and images
+  are kept.
+- Read acknowledgements use **one `PUT /repos/{owner}/{repo}/notifications` per repository**, with `last_read_at`
+  frozen at the newest loaded notification when you leave the feed.
+- A `205` response removes the covered cached items; a `202` leaves them until a later sync confirms GitHub's
+  asynchronous operation. Failures keep them unread. Removal compares with the latest stored timestamps, so an update
+  that arrives meanwhile is kept, and a sync already in flight cannot bring read items back.
+- A failed sync keeps the cache and backs off before retrying (at least 5 minutes, honoring `Retry-After` and
+  rate-limit reset headers).
 
-```text
-SourceAdapter: fetch + normalize, no reader-state writes
-    -> SourceItem: provider ID, source ID, article data and provenance
-    -> SourceRepository: sources, items, states (separate collections)
-    -> SourceSubscription: projection into the existing Reader UI
-```
-
-`SourceAdapter<Config, Cursor>` is shared by GitHub and Inoreader normalization.
-The Inoreader factory consumes the canonical normalizer through a compatibility
-bridge, preserving historical article IDs, enclosures and pagination. Its
-storage/read-state migration is deliberately **not** part of this slice: the
-existing Inoreader remote read bridge remains authoritative for RSS. GitHub
-read operations live in the GitHub session service, separate from the fetching
-adapter. Legacy local read/star flags do not determine GitHub unread state.
-Direct RSS ingestion, generic StateBridge APIs, Web Monitor and AI enrichment
-are not implemented.
-
-GitHub collection:
-
-- `GET /notifications?all=false&per_page=100`, following unread notification pages;
-  all subject types become items. Release filtering is a display preference only.
-- Only unread notifications are displayed. GitHub read state is authoritative, not
-  local ItemState. A composite `(sourceId, externalId)` identifies each article;
-  the notification thread ID is the external ID.
-- Notification pages are checkpointed and displayed before release details are
-  fetched. Only a complete notification snapshot can remove absent notifications.
-  A failed later page does not erase the previous cache. Read-state reconciliation
-  completes before optional body enrichment, so an unavailable release body does
-  not prevent remote reads from being reflected.
-- `X-Poll-Interval` sets the minimum next poll time. Incremental `since` and
-  conditional `Last-Modified` requests are not used for unread reconciliation.
-- Known Release, Issue, PullRequest, Discussion and Commit subjects are resolved
-  individually for a browser URL and body. Unknown types still appear with their
-  title and repository link. Markdown bodies are rendered with raw HTML disabled
-  and sanitized again at display time; commit messages remain escaped plain text.
-  Explicit HTTP(S) links and images are supported, and bare web URLs become links.
-  Relative destinations and other URL schemes remain text instead of links or images.
-  Previously cached unread bodies are refreshed on a subsequent sync to use this format.
-- Read acknowledgements use **one `PUT /repos/{owner}/{repo}/notifications` per
-  repository**, with `last_read_at` frozen from the loaded notifications' update
-  timestamps at departure. All types through that timestamp are included.
-- A `205` response removes covered cached items; a `202` leaves them visible until
-  a subsequent unread snapshot confirms GitHub's asynchronous operation finished.
-  Failures retain unread items. Cache removal checks the latest stored timestamps
-  so an update arriving while the write is in flight is not accidentally removed.
-  The same timestamp boundary prevents stale in-flight syncs from reintroducing read items.
-- Each source can fail independently. A failed sync retains its prior cursor;
-  the service backs off before retrying, honoring `Retry-After` and rate-limit
-  reset headers when available.
-
-The public GraphQL schema has no notification-read mutation. Repository-wide REST
-acknowledgements intentionally trade per-type selection for far fewer write requests.
+The public GraphQL schema has no notification-read mutation. Repository-wide REST acknowledgements intentionally
+trade per-type selection for far fewer write requests.
 
 ### Storage and security
 
-The proposed four logical collections are represented in existing localforage
-storage, not a new SQL database:
+Two IndexedDB databases, in the layout used by irodr 1.x (localforage), so an upgrade keeps the data:
 
-There are **two separate localforage instances**, not four separate tables.
-In browsers using the default IndexedDB driver, the exact layout is:
+| IndexedDB database         | Object store    | Key                               | Value                                           |
+| -------------------------- | --------------- | --------------------------------- | ----------------------------------------------- |
+| `irodr-sources`            | `keyvaluepairs` | `snapshot`                        | `{ sources, items, states }` (the cached inbox) |
+| `irodr-source-credentials` | `keyvaluepairs` | `credential:github-notifications` | `{ version: 2, token }`                         |
 
-| IndexedDB database | Object store | Record key | Stored value |
-| --- | --- | --- | --- |
-| `irodr-sources` | `keyvaluepairs` | `snapshot` | One object containing `sources`, `items`, and `states` arrays |
-| `irodr-source-credentials` | `keyvaluepairs` | `credential:github-notifications` | `{ version: 2, token: ... }` |
-
-Credential keys are built as `credential:${encodeURIComponent(sourceId)}`;
-the GitHub source ID is `github-notifications`. The `keyvaluepairs` object-store
-name is localforage's default. Source config and cached items never contain the PAT.
-Splitting the databases is organizational, not a security boundary.
-
-Storage belongs to the browser profile and origin. For local development, inspect
-the `http://localhost:8888` origin in the browser's Storage/Application panel,
-under IndexedDB. Port `13245` and the production origin have separate data.
-The driver is not pinned: if localforage falls back to localStorage, the keys are
-`irodr-sources/snapshot` and
-`irodr-source-credentials/credential:github-notifications`.
-Tests explicitly switch to an in-memory driver.
-
-- `irodr-sources` has a single atomic snapshot containing source configuration and
-  cached items. Its generic item-state collection is not authoritative for GitHub.
-  Completing the unread list atomically replaces that source's cached inbox.
-- `irodr-source-credentials` stores the unencrypted token separately.
-- Web Locks serialize source snapshot mutations across tabs, with a fresh
-  persisted snapshot loaded under the lock. Without Web Locks, use one tab.
-  Other browsers and tabs observe GitHub read changes on their next sync.
-
-Use **Disconnect and forget token** in Sources to stop syncing and remove the
-saved token; the cached inbox is preserved until a later sync. Previously encrypted
-credentials cannot be auto-restored; enter the PAT once more to replace them.
-No PAT is stored in source config, reader state, or Almin execution arguments.
-
-**Cached articles and metadata are not encrypted.** This includes private release
-notes. Browser data deletion removes the cache, not GitHub's read state.
-Read state is shared through GitHub; credentials and caches are per browser.
-Storage remains subject to browser quota.
-**The token is also unencrypted.** Scripts running on the same origin, including
-user scripts or XSS, can access it even before the next sync. Only use this
-feature in a trusted browser profile.
-
-### Verification
-
-```sh
-pnpm exec tsc --noEmit
-CI=true pnpm exec react-scripts test --watchAll=false --runInBand
-pnpm run build
-pnpm run test:proxy
-```
-
-Tests use mocked GitHub responses and in-memory storage. For a live smoke test,
-connect a PAT in two browser profiles (never in a committed file), check repository
-grouping for Releases, Issues and PRs, then leave a repository feed in one profile.
-Its notifications through the loaded timestamp should become read on GitHub and
-disappear from the other profile on its next sync. Verify that other repositories
-and newer updates remain unread.
+- Web Locks serialize snapshot writes across tabs; each write reloads the stored snapshot under the lock.
+- **Disconnect and forget token** in Sources stops syncing and removes the token. The cached inbox stays readable.
+- **Cached articles and the token are not encrypted.** Scripts running on the same origin, including user scripts,
+  can read them. Only use this feature in a trusted browser profile. Deleting browser data removes the cache, not
+  GitHub's read state.
 
 References:
 
-- [GitHub notification API](https://docs.github.com/en/rest/activity/notifications)
-- [GitHub repository bulk-read API](https://docs.github.com/en/rest/activity/notifications#mark-repository-notifications-as-read)
+- [GitHub notifications API](https://docs.github.com/en/rest/activity/notifications)
+- [Mark repository notifications as read](https://docs.github.com/en/rest/activity/notifications#mark-repository-notifications-as-read)
 - [GitHub public GraphQL schema](https://docs.github.com/en/graphql/overview/public-schema)
 - [GitHub repository subscriptions](https://docs.github.com/en/rest/activity/watching)

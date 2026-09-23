@@ -5,25 +5,52 @@ env:
 permissions:
   contents: read
 jobs:
-  test:
-    name: "Test on Node.js ${{ matrix.node-version }}"
+  check:
+    name: Check, unit test and build
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [22]
     steps:
-      - name: checkout
+      - name: Checkout
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           persist-credentials: false
-      - name: Install pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
-      - name: setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+      - name: Set up Vite+
+        uses: voidzero-dev/setup-vp@3754dd7dbdb32bd8f6d28b6043de13ad3a75f21f # v1.21.1
         with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'pnpm'
+          node-version-file: .node-version
+          cache: true
       - name: Install
-        run: pnpm install
-      - name: Test
-        run: pnpm test
+        run: vp install --frozen-lockfile
+      - name: Format, lint and type check
+        run: vp check
+      - name: Unit tests
+        run: vp test
+      - name: Build
+        run: vp build
+  e2e:
+    name: Integration tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+      - name: Set up Vite+
+        uses: voidzero-dev/setup-vp@3754dd7dbdb32bd8f6d28b6043de13ad3a75f21f # v1.21.1
+        with:
+          node-version-file: .node-version
+          cache: true
+      - name: Install
+        run: vp install --frozen-lockfile
+      - name: Install Playwright browser
+        run: vp exec playwright install --with-deps chromium
+      - name: Integration tests against the fake Inoreader and GitHub APIs
+        run: vp run test:e2e
+      - name: Upload report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
