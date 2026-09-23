@@ -106,6 +106,11 @@ function cleanChildren(parent: ParentNode, target: ParentNode, doc: Document): v
             continue;
         }
         const clean = doc.createElement(tag);
+        // Before `src`: an image in the live document starts loading as soon as it has one.
+        if (tag === "img") {
+            clean.setAttribute("loading", "lazy");
+            clean.setAttribute("decoding", "async");
+        }
         for (const name of ALLOWED_ATTRIBUTES[tag] ?? []) {
             const value = element.getAttribute(name);
             if (value === null) continue;
@@ -113,10 +118,6 @@ function cleanChildren(parent: ParentNode, target: ParentNode, doc: Document): v
             clean.setAttribute(name, value);
         }
         if (tag === "a") clean.setAttribute("rel", "noopener noreferrer");
-        if (tag === "img") {
-            clean.setAttribute("loading", "lazy");
-            clean.setAttribute("decoding", "async");
-        }
         cleanChildren(element, clean, doc);
         target.appendChild(clean);
     }

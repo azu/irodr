@@ -295,6 +295,10 @@ describe("Reader", () => {
         await reader.openFeed("memory:C");
         source.removeFeed("memory:C");
         expect(listed()).toContain("C(0)");
+        // The view shows the same feed as the list, with nothing unread.
+        const { view, list } = reader.getState();
+        expect(view?.feed.unreadCount).toBe(0);
+        expect(list.categories.flatMap((category) => category.feeds)).toContain(view?.feed);
         await reader.prevFeed();
         expect(listed()).not.toContain("C(0)");
     });

@@ -7,6 +7,7 @@ export const CLASS = {
     item: "SubscriptionContentsContainer-content",
     itemTitle: "SubscriptionContentsContainer-contentTitle",
     itemBody: "SubscriptionContentsContainer-contentBody",
+    feedList: "SubscriptionListContainer",
     feed: "SubscriptionListContainer-item"
 } as const;
 

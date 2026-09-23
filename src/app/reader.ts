@@ -1,3 +1,4 @@
+import { shallowEqual } from "../lib/equal.ts";
 import { Store } from "../lib/store.ts";
 import type { Feed, Item, SettingValues, Source, SourceCapabilities, SourceSnapshot } from "../sources/source.ts";
 import { DEFAULT_PREFERENCES, normalizePreferences, type Preferences } from "./preferences.ts";
@@ -262,7 +263,8 @@ export class Reader {
             const feed = source.getSnapshot().feeds.find((candidate) => candidate.id === feedId);
             if (feed) return feed;
         }
-        return this.#retainedCurrent?.id === feedId ? this.#retainedCurrent : undefined;
+        // The source no longer lists it, so it has no unread items left.
+        return this.#retainedCurrent?.id === feedId ? this.#asRead(this.#retainedCurrent) : undefined;
     }
 
     #source(feed: Pick<Feed, "sourceId">): Source {
@@ -271,9 +273,9 @@ export class Reader {
         return source;
     }
 
-    /** The feed as displayed: 0 unread while a mark-read request is in flight. */
-    #displayed(feed: Feed): Feed {
-        if (!this.#readPending.has(feed.id) || feed.unreadCount === 0) return feed;
+    /** The feed with 0 unread, memoized so its identity is stable across commits. */
+    #asRead(feed: Feed): Feed {
+        if (feed.unreadCount === 0) return feed;
         let override = this.#readOverrides.get(feed);
         if (!override) {
             override = { ...feed, unreadCount: 0 };
@@ -282,10 +284,15 @@ export class Reader {
         return override;
     }
 
+    /** The feed as displayed: 0 unread while a mark-read request is in flight. */
+    #displayed(feed: Feed): Feed {
+        return this.#readPending.has(feed.id) ? this.#asRead(feed) : feed;
+    }
+
     #buildList(): { list: FeedListState; totals: ReaderState["totals"] } {
         const feeds = this.#allFeeds();
         if (this.#currentFeedId && !feeds.some((feed) => feed.id === this.#currentFeedId) && this.#retainedCurrent) {
-            feeds.push({ ...this.#retainedCurrent, unreadCount: 0 });
+            feeds.push(this.#asRead(this.#retainedCurrent));
         }
         const recent = new Set(this.#history.slice(-RECENT_FEEDS));
         const byCategory = new Map<string, Feed[]>();
@@ -460,8 +467,9 @@ export class Reader {
                 this.#setLoading(1);
                 this.setMessage("Start loading contents...");
             }
+            let loaded: CacheEntry;
             try {
-                await this.#load(feed);
+                loaded = await this.#load(feed);
             } catch {
                 if (token !== this.#navigation) return "superseded";
                 this.#setPending(undefined);
@@ -471,6 +479,8 @@ export class Reader {
                 if (slow) this.#setLoading(-1);
             }
             if (token !== this.#navigation) return "superseded";
+            // A newer load of this feed may still be running and has not cached anything yet.
+            if (!this.#cache.has(feedId)) this.#remember(feedId, loaded);
             if (slow) this.setMessage("Finish loading contents");
         }
         this.#pendingFeedId = undefined;
@@ -539,15 +549,18 @@ export class Reader {
     }
 
     async #markRead(feed: Feed, items: readonly Item[]): Promise<void> {
+        const source = this.#source(feed);
+        const before = source.getSnapshot().status;
         this.#readPending.add(feed.id);
         this.#commit({ list: true, view: true });
         try {
-            await this.#source(feed).markRead(feed.id, items);
+            await source.markRead(feed.id, items);
             this.#readHistory = [...this.#readHistory, ...items].slice(-READ_HISTORY_LIMIT);
         } catch (error) {
-            const status = this.#source(feed).getSnapshot().status;
+            // Show the source's error when this request caused it, e.g. an expired login.
+            const status = source.getSnapshot().status;
             this.setMessage(
-                status.phase === "error"
+                status !== before && status.phase === "error"
                     ? status.message
                     : `Could not mark ${feed.title} as read. ${error instanceof Error ? error.message : ""}`.trim(),
                 { error: true }
@@ -573,7 +586,8 @@ export class Reader {
             if (feed && !this.#fresh(feed)) {
                 try {
                     await this.#load(feed);
-                    this.#commit({ list: true });
+                    // The open feed can be among them when a newer revision arrived.
+                    this.#commit({ list: true, view: true });
                 } catch {
                     failed = true;
                 }
@@ -723,13 +737,6 @@ export class Reader {
         this.#commit({ sources: true, list: true, view: true });
         return message;
     }
-}
-
-function shallowEqual<T extends object>(a: T | undefined, b: T | undefined): boolean {
-    if (a === b) return true;
-    if (!a || !b) return false;
-    const keys = Object.keys(a) as (keyof T)[];
-    return keys.length === Object.keys(b).length && keys.every((key) => Object.is(a[key], b[key]));
 }
 
 function sameCategories(a: readonly CategoryView[], b: readonly CategoryView[]): boolean {

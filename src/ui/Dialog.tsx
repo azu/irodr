@@ -44,6 +44,8 @@ export function Dialog({
     children: ReactNode;
 }) {
     const ref = useRef<HTMLDialogElement>(null);
+    /** Where the last press started: a drag from inside that ends on the backdrop must not close. */
+    const pressed = useRef<EventTarget | null>(null);
     useEffect(() => {
         const dialog = ref.current;
         if (!dialog) return;
@@ -60,8 +62,11 @@ export function Dialog({
             onClose={onClose}
             // Escape: update the state right away instead of waiting for the `close` event.
             onCancel={onClose}
+            onPointerDown={(event) => {
+                pressed.current = event.target;
+            }}
             onClick={(event) => {
-                if (event.target === event.currentTarget) onClose();
+                if (event.target === event.currentTarget && pressed.current === event.currentTarget) onClose();
             }}
         >
             {open ? (

@@ -43,16 +43,39 @@ function openDatabase(name: string): Promise<IDBDatabase> {
 
 export function createIndexedDBStore(name: string): KeyValueStore {
     let database: Promise<IDBDatabase> | undefined;
-    const db = () => {
-        database ??= openDatabase(name).catch((error: unknown) => {
-            database = undefined;
-            throw error;
-        });
-        return database;
+    const forget = (stale: Promise<IDBDatabase>) => {
+        if (database === stale) database = undefined;
     };
+    const db = () => {
+        if (database) return database;
+        const opening: Promise<IDBDatabase> = openDatabase(name).then(
+            (opened) => {
+                // Reopen after the browser closes the connection, e.g. when site data is cleared.
+                opened.addEventListener("close", () => forget(opening));
+                opened.addEventListener("versionchange", () => {
+                    opened.close();
+                    forget(opening);
+                });
+                return opened;
+            },
+            (error: unknown) => {
+                forget(opening);
+                throw error;
+            }
+        );
+        database = opening;
+        return opening;
+    };
+    /** Resolves when the transaction commits, so aborted writes (e.g. quota errors) are reported. */
     const run = async <T>(mode: IDBTransactionMode, action: (store: IDBObjectStore) => IDBRequest<T>) => {
-        const store = (await db()).transaction(OBJECT_STORE, mode).objectStore(OBJECT_STORE);
-        return promisify(action(store));
+        const transaction = (await db()).transaction(OBJECT_STORE, mode);
+        const committed = new Promise<void>((resolve, reject) => {
+            transaction.oncomplete = () => resolve();
+            transaction.onabort = () => reject(transaction.error ?? new Error("IndexedDB transaction aborted"));
+            transaction.onerror = () => reject(transaction.error ?? new Error("IndexedDB transaction failed"));
+        });
+        const [result] = await Promise.all([promisify(action(transaction.objectStore(OBJECT_STORE))), committed]);
+        return result;
     };
     return {
         async get<T>(key: string) {

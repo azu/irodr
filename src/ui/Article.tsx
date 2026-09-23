@@ -58,7 +58,6 @@ function eventPayload(item: Item, focused: boolean) {
 export function Article({ item, focused }: { item: Item; focused: boolean }) {
     const events = useUserScriptEvents();
     const now = useNow();
-    const mounted = useRef(false);
     const dispatch = useEffectEvent((name: string) => {
         events?.dispatch(`SubscriptionContent::${name}`, eventPayload(item, focused));
     });
@@ -66,11 +65,13 @@ export function Article({ item, focused }: { item: Item; focused: boolean }) {
         dispatch("componentDidMount");
         return () => dispatch("componentWillUnmount");
     }, []);
-    // componentDidUpdate: React Compiler re-renders this component only when its inputs change.
+    // componentDidUpdate: only when the item or its focus changes, not on clock ticks.
+    const rendered = useRef({ item, focused });
     useEffect(() => {
-        if (mounted.current) dispatch("componentDidUpdate");
-        mounted.current = true;
-    });
+        if (rendered.current.item === item && rendered.current.focused === focused) return;
+        rendered.current = { item, focused };
+        dispatch("componentDidUpdate");
+    }, [item, focused]);
     const updated = Math.abs(item.updatedAt - item.publishedAt) >= 60_000;
     // Feed data is untrusted: only link to http(s) URLs.
     const href = safeUrl(item.url);

@@ -85,7 +85,11 @@ test("preferences are saved and applied", async ({ page, api }) => {
     await page.getByRole("button", { name: "Preferences" }).click();
     const dialog = page.getByRole("dialog", { name: "App Preference" });
     await dialog.getByLabel("Prefetch Subscription Count").fill("0");
-    await dialog.getByLabel("Fetch subscription contents Count").fill("2");
+    // Typing into a cleared field: the field must accept the empty state in between.
+    const fetchCount = dialog.getByLabel("Fetch subscription contents Count");
+    await fetchCount.fill("");
+    await expect(fetchCount).toHaveValue("");
+    await fetchCount.pressSequentially("2");
     await dialog.getByRole("button", { name: "Save" }).click();
     await page.reload();
     await page.getByRole("button", { name: "Preferences" }).click();

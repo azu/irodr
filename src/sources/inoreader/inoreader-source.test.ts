@@ -20,6 +20,11 @@ beforeAll(async () => {
 afterAll(() => server.close());
 beforeEach(() => server.reset({ inoreader: { subscriptions: inoreaderSubscriptions() } }));
 
+let clockOffset = 0;
+beforeEach(() => {
+    clockOffset = 0;
+});
+
 function createSource(storage = new MemoryStorage()) {
     const navigations: string[] = [];
     const source = new InoreaderSource({
@@ -30,7 +35,7 @@ function createSource(storage = new MemoryStorage()) {
         fetch: (input, init) => fetch(input, init),
         storage,
         session: new MemoryStorage(),
-        now: () => Date.now(),
+        now: () => Date.now() + clockOffset,
         navigate: (url) => navigations.push(url)
     });
     return { source, storage, navigations };
@@ -127,6 +132,34 @@ describe("InoreaderSource", () => {
         expect(source.getSnapshot().feeds.find((feed) => feed.title === "Alpha Blog")?.unreadCount).toBe(0);
         await source.sync();
         expect(source.getSnapshot().feeds.find((feed) => feed.title === "Alpha Blog")?.unreadCount).toBe(1);
+    });
+
+    it("shows 0 until Inoreader counts reflect a mark-read, but not forever", async () => {
+        const { source } = await connected();
+        await source.sync();
+        const alpha = () => source.getSnapshot().feeds.find((feed) => feed.title === "Alpha Blog")?.unreadCount;
+        const page = await source.loadItems(`inoreader:${ALPHA}`, { count: 20 });
+        await source.markRead(`inoreader:${ALPHA}`, page.items);
+        // The unread count lags behind the mark-read request.
+        for (const item of server.inoreader.streams.get(ALPHA)?.items ?? []) item.read = false;
+        await source.sync();
+        expect(alpha()).toBe(0);
+        clockOffset = 6 * 60 * 1000;
+        await source.sync();
+        expect(alpha()).toBe(3);
+    });
+
+    it("shows items marked unread elsewhere after Inoreader reflected the mark-read", async () => {
+        const { source } = await connected();
+        await source.sync();
+        const alpha = () => source.getSnapshot().feeds.find((feed) => feed.title === "Alpha Blog")?.unreadCount;
+        const page = await source.loadItems(`inoreader:${ALPHA}`, { count: 20 });
+        await source.markRead(`inoreader:${ALPHA}`, page.items);
+        await source.sync();
+        expect(alpha()).toBe(0);
+        for (const item of server.inoreader.streams.get(ALPHA)?.items ?? []) item.read = false;
+        await source.sync();
+        expect(alpha()).toBe(3);
     });
 
     it("refreshes an expired access token once", async () => {

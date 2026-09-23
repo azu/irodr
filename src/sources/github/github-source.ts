@@ -1,3 +1,4 @@
+import { shallowEqual } from "../../lib/equal.ts";
 import type { KeyValueStore, WriteLock } from "../../lib/kv-store.ts";
 import { Store } from "../../lib/store.ts";
 import type {
@@ -115,7 +116,7 @@ export class GitHubSource implements Source {
     readonly #writeRequests = new Set<AbortController>();
     #status: SourceStatus = LOCKED;
     /** Repositories in first-seen order. Read ones stay (with 0 unread) until reload, like read RSS feeds. */
-    #repositories: string[] = [];
+    #repositories = new Set<string>();
     #items = new Map<string, readonly Item[]>();
     private readonly options: GitHubSourceOptions;
 
@@ -193,7 +194,7 @@ export class GitHubSource implements Source {
             if (item.sourceId !== this.id || item.metadata?.githubUnread === false) continue;
             const repository = validRepository(item.metadata?.repository);
             if (!repository) continue;
-            if (!this.#repositories.includes(repository)) this.#repositories.push(repository);
+            this.#repositories.add(repository);
             if (releaseOnly && item.metadata?.type !== "Release") {
                 hidden.add(repository);
                 continue;
@@ -549,13 +550,19 @@ export class GitHubSource implements Source {
         await this.#cache.load();
         const repository = repositoryOfFeed(feedId);
         const wanted = new Set(loadedItems.map((item) => externalIdOf(item.id)));
-        // Notifications removed meanwhile (read in another browser) need no request.
-        const stillUnread = this.#cache.snapshot.items.some(
+        const cached = this.#cache.snapshot.items.filter(
             (item) => item.sourceId === this.id && wanted.has(item.externalId)
         );
-        if (!stillUnread) return;
+        // Notifications removed meanwhile (read in another browser) need no request.
+        if (cached.length === 0) return;
+        // Only GitHub's own `updated_at` is a safe `last_read_at`, not the publish-date fallback.
+        const timestamped = new Set<string | undefined>(
+            cached.filter((item) => Number.isFinite(Date.parse(item.updatedAt ?? ""))).map((item) => item.externalId)
+        );
         // Freeze the cutoff at the newest loaded notification: later arrivals stay unread.
-        const cutoff = Math.max(...loadedItems.map((item) => item.updatedAt));
+        const cutoff = Math.max(
+            ...loadedItems.filter((item) => timestamped.has(externalIdOf(item.id))).map((item) => item.updatedAt)
+        );
         if (!Number.isFinite(cutoff) || cutoff <= 0) {
             throw new GitHubSourceError("Cannot safely mark a repository read without its notification timestamp.");
         }
@@ -666,9 +673,4 @@ function toItem(feedId: string, repository: string, item: CachedItem): Item {
         updatedAt: updated,
         unread: true
     };
-}
-
-function shallowEqual<T extends object>(a: T, b: T): boolean {
-    const keys = Object.keys(a) as (keyof T)[];
-    return keys.length === Object.keys(b).length && keys.every((key) => Object.is(a[key], b[key]));
 }

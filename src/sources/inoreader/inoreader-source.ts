@@ -1,3 +1,4 @@
+import { shallowEqual } from "../../lib/equal.ts";
 import { decodeEntities, escapeHtml } from "../../lib/html.ts";
 import { Store } from "../../lib/store.ts";
 import type {
@@ -21,6 +22,8 @@ import { InoreaderAuthError, InoreaderOAuth, type InoreaderOAuthOptions } from "
 export const INOREADER_SOURCE_ID = "inoreader";
 const FEED_PREFIX = `${INOREADER_SOURCE_ID}:`;
 const READ_CATEGORY = /^user\/[^/]+\/state\/com\.google\/read$/;
+/** How long a local mark-read overrides unread counts that do not reflect it yet. */
+const READ_THROUGH_MS = 5 * 60 * 1000;
 
 export interface InoreaderSourceOptions extends InoreaderOAuthOptions {
     /** Navigate the browser, used for the OAuth redirect. */
@@ -66,8 +69,8 @@ export class InoreaderSource implements Source {
 
     readonly #oauth: InoreaderOAuth;
     readonly #store: Store<SourceSnapshot>;
-    /** Stream ID → the timestamp (µs) through which this browser marked the feed read. */
-    readonly #readThrough = new Map<string, number>();
+    /** Stream ID → the timestamp (µs) through which this browser marked the feed read, and when. */
+    readonly #readThrough = new Map<string, { through: number; at: number }>();
     /** Item → its Inoreader timestampUsec, for mark-all-as-read. */
     readonly #itemTimestamps = new WeakMap<Item, number>();
     #subscriptions?: SubscriptionsResponse;
@@ -200,9 +203,15 @@ export class InoreaderSource implements Source {
             // Inoreader returns no unread entry for some streams; irodr 1.x skipped them too.
             if (!unread) continue;
             const newest = Number(unread.newestItemTimestampUsec) || 0;
-            const readThrough = this.#readThrough.get(subscription.id);
+            let unreadCount = Number(unread.count) || 0;
             // A mark-all-as-read request may not be reflected by the next count yet.
-            const unreadCount = readThrough !== undefined && newest <= readThrough ? 0 : Number(unread.count) || 0;
+            const readThrough = this.#readThrough.get(subscription.id);
+            if (readThrough && (unreadCount === 0 || this.options.now() - readThrough.at > READ_THROUGH_MS)) {
+                // Inoreader caught up, or the items were marked unread again elsewhere.
+                this.#readThrough.delete(subscription.id);
+            } else if (readThrough && newest <= readThrough.through) {
+                unreadCount = 0;
+            }
             const feed: Feed = {
                 id: `${FEED_PREFIX}${subscription.id}`,
                 sourceId: this.id,
@@ -283,7 +292,10 @@ export class InoreaderSource implements Source {
             if (isAuthFailure(error)) this.handleFailure(error);
             throw error;
         }
-        this.#readThrough.set(streamId, Math.max(this.#readThrough.get(streamId) ?? 0, through));
+        this.#readThrough.set(streamId, {
+            through: Math.max(this.#readThrough.get(streamId)?.through ?? 0, through),
+            at: this.options.now()
+        });
         this.publish({
             feeds: this.#store
                 .get()
@@ -332,9 +344,4 @@ function isAuthFailure(error: unknown): boolean {
 
 function errorMessage(error: unknown): string {
     return error instanceof Error ? error.message : "Inoreader request failed.";
-}
-
-function shallowEqual<T extends object>(a: T, b: T): boolean {
-    const keys = Object.keys(a) as (keyof T)[];
-    return keys.length === Object.keys(b).length && keys.every((key) => Object.is(a[key], b[key]));
 }

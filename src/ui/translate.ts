@@ -65,7 +65,8 @@ function bodyOf(itemId: string): Element | null {
 export class TranslateMode {
     #enabled = false;
     #abort?: AbortController;
-    #translator?: TranslatorHandle;
+    /** Shared while being created, so turning the mode off can destroy it once it exists. */
+    #translator?: Promise<TranslatorHandle>;
     private readonly notify: (message: string) => void;
 
     constructor(notify: (message: string) => void) {
@@ -81,8 +82,20 @@ export class TranslateMode {
         this.#enabled = false;
         this.#abort?.abort();
         this.#abort = undefined;
-        this.#translator?.destroy();
+        const translator = this.#translator;
         this.#translator = undefined;
+        void translator?.then((handle) => handle.destroy()).catch(() => undefined);
+    }
+
+    async #getTranslator(): Promise<TranslatorHandle> {
+        const pending = (this.#translator ??= createTranslator("en", "ja"));
+        try {
+            return await pending;
+        } catch (error) {
+            // Try again for the next article, e.g. after a translator user script is installed.
+            if (this.#translator === pending) this.#translator = undefined;
+            throw error;
+        }
     }
 
     async toggle(focusedItemId: string | undefined): Promise<void> {
@@ -106,11 +119,11 @@ export class TranslateMode {
         const abort = new AbortController();
         this.#abort = abort;
         try {
-            this.#translator ??= await createTranslator("en", "ja");
+            const translator = await this.#getTranslator();
             const nodes = textNodes(body);
             if (nodes.length === 0 || abort.signal.aborted) return;
             const originals = nodes.map((node) => node.textContent ?? "");
-            const translated = await this.#translator.translateBatch(originals);
+            const translated = await translator.translateBatch(originals);
             if (abort.signal.aborted) return;
             nodes.forEach((node, index) => {
                 const span = document.createElement("span");

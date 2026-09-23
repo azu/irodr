@@ -181,7 +181,7 @@ export function FeedList() {
     }, [current, index]);
 
     return (
-        <nav aria-label="Subscriptions" {...withClass("SubscriptionListContainer", styles.nav)}>
+        <nav aria-label="Subscriptions" {...withClass(CLASS.feedList, styles.nav)}>
             <ul {...stylex.props(styles.list)}>
                 {list.categories.map((category) => (
                     <Category
