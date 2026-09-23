@@ -41,19 +41,13 @@ enum HelperError: Error, CustomStringConvertible {
     }
 }
 
-/// Sessions by "source>target", reused across requests.
-var sessions: [String: TranslationSession] = [:]
-
+/// A session per request, as hotchpotch/trn does, so no state is shared across concurrency domains.
 func session(from sourceCode: String, to targetCode: String) async throws -> TranslationSession {
-    let key = "\(sourceCode)>\(targetCode)"
-    if let cached = sessions[key] { return cached }
     let source = Locale.Language(identifier: sourceCode)
     let target = Locale.Language(identifier: targetCode)
     switch await LanguageAvailability().status(from: source, to: target) {
     case .installed:
-        let created = TranslationSession(installedSource: source, target: target)
-        sessions[key] = created
-        return created
+        return TranslationSession(installedSource: source, target: target)
     case .supported:
         throw HelperError.notInstalled(sourceCode, targetCode)
     case .unsupported:

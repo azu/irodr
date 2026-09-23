@@ -22,8 +22,9 @@ Browser ── http://127.0.0.1:18888 ──> irodr-local (Node single executabl
 ```sh
 # macOS: the translation helper (Swift 6, macOS 26+). vp pack embeds it when it exists.
 swift build -c release --package-path swift/irodr-translate
-# The app and the executable. Node's Single Executable Applications need Node.js 25.7+ (`vp env use 26`).
-vp build && vp pack
+# The app and the executable. Node's Single Executable Applications need Node.js 25.7+ to build,
+# e.g. without switching the Node.js of your shell:
+npx -p node@26 -- pnpm run build:local
 ./build/irodr-local            # http://127.0.0.1:18888/
 ./build/irodr-local --port 18889
 ```
