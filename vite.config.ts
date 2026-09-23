@@ -31,7 +31,6 @@ export default defineConfig({
           ],
     server: { port: 8888, strictPort: true, proxy: corsProxy },
     preview: { port: 8888, strictPort: true, proxy: corsProxy },
-    build: { target: "es2024" },
     lint: {
         plugins: ["eslint", "typescript", "unicorn", "oxc", "react", "jsx-a11y", "import"],
         // React Compiler diagnostics (purity, refs, set-state-in-effect, ...).
@@ -39,7 +38,9 @@ export default defineConfig({
             { name: "react-compiler", specifier: "eslint-plugin-react-hooks" },
             // StyleX drops unsupported values silently; catch them at lint time.
             { name: "stylex", specifier: "@stylexjs/eslint-plugin" },
-            { name: "immutable", specifier: "@irodr/oxlint-plugin-immutable" }
+            { name: "immutable", specifier: "@irodr/oxlint-plugin-immutable" },
+            // Browser support is Baseline Widely available (web-features data). Built-ins are not polyfilled.
+            { name: "baseline-js", specifier: "eslint-plugin-baseline-js" }
         ],
         categories: { correctness: "error", suspicious: "warn", perf: "warn" },
         options: { typeAware: true, typeCheck: true },
@@ -93,6 +94,20 @@ export default defineConfig({
         },
         overrides: [
             {
+                // Shipped code runs in browsers; tests and tools below run in Node.
+                files: ["src/**"],
+                rules: {
+                    "baseline-js/use-baseline": [
+                        "error",
+                        {
+                            available: "widely",
+                            includeWebApis: { preset: "auto" },
+                            includeJsBuiltins: { preset: "auto" }
+                        }
+                    ]
+                }
+            },
+            {
                 // The Netlify edge function must stay silent: logs can leak proxied URLs.
                 files: ["netlify/**"],
                 rules: { "no-console": "error" }
@@ -100,7 +115,7 @@ export default defineConfig({
             {
                 // Playwright fixtures receive a `use` callback that is not React's `use`.
                 files: ["e2e/**", "**/*.test.ts"],
-                rules: { "no-console": "off", "react/rules-of-hooks": "off" }
+                rules: { "no-console": "off", "react/rules-of-hooks": "off", "baseline-js/use-baseline": "off" }
             }
         ]
     },

@@ -215,11 +215,11 @@ export function projectFeeds(state: GitHubState, snapshot: CacheSnapshot, web: s
     const shown = (entry: { item: CachedItem }) => !releaseOnly || entry.item.metadata?.type === "Release";
     // Repositories hidden by the display filter still have unread notifications.
     const hidden = new Set(unread.filter((entry) => !shown(entry)).map((entry) => entry.repository));
-    const listed = unread.filter(shown);
+    const groups = Map.groupBy(unread.filter(shown), (entry) => entry.repository);
     const previousFeeds = new Map(state.feeds.map((feed) => [feed.id, feed]));
     const syncedAt = Date.parse(source.lastSyncedAt ?? "") || undefined;
     const projected = [...repositories].flatMap((repository) => {
-        const cached = listed.filter((entry) => entry.repository === repository);
+        const cached = groups.get(repository) ?? [];
         if (cached.length === 0 && hidden.has(repository)) return [];
         const id = githubFeedId(repository);
         const old = new Map((state.items.get(id) ?? []).map((item) => [item.id, item]));
@@ -229,8 +229,7 @@ export function projectFeeds(state: GitHubState, snapshot: CacheSnapshot, web: s
                 const previous = old.get(item.id);
                 return previous && shallowEqual(previous, item) ? previous : item;
             })
-            // Sorts the new array from map(). ES2022 built-ins only: see "Code style" in docs/architecture.md.
-            .sort((a, b) => b.updatedAt - a.updatedAt);
+            .toSorted((a, b) => b.updatedAt - a.updatedAt);
         const feed: Feed = {
             id,
             sourceId: GITHUB_SOURCE_ID,

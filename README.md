@@ -52,6 +52,7 @@ See [Source adapters](./docs/source-adapters.md) for details, storage and limita
 | <kbd>Shift</kbd>+<kbd>h</kbd>                        | Print read items of this session to the console       |
 
 Shortcuts use the physical key, so they also work with non-Latin keyboard layouts.
+Irodr supports current browsers: features that are [Baseline Widely available](https://developer.mozilla.org/en-US/docs/Glossary/Baseline/Compatibility).
 Preferences saved by irodr 1.x are carried over on the first start.
 
 ### Custom Inoreader Client ID and Client Secret

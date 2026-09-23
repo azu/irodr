@@ -40,6 +40,7 @@
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.1",
     "babel-plugin-react-compiler": "^1.0.0",
+    "eslint-plugin-baseline-js": "^0.7.2",
     "eslint-plugin-react-hooks": "^7.1.1",
     "vite-plus": "1.0.0-rc.0"
   },

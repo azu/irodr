@@ -21,12 +21,19 @@ function fromInstance(instance: { translate(text: string): Promise<string>; dest
     };
 }
 
+/** The browser's Translator API. It is not Baseline: it is feature-detected, and translation is optional. */
+function builtInTranslator(): typeof Translator | undefined {
+    // oxlint-disable-next-line baseline-js/use-baseline
+    return typeof Translator === "undefined" ? undefined : Translator;
+}
+
 /** Priority: browser Translator API, the older experimental API, then a user script translator. */
 async function createTranslator(sourceLanguage: string, targetLanguage: string): Promise<TranslatorHandle> {
     const languages = { sourceLanguage, targetLanguage };
-    if (typeof Translator !== "undefined" && Translator) {
-        if ((await Translator.availability(languages)) !== "unavailable") {
-            return fromInstance(await Translator.create(languages));
+    const browserTranslator = builtInTranslator();
+    if (browserTranslator) {
+        if ((await browserTranslator.availability(languages)) !== "unavailable") {
+            return fromInstance(await browserTranslator.create(languages));
         }
     }
     if (window.translation && (await window.translation.canTranslate(languages)) !== "no") {

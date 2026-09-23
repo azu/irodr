@@ -39,10 +39,13 @@ specific source; `src/main.tsx` is the only place that knows which sources exist
   `Map` or `Set` there.
 - No `let` or `var`, no reassigned parameters, no `Object.assign`. `lib/oxlint-plugin-immutable` and the lint
   configuration in `vite.config.ts` enforce these.
-- **ES2022 built-ins only** in shipped code. `build.target` lowers syntax but adds no polyfills, so `Map.groupBy`
-  (Safari 17.4), `toSorted()` (Safari 16) and other newer built-ins throw in browsers that otherwise run Irodr
-  (Safari 15.4). Sort a copy with `[...values].sort()`. The ES2022 `lib` in `tsconfig.app.json` rejects newer
-  built-ins, and tests run startup code under `withoutNewerBuiltIns` (`src/lib/runtime-baseline.ts`).
+- **Browser support is [Baseline Widely available](https://developer.mozilla.org/en-US/docs/Glossary/Baseline/Compatibility)**:
+  features supported by Chrome, Edge, Firefox and Safari for at least 2.5 years. Vite's default build target
+  (`baseline-widely-available`) lowers syntax, but nothing polyfills built-ins, so `baseline-js/use-baseline`
+  (eslint-plugin-baseline-js, web-features data) reports newer built-ins and Web APIs in `src/`. It cannot see
+  instance methods such as `Set.prototype.union()` without type information: check those on
+  [web-features](https://web-platform-dx.github.io/web-features/). Optional, feature-detected APIs (the
+  Translator API) are exempted where they are used.
 
 ## Sources
 

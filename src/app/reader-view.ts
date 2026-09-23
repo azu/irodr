@@ -183,13 +183,15 @@ function feedList(
     const recent = new Set(model.history.slice(-RECENT_FEEDS));
     const shown = feeds.map((feed) => displayed(model, inputs, feed));
     const unread = shown.reduce((sum, feed) => sum + feed.unreadCount, 0);
-    // Like LDR, read feeds leave the list, except recently visited ones so the list does not shift.
-    const visible = shown.filter((feed) => feed.unreadCount !== 0 || recent.has(feed.id) || feed.id === currentFeedId);
-    // ES2022 built-ins only: see "Code style" in docs/architecture.md.
-    const categories = [...new Set(visible.map((feed) => feed.category))].sort().map((name) => ({
+    const byCategory = Map.groupBy(
+        // Like LDR, read feeds leave the list, except recently visited ones so the list does not shift.
+        shown.filter((feed) => feed.unreadCount !== 0 || recent.has(feed.id) || feed.id === currentFeedId),
+        (feed) => feed.category
+    );
+    const categories = [...byCategory.keys()].toSorted().map((name) => ({
         name,
         collapsed: model.collapsed.has(name),
-        feeds: visible.filter((feed) => feed.category === name)
+        feeds: byCategory.get(name) ?? []
     }));
     const revisions = new Map(feeds.map((feed) => [feed.id, feed.revision]));
     const prefetched = new Set(

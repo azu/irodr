@@ -89,18 +89,23 @@ createRoot(root).render(
     </StrictMode>
 );
 
-// Carry over preferences saved by irodr 1.x once.
-if (!hasSavedPreferences(localStorage)) {
-    const legacy = legacyPreferences(await readAllValues("AppRepository").catch(() => []));
-    if (legacy) reader.updatePreferences(legacy);
+// Top-level await is not Baseline Widely available yet, so startup is an async function.
+async function start(): Promise<void> {
+    // Carry over preferences saved by irodr 1.x once.
+    if (!hasSavedPreferences(localStorage)) {
+        const legacy = legacyPreferences(await readAllValues("AppRepository").catch(() => []));
+        if (legacy) reader.updatePreferences(legacy);
+    }
+
+    const started = await reader.start(new URL(location.href));
+    if (started.consumedUrl) history.replaceState(null, "", location.pathname);
+    // User scripts running at document-end listen after DOMContentLoaded.
+    if (document.readyState === "loading") {
+        await new Promise((resolve) => document.addEventListener("DOMContentLoaded", resolve, { once: true }));
+    }
+    setTimeout(() => installUserScriptApi(window, reader, shortcuts, events), 0);
+
+    window.irodr = { reader, config };
 }
 
-const started = await reader.start(new URL(location.href));
-if (started.consumedUrl) history.replaceState(null, "", location.pathname);
-// User scripts running at document-end listen after DOMContentLoaded.
-if (document.readyState === "loading") {
-    await new Promise((resolve) => document.addEventListener("DOMContentLoaded", resolve, { once: true }));
-}
-setTimeout(() => installUserScriptApi(window, reader, shortcuts, events), 0);
-
-window.irodr = { reader, config };
+start().catch((error: unknown) => console.error(error));
