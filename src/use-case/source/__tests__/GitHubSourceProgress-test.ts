@@ -59,7 +59,7 @@ it("updates the Reader before the connecting use case completes and keeps intera
         await connecting;
         expect(sourceRepository.getItems(GITHUB_SOURCE_ID)).toEqual([]);
         expect(appStoreGroup.state.subscriptionContents.contentsCount).toBe(0);
-        expect(appStoreGroup.state.subscriptionList.getItem(subscriptionId)).toBeUndefined();
+        expect(appStoreGroup.state.subscriptionList.getItem(subscriptionId)?.unread.count).toBe(0);
         expect(appStoreGroup.state.subscriptionContents.subscription?.lastUpdated.millSecond).toBeGreaterThan(0);
     } finally {
         finishRelease();

@@ -12,8 +12,14 @@ import { SubscriptionRepository } from "../repository/SubscriptionRepository";
 import { SourceItem } from "../../domain/Sources/SourceAdapter";
 import { githubRepository } from "./GitHubNotification";
 
+const GITHUB_REPOSITORY_SUBSCRIPTION_PREFIX = "github-notifications/repository/";
+
 export function githubRepositorySubscriptionId(repository: string): SubscriptionIdentifier {
-    return new SubscriptionIdentifier(`github-notifications/repository/${encodeURIComponent(repository)}`);
+    return new SubscriptionIdentifier(`${GITHUB_REPOSITORY_SUBSCRIPTION_PREFIX}${encodeURIComponent(repository)}`);
+}
+
+export function isGitHubRepositorySubscriptionId(id: SubscriptionIdentifier): boolean {
+    return id.toValue().startsWith(GITHUB_REPOSITORY_SUBSCRIPTION_PREFIX);
 }
 
 // GitHub feeds are a projection of the server's unread inbox, not local ItemState.
@@ -21,6 +27,8 @@ export function projectSourceSubscriptions(store: SourceRepository, subscription
     for (const source of store.getSources()) {
         const github = source.adapterType === "github-notifications";
         const groups = new Map<string, SourceItem[]>();
+        // Repositories hidden by the display filter still have unread notifications.
+        const filtered = new Set<string>();
         const category = github
             ? "GitHub Notifications"
             : typeof source.config.category === "string"
@@ -29,13 +37,11 @@ export function projectSourceSubscriptions(store: SourceRepository, subscription
         subscriptions.ensureCategory(category);
         for (const item of store.getItems(source.id)) {
             const repository = githubRepository(item);
-            if (
-                github &&
-                ((source.config.releaseOnly === true && item.metadata?.type !== "Release") ||
-                    item.metadata?.githubUnread === false ||
-                    !repository)
-            )
+            if (github && source.config.releaseOnly === true && item.metadata?.type !== "Release") {
+                if (repository && item.metadata?.githubUnread !== false) filtered.add(repository);
                 continue;
+            }
+            if (github && (item.metadata?.githubUnread === false || !repository)) continue;
             const key = github ? (repository as string) : source.id;
             if (!groups.has(key)) groups.set(key, []);
             groups.get(key)!.push(item);
@@ -93,11 +99,38 @@ export function projectSourceSubscriptions(store: SourceRepository, subscription
                 })
             );
         }
-        // Drop repositories with no unread notifications, including the old aggregate feed.
         for (const subscription of subscriptions.getAll()) {
-            if (subscription.props.sourceId === source.id && !projected.has(subscription.props.id.toValue())) {
-                subscriptions.delete(subscription);
+            if (subscription.props.sourceId !== source.id || projected.has(subscription.props.id.toValue())) {
+                continue;
             }
+            // Like a read RSS feed, keep a fully read repository in place as an empty
+            // feed so the list does not shift while the reader moves through it. The
+            // list shows it only while it is in the recent navigation activity.
+            if (
+                github &&
+                isGitHubRepositorySubscriptionId(subscription.props.id) &&
+                !filtered.has(subscription.title)
+            ) {
+                if (subscription.unread.count > 0 || subscription.contents.hasContent) {
+                    subscriptions.save(
+                        new Subscription({
+                            ...subscription.props,
+                            contents: new SubscriptionContents({
+                                contents: [],
+                                lastUpdatedTimestamp: subscription.contents.lastUpdatedTimestamp
+                            }),
+                            unread: new SubscriptionUnread({
+                                count: 0,
+                                maxCount: Number.MAX_SAFE_INTEGER,
+                                readTimestamp: new TimeStamp(0)
+                            })
+                        })
+                    );
+                }
+                continue;
+            }
+            // Drop the old aggregate feed and repositories hidden by the display filter.
+            subscriptions.delete(subscription);
         }
         subscriptions.ensureCategory(category);
     }

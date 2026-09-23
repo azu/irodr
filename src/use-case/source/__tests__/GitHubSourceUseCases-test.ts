@@ -127,8 +127,9 @@ describe("GitHub source Reader workflow", () => {
             // The display-only filter does not protect older Issue notifications from bulk read.
             expect(notifications.some((item) => item.id === "43")).toBe(false);
             expect(remoteRead).not.toHaveBeenCalled();
-            expect(subscriptionRepository.findById(subscriptionId)).toBeUndefined();
-            expect(appStoreGroup.state.subscriptionList.getItem(subscriptionId)).toBeUndefined();
+            // Like a read RSS feed, the recently opened repository stays in place as read.
+            expect(subscriptionRepository.findById(subscriptionId)?.unread.count).toBe(0);
+            expect(appStoreGroup.state.subscriptionList.getItem(subscriptionId)?.hasBeenRead).toBe(true);
             expect(
                 appStoreGroup.state.subscriptionList.getNextItem(subscriptionId)?.props.id.equals(otherSubscriptionId)
             ).toBe(true);

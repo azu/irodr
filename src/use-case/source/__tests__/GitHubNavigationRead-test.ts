@@ -91,9 +91,14 @@ it("auto-reads the departed GitHub feed, preserves skip/reselection, and exclude
         });
         expect(patched).toEqual([]);
 
+        const rows = () =>
+            appStoreGroup.state.subscriptionList.groupSubscriptions.map((subscription) => subscription.title);
+        expect(rows()).toEqual(["owner/a", "owner/b", "owner/c", "owner/d"]);
         await navigate("owner/b");
         expect(patched).toEqual(["owner/a"]);
-        expect(count("owner/a")).toBeUndefined();
+        // Like RSS, the read feed stays in place so the rows below do not shift.
+        expect(count("owner/a")).toBe(0);
+        expect(rows()).toEqual(["owner/a", "owner/b", "owner/c", "owner/d"]);
         expect(count("owner/b")).toBe(1);
 
         // Reselecting B must not add duplicate activity that breaks Shift+S.

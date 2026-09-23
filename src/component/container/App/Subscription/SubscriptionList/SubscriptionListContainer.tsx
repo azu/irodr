@@ -57,8 +57,8 @@ export class SubscriptionListContainer extends BaseContainer<SubscriptionListCon
             return;
         }
         if (!isChangedVisibleCurrentSubscriptionId) {
-            // Marking a GitHub feed read removes it from the list. The rows above the
-            // current feed shift up without moving scrollTop, hiding the current feed.
+            // A read feed leaves the list once it drops out of the recent activity. The
+            // rows above the current feed shift up without moving scrollTop, hiding it.
             // Re-align it instead of re-running the navigation side effects.
             const prevIndex = prevProp.subscriptionList.groupSubscriptions.findIndex((subscription) =>
                 subscription.props.id.equals(currentSubscriptionId)
