@@ -58,6 +58,8 @@ export function Dialog({
             aria-label={title}
             {...stylex.props(styles.dialog)}
             onClose={onClose}
+            // Escape: update the state right away instead of waiting for the `close` event.
+            onCancel={onClose}
             onClick={(event) => {
                 if (event.target === event.currentTarget) onClose();
             }}

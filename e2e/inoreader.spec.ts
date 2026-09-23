@@ -214,12 +214,14 @@ test("keeps a feed unread when marking it read fails", async ({ page, api }) => 
 test("refreshes an expired access token", async ({ page, api }) => {
     await api.control("POST", "/inoreader/expire-tokens");
     await page.getByRole("button", { name: "Refresh" }).click();
+    await expect
+        .poll(async () =>
+            requests(await api.log(), "inoreader", "/oauth2/token").map((entry) =>
+                new URLSearchParams(entry.body).get("grant_type")
+            )
+        )
+        .toEqual(["authorization_code", "refresh_token"]);
     await expect(headerMessage(page)).toHaveText("Updated feeds");
-    const tokenRequests = requests(await api.log(), "inoreader", "/oauth2/token");
-    expect(tokenRequests.map((entry) => new URLSearchParams(entry.body).get("grant_type"))).toEqual([
-        "authorization_code",
-        "refresh_token"
-    ]);
     await expect(feedRow(page, "Alpha Blog")).toBeVisible();
 });
 

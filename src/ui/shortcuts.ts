@@ -104,8 +104,9 @@ export function createShortcuts(reader: Reader, translate: TranslateMode): Short
     }
 
     const onKeyDown = (event: KeyboardEvent) => {
-        // Dialogs own the keyboard while open.
-        if (reader.getState().panel) return;
+        // Modal dialogs own the keyboard while open. Check the DOM, not the reader state:
+        // a dialog closed with Escape updates the state only when its `close` event fires.
+        if (document.querySelector("dialog[open]")) return;
         bindings.handleEvent(event);
     };
 
