@@ -43,6 +43,11 @@ struct TranslateSuccess: Encodable {
     var segments: [Segment]? = nil
 }
 
+/// Enough of a request to answer one that could not be decoded.
+struct RequestID: Decodable {
+    let id: Int
+}
+
 struct TranslateFailure: Encodable {
     let id: Int
     let error: String
@@ -169,8 +174,16 @@ actor Output {
 let output = Output()
 let decoder = JSONDecoder()
 for try await line in FileHandle.standardInput.bytes.lines {
-    guard let request = try? decoder.decode(TranslateRequest.self, from: Data(line.utf8)) else {
-        FileHandle.standardError.write(Data("irodr-translate: invalid request\n".utf8))
+    let data = Data(line.utf8)
+    let request: TranslateRequest
+    do {
+        request = try decoder.decode(TranslateRequest.self, from: data)
+    } catch {
+        // Answer it anyway, so the caller does not wait for a response that never comes.
+        FileHandle.standardError.write(Data("irodr-translate: invalid request: \(error)\n".utf8))
+        if let id = try? decoder.decode(RequestID.self, from: data).id {
+            await output.write(encodeLine(TranslateFailure(id: id, error: "Invalid request: \(error)")))
+        }
         continue
     }
     Task {

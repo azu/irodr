@@ -11,7 +11,8 @@ import type { Translator } from "./handler.ts";
  *     → {"id":2,"segments":[{"runs":[{"text":"Read "},{"text":"the docs","tag":1}]}],"sourceLanguage":"en",...}
  *     ← {"id":2,"segments":[{"runs":[{"text":"ドキュメント","tag":1},{"text":"を読む"}]}]}
  *
- * The helper starts on the first request and is restarted after it exits.
+ * The helper starts on the first request and is restarted after it exits. A request without a response
+ * within `timeout` fails.
  */
 export interface TranslatorProcess extends Required<Translator> {
     close: () => void;
@@ -24,7 +25,12 @@ interface Pending {
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null;
 
-export function createTranslatorProcess(command: string, args: readonly string[] = []): TranslatorProcess {
+export function createTranslatorProcess(
+    command: string,
+    args: readonly string[] = [],
+    options: { timeout?: number } = {}
+): TranslatorProcess {
+    const timeout = options.timeout ?? 60_000;
     const pending = new Map<number, Pending>();
     const current: { child: ChildProcessWithoutNullStreams | undefined; nextId: number } = {
         child: undefined,
@@ -70,7 +76,20 @@ export function createTranslatorProcess(command: string, args: readonly string[]
             const child = (current.child ??= start());
             const id = current.nextId;
             current.nextId = id + 1;
-            pending.set(id, { resolve, reject });
+            const timer = setTimeout(() => {
+                pending.delete(id);
+                reject(new Error("Translation helper did not respond"));
+            }, timeout);
+            pending.set(id, {
+                resolve: (message) => {
+                    clearTimeout(timer);
+                    resolve(message);
+                },
+                reject: (error) => {
+                    clearTimeout(timer);
+                    reject(error);
+                }
+            });
             child.stdin.write(`${JSON.stringify({ id, ...request })}\n`);
         });
 

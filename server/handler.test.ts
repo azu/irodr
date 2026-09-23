@@ -117,3 +117,11 @@ describe("local server handler", () => {
         expect(requests).toHaveLength(1);
     });
 });
+
+describe("translator process", () => {
+    it("fails a request the helper never answers", async () => {
+        const silent = createTranslatorProcess(process.execPath, ["-e", "process.stdin.resume()"], { timeout: 50 });
+        await expect(silent.translate(["Hello"], "en", "ja")).rejects.toThrow("Translation helper did not respond");
+        silent.close();
+    });
+});

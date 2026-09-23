@@ -19,7 +19,7 @@
     "fix": "vp check --fix",
     "test": "vp test",
     "test:e2e": "vp build --mode e2e --outDir dist-e2e && playwright test",
-    "build:local": "vp build && vp pack",
+    "build:local": "node server/build-translator.ts && vp build && vp pack",
     "prepare": "vp config --no-agent"
   },
   "dependencies": {
