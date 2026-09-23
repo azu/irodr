@@ -47,7 +47,7 @@ async function createTranslator(sourceLanguage: string, targetLanguage: string):
         };
     }
     throw new Error(
-        "No translator available. Install irodr-translate.user.js or use a browser with Translator API support."
+        "No translator available. Install the irodr-translate userscript or use a browser with Translation API support."
     );
 }
 
