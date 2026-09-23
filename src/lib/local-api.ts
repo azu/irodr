@@ -3,6 +3,8 @@
  * http://127.0.0.1 and adds features a browser cannot provide, such as on-device translation.
  * On any other host these endpoints are missing and every feature reports unavailable.
  */
+import { parseSegments, type TranslationSegment } from "./translation-segment.ts";
+
 export interface LocalApiInfo {
     readonly name: string;
     readonly version: string;
@@ -13,6 +15,12 @@ export interface LocalApi {
     /** The server's info, or undefined when there is no local server. Detected once and cached. */
     info: () => Promise<LocalApiInfo | undefined>;
     translate: (texts: readonly string[], sourceLanguage: string, targetLanguage: string) => Promise<string[]>;
+    /** Needs the "translate-segments" feature. */
+    translateSegments: (
+        segments: readonly TranslationSegment[],
+        sourceLanguage: string,
+        targetLanguage: string
+    ) => Promise<TranslationSegment[]>;
 }
 
 export interface LocalApiOptions {
@@ -57,19 +65,23 @@ export function createLocalApi({ baseUrl, fetch }: LocalApiOptions): LocalApi {
 
     const info = (): Promise<LocalApiInfo | undefined> => (detected.info ??= detect());
 
+    const post = async (body: Record<string, unknown>): Promise<unknown> => {
+        const response = await fetch(`${baseUrl}/api/translate`, {
+            method: "POST",
+            // JSON makes cross-site requests preflighted, which the local server rejects.
+            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            body: JSON.stringify(body)
+        });
+        if (!response.ok) throw new Error(await errorMessage(response));
+        return response.json();
+    };
+
     const translate = async (
         texts: readonly string[],
         sourceLanguage: string,
         targetLanguage: string
     ): Promise<string[]> => {
-        const response = await fetch(`${baseUrl}/api/translate`, {
-            method: "POST",
-            // JSON makes cross-site requests preflighted, which the local server rejects.
-            headers: { "Content-Type": "application/json", Accept: "application/json" },
-            body: JSON.stringify({ texts, sourceLanguage, targetLanguage })
-        });
-        if (!response.ok) throw new Error(await errorMessage(response));
-        const body: unknown = await response.json();
+        const body = await post({ texts, sourceLanguage, targetLanguage });
         if (
             !isRecord(body) ||
             !Array.isArray(body.texts) ||
@@ -81,5 +93,18 @@ export function createLocalApi({ baseUrl, fetch }: LocalApiOptions): LocalApi {
         return body.texts;
     };
 
-    return { info, translate };
+    const translateSegments = async (
+        segments: readonly TranslationSegment[],
+        sourceLanguage: string,
+        targetLanguage: string
+    ): Promise<TranslationSegment[]> => {
+        const body = await post({ segments, sourceLanguage, targetLanguage });
+        const translated = isRecord(body) ? parseSegments(body.segments) : undefined;
+        if (!translated || translated.length !== segments.length) {
+            throw new Error("Local server returned an unexpected translation");
+        }
+        return translated;
+    };
+
+    return { info, translate, translateSegments };
 }

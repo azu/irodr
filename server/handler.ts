@@ -2,6 +2,7 @@
  * irodr-local: serves the built irodr and the local API (docs/local-server.md) as one
  * `(Request) => Promise<Response>` handler, so any runtime (Node, Bun) can host it.
  */
+import { parseSegments, type TranslationSegment } from "../src/lib/translation-segment.ts";
 
 export interface Asset {
     readonly body: Uint8Array<ArrayBuffer>;
@@ -15,6 +16,12 @@ export interface Assets {
 
 export interface Translator {
     translate: (texts: readonly string[], sourceLanguage: string, targetLanguage: string) => Promise<string[]>;
+    /** Paragraphs with inline markup; see src/lib/translation-segment.ts. */
+    translateSegments?: (
+        segments: readonly TranslationSegment[],
+        sourceLanguage: string,
+        targetLanguage: string
+    ) => Promise<TranslationSegment[]>;
 }
 
 export interface LocalServerOptions {
@@ -49,8 +56,11 @@ export function createLocalServerHandler(options: LocalServerOptions): (request:
     const origins = new Set(options.origins);
     const hosts = new Set(options.origins.map((origin) => new URL(origin).host));
 
-    const info = () =>
-        json({ name: "irodr-local", version: options.version, features: options.translator ? ["translate"] : [] });
+    const features = [
+        ...(options.translator ? ["translate"] : []),
+        ...(options.translator?.translateSegments ? ["translate-segments"] : [])
+    ];
+    const info = () => json({ name: "irodr-local", version: options.version, features });
 
     const translate = async (request: Request): Promise<Response> => {
         const { translator } = options;
@@ -60,16 +70,22 @@ export function createLocalServerHandler(options: LocalServerOptions): (request:
             return json({ error: "Content-Type must be application/json" }, 415);
         }
         const body: unknown = await request.json().catch(() => undefined);
+        const segments = isRecord(body) && body.segments !== undefined ? parseSegments(body.segments) : undefined;
         if (
             !isRecord(body) ||
-            !isStringArray(body.texts) ||
+            (!isStringArray(body.texts) && !segments) ||
             typeof body.sourceLanguage !== "string" ||
             typeof body.targetLanguage !== "string"
         ) {
-            return json({ error: "Expected { texts: string[], sourceLanguage, targetLanguage }" }, 400);
+            return json({ error: "Expected { texts or segments, sourceLanguage, targetLanguage }" }, 400);
         }
+        const { sourceLanguage, targetLanguage } = body;
         try {
-            return json({ texts: await translator.translate(body.texts, body.sourceLanguage, body.targetLanguage) });
+            if (segments) {
+                if (!translator.translateSegments) return json({ error: "Segments are not supported" }, 501);
+                return json({ segments: await translator.translateSegments(segments, sourceLanguage, targetLanguage) });
+            }
+            return json({ texts: await translator.translate(body.texts as string[], sourceLanguage, targetLanguage) });
         } catch (error) {
             return json({ error: error instanceof Error ? error.message : "Translation failed" }, 422);
         }

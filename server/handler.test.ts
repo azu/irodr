@@ -42,7 +42,11 @@ describe("local server handler", () => {
 
     it("describes itself and its features", async () => {
         const response = await handler()(new Request(`${ORIGIN}/api/local`));
-        expect(await response.json()).toEqual({ name: "irodr-local", version: "1.2.3", features: ["translate"] });
+        expect(await response.json()).toEqual({
+            name: "irodr-local",
+            version: "1.2.3",
+            features: ["translate", "translate-segments"]
+        });
         const withoutTranslator = await handler({ translator: undefined })(new Request(`${ORIGIN}/api/local`));
         expect(await withoutTranslator.json()).toMatchObject({ features: [] });
     });
@@ -50,6 +54,20 @@ describe("local server handler", () => {
     it("translates with the helper process", async () => {
         const response = await handler()(translateRequest(["Hello", "World"]));
         expect(await response.json()).toEqual({ texts: ["[ja] Hello", "[ja] World"] });
+    });
+
+    it("translates segments with the helper process", async () => {
+        const segments = [{ runs: [{ text: "Read " }, { text: "the docs", tag: 1 }] }];
+        const response = await handler()(
+            new Request(`${ORIGIN}/api/translate`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Origin: ORIGIN },
+                body: JSON.stringify({ segments, sourceLanguage: "en", targetLanguage: "ja" })
+            })
+        );
+        expect(await response.json()).toEqual({
+            segments: [{ runs: [{ text: "[ja] " }, { text: "the docs", tag: 1 }, { text: "Read " }] }]
+        });
     });
 
     it("returns the helper's error", async () => {

@@ -1,19 +1,21 @@
 import { chunkBySize, forEachConcurrently } from "../lib/batch.ts";
 import type { LocalApi } from "../lib/local-api.ts";
+import type { TranslationSegment } from "../lib/translation-segment.ts";
 import { CLASS, itemElement } from "./dom.ts";
+import { applySegment, applyText, restoreOriginals, translationUnits, unitText } from "./translate-dom.ts";
 
 type TranslateBatch = (texts: string[]) => Promise<string[]>;
 
 interface TranslatorHandle {
     translateBatch: TranslateBatch;
+    /** Paragraphs with their inline markup, so word order can change around links and emphasis. */
+    translateSegments?: (segments: TranslationSegment[]) => Promise<TranslationSegment[]>;
     destroy: () => void;
 }
 
-const ORIGINAL = "data-original-text";
 /** A long article is sent in parts of about this many characters, and each part is shown when translated. */
 const CHUNK_CHARACTERS = 1000;
 const CONCURRENT_CHUNKS = 4;
-const SKIPPED = new Set(["PRE", "CODE", "KBD", "SAMP", "VAR"]);
 
 function fromInstance(instance: { translate(text: string): Promise<string>; destroy(): void }): TranslatorHandle {
     return {
@@ -42,9 +44,16 @@ async function createTranslator(
     local: LocalApi
 ): Promise<TranslatorHandle> {
     const languages = { sourceLanguage, targetLanguage };
-    if ((await local.info())?.features.has("translate")) {
+    const localFeatures = (await local.info())?.features;
+    if (localFeatures?.has("translate")) {
         return {
             translateBatch: (texts) => local.translate(texts, sourceLanguage, targetLanguage),
+            ...(localFeatures.has("translate-segments")
+                ? {
+                      translateSegments: (segments: TranslationSegment[]) =>
+                          local.translateSegments(segments, sourceLanguage, targetLanguage)
+                  }
+                : {}),
             destroy: () => undefined
         };
     }
@@ -69,26 +78,6 @@ async function createTranslator(
     );
 }
 
-/** Whether `node` is inside a skipped element (code, ...) below `root`. */
-function insideSkipped(node: Node, root: Element): boolean {
-    const parent = node.parentElement;
-    if (!parent || parent === root) return false;
-    return SKIPPED.has(parent.tagName) || insideSkipped(parent, root);
-}
-
-function textNodes(element: Element): Text[] {
-    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
-    const nodes: Text[] = [];
-    while (walker.nextNode()) {
-        const node = walker.currentNode;
-        if (!(node instanceof Text) || !node.textContent?.trim()) continue;
-        // Already translated, e.g. the first parts of an article left before it was done.
-        if (insideSkipped(node, element) || node.parentElement?.hasAttribute(ORIGINAL)) continue;
-        nodes.push(node);
-    }
-    return nodes;
-}
-
 function bodyOf(itemId: string): Element | null {
     return itemElement(itemId)?.querySelector(`.${CLASS.itemBody}`) ?? null;
 }
@@ -111,6 +100,8 @@ export function createTranslateMode(
         /** Shared while being created, so turning the mode off can destroy it once it exists. */
         translator: Promise<TranslatorHandle> | undefined;
     } = { enabled: false, abort: undefined, translator: undefined };
+    /** The children of paragraphs replaced by their translation. */
+    const originals = new WeakMap<Element, readonly Node[]>();
 
     const off = (): void => {
         if (!mode.enabled) return;
@@ -141,20 +132,32 @@ export function createTranslateMode(
         mode.abort = abort;
         try {
             const translator = await getTranslator();
-            const nodes = textNodes(body);
-            if (nodes.length === 0 || abort.signal.aborted) return;
+            const { translateSegments } = translator;
+            // Units not translated yet: an article left midway resumes where it stopped.
+            const units = translationUnits(body, { paragraphs: translateSegments !== undefined });
+            if (units.length === 0 || abort.signal.aborted) return;
             // Parts start from the top of the article, so the text read first appears first.
-            const chunks = chunkBySize(nodes, (node) => node.length, CHUNK_CHARACTERS);
+            const chunks = chunkBySize(units, (unit) => unitText(unit).length, CHUNK_CHARACTERS);
             await forEachConcurrently(chunks, CONCURRENT_CHUNKS, async (chunk) => {
                 if (abort.signal.aborted) return;
-                const originals = chunk.map((node) => node.textContent ?? "");
-                const translated = await translator.translateBatch(originals);
+                if (translateSegments) {
+                    const segments = chunk.map((unit) =>
+                        unit.kind === "block" ? unit.segment : { runs: [{ text: unit.node.data }] }
+                    );
+                    const translated = await translateSegments(segments);
+                    if (abort.signal.aborted) return;
+                    chunk.forEach((unit, index) => {
+                        const segment = translated[index];
+                        if (!segment) return;
+                        if (unit.kind === "block") applySegment(unit, segment, originals);
+                        else applyText(unit.node, segment.runs.map((run) => run.text).join(""));
+                    });
+                    return;
+                }
+                const translated = await translator.translateBatch(chunk.map(unitText));
                 if (abort.signal.aborted) return;
-                chunk.forEach((node, index) => {
-                    const span = document.createElement("span");
-                    span.setAttribute(ORIGINAL, originals[index] ?? "");
-                    span.textContent = translated[index] ?? "";
-                    node.replaceWith(span);
+                chunk.forEach((unit, index) => {
+                    if (unit.kind === "text") applyText(unit.node, translated[index] ?? "");
                 });
             });
         } catch (error) {
@@ -168,9 +171,7 @@ export function createTranslateMode(
     const toggle = async (focusedItemId: string | undefined): Promise<void> => {
         if (mode.enabled) {
             off();
-            for (const span of document.querySelectorAll(`[${ORIGINAL}]`)) {
-                span.replaceWith(document.createTextNode(span.getAttribute(ORIGINAL) ?? ""));
-            }
+            restoreOriginals(document, originals);
             notify("Translate mode: OFF");
             return;
         }

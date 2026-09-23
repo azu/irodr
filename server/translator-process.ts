@@ -1,5 +1,6 @@
 import { type ChildProcessWithoutNullStreams, spawn } from "node:child_process";
 import { createInterface } from "node:readline";
+import { parseSegments, type TranslationSegment } from "../src/lib/translation-segment.ts";
 import type { Translator } from "./handler.ts";
 
 /**
@@ -7,15 +8,17 @@ import type { Translator } from "./handler.ts";
  *
  *     → {"id":1,"texts":["Hello"],"sourceLanguage":"en","targetLanguage":"ja"}
  *     ← {"id":1,"texts":["こんにちは"]}   or   {"id":1,"error":"..."}
+ *     → {"id":2,"segments":[{"runs":[{"text":"Read "},{"text":"the docs","tag":1}]}],"sourceLanguage":"en",...}
+ *     ← {"id":2,"segments":[{"runs":[{"text":"ドキュメント","tag":1},{"text":"を読む"}]}]}
  *
  * The helper starts on the first request and is restarted after it exits.
  */
-export interface TranslatorProcess extends Translator {
+export interface TranslatorProcess extends Required<Translator> {
     close: () => void;
 }
 
 interface Pending {
-    resolve: (texts: string[]) => void;
+    resolve: (message: Record<string, unknown>) => void;
     reject: (error: Error) => void;
 }
 
@@ -39,11 +42,8 @@ export function createTranslatorProcess(command: string, args: readonly string[]
         const entry = pending.get(message.id);
         if (!entry) return;
         pending.delete(message.id);
-        if (Array.isArray(message.texts) && message.texts.every((text) => typeof text === "string")) {
-            entry.resolve(message.texts);
-        } else {
-            entry.reject(new Error(typeof message.error === "string" ? message.error : "Translation failed"));
-        }
+        if (typeof message.error === "string") entry.reject(new Error(message.error));
+        else entry.resolve(message);
     };
 
     const start = (): ChildProcessWithoutNullStreams => {
@@ -65,14 +65,32 @@ export function createTranslatorProcess(command: string, args: readonly string[]
         return child;
     };
 
-    const translate = (texts: readonly string[], sourceLanguage: string, targetLanguage: string) =>
-        new Promise<string[]>((resolve, reject) => {
+    const send = (request: Record<string, unknown>) =>
+        new Promise<Record<string, unknown>>((resolve, reject) => {
             const child = (current.child ??= start());
             const id = current.nextId;
             current.nextId = id + 1;
             pending.set(id, { resolve, reject });
-            child.stdin.write(`${JSON.stringify({ id, texts, sourceLanguage, targetLanguage })}\n`);
+            child.stdin.write(`${JSON.stringify({ id, ...request })}\n`);
         });
+
+    const translate = async (texts: readonly string[], sourceLanguage: string, targetLanguage: string) => {
+        const { texts: translated } = await send({ texts, sourceLanguage, targetLanguage });
+        if (!Array.isArray(translated) || !translated.every((text) => typeof text === "string")) {
+            throw new Error("Translation helper returned an unexpected response");
+        }
+        return translated;
+    };
+
+    const translateSegments = async (
+        segments: readonly TranslationSegment[],
+        sourceLanguage: string,
+        targetLanguage: string
+    ) => {
+        const translated = parseSegments((await send({ segments, sourceLanguage, targetLanguage })).segments);
+        if (!translated) throw new Error("Translation helper returned an unexpected response");
+        return translated;
+    };
 
     const close = () => {
         const { child } = current;
@@ -82,5 +100,5 @@ export function createTranslatorProcess(command: string, args: readonly string[]
         failAll(new Error("Translation helper closed"));
     };
 
-    return { translate, close };
+    return { translate, translateSegments, close };
 }

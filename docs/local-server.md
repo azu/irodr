@@ -51,10 +51,20 @@ The page's origin is `http://127.0.0.1:<port>`, so:
 
 The web app uses it through `src/lib/local-api.ts`. `e2e/fake-api/local.ts` implements it for tests under `/local`.
 
-| Request               | Body                                                                 | Response                                                       |
-| --------------------- | -------------------------------------------------------------------- | -------------------------------------------------------------- |
-| `GET /api/local`      |                                                                      | `{ "name": "irodr-local", "version": "…", "features": [...] }` |
-| `POST /api/translate` | `{ "texts": ["…"], "sourceLanguage": "en", "targetLanguage": "ja" }` | `{ "texts": ["…"] }`, or `{ "error": "…" }` with 4xx/5xx       |
+| Request                               | Response                                                         |
+| ------------------------------------- | ---------------------------------------------------------------- |
+| `GET /api/local`                      | `{ "name": "irodr-local", "version": "…", "features": [...] }`   |
+| `POST /api/translate` with `texts`    | `{ "texts": ["…"] }`                                             |
+| `POST /api/translate` with `segments` | `{ "segments": [...] }` (needs the `translate-segments` feature) |
+
+A translate request is `{ "texts": ["…"], "sourceLanguage": "en", "targetLanguage": "ja" }`, or `segments` instead of
+`texts`. Errors are `{ "error": "…" }` with a 4xx/5xx status.
+
+A segment is a paragraph with its inline markup: `{ "runs": [{ "text": "Read " }, { "text": "the docs", "tag": 0 }] }`.
+A run's `tag` names the inline element around it (`<a>`, `<strong>`, ...) and `skip` marks code. The translation
+returns runs with the same tags on the translated words, in the target language's word order, and the page rebuilds
+each element around them (`src/ui/translate-dom.ts`). So a sentence is translated as a whole, not cut at its links.
+Paragraphs with images or line breaks, and text outside paragraphs, are sent as plain text runs.
 
 `features` lists what the server can do, e.g. `"translate"` when a translation helper is available.
 
@@ -78,6 +88,12 @@ The server runs on the user's machine, and any web page can send requests to loc
 translates without UI on macOS 26 and later, like [hotchpotch/trn](https://github.com/hotchpotch/trn). Language
 packages must be installed in System Settings > General > Language & Region > Translation Languages; otherwise the
 helper returns an error that irodr shows in the header.
+
+Segments are translated as `AttributedString`s: the framework keeps formatting on the translated words
+([`translate(_:)`](<https://developer.apple.com/documentation/translation/translationsession/translate(_:)-59zi2>)).
+Tags travel as `irodr-tag:<n>` links and code as
+[`skipsTranslation`](https://developer.apple.com/documentation/foundation/attributescopes/translationattributes/skipstranslation)
+(macOS 26.4+). On older macOS, each segment is translated as plain text without its markup.
 
 For speed, the helper asks for the `lowLatency` strategy (traditional models, macOS 26.4+) and translates requests
 concurrently. The page sends a long article in parts of about 1,000 characters, up to 4 at a time from the top, and
