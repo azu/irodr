@@ -39,6 +39,10 @@ specific source; `src/main.tsx` is the only place that knows which sources exist
   `Map` or `Set` there.
 - No `let` or `var`, no reassigned parameters, no `Object.assign`. `lib/oxlint-plugin-immutable` and the lint
   configuration in `vite.config.ts` enforce these.
+- **ES2022 built-ins only** in shipped code. `build.target` lowers syntax but adds no polyfills, so `Map.groupBy`
+  (Safari 17.4), `toSorted()` (Safari 16) and other newer built-ins throw in browsers that otherwise run Irodr
+  (Safari 15.4). Sort a copy with `[...values].sort()`. The ES2022 `lib` in `tsconfig.app.json` rejects newer
+  built-ins, and tests run startup code under `withoutNewerBuiltIns` (`src/lib/runtime-baseline.ts`).
 
 ## Sources
 

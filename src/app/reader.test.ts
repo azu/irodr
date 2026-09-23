@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
+import { withoutNewerBuiltIns } from "../lib/runtime-baseline.ts";
 import { createStore } from "../lib/store.ts";
 import type { Feed, Item, Source, SourceCapabilities, SourceSnapshot, SourceStatus } from "../sources/source.ts";
 import { DEFAULT_PREFERENCES } from "./preferences.ts";
@@ -162,6 +163,20 @@ describe("Reader", () => {
         expect(reader.getState().list.categories.map((category) => category.name)).toEqual(["Blogs", "News"]);
         expect(listed()).toEqual(["D(1)", "A(2)", "B(1)", "C(1)"]);
         expect(reader.getState().totals).toEqual({ unread: 5, feeds: 5 });
+    });
+
+    it("starts without the built-ins newer than ES2022", () => {
+        const source = createMemorySource("memory");
+        source.setFeed("A", [{ title: "a1" }]);
+        source.setFeed("D", [{ title: "d1" }], "Blogs");
+        source.setFeed("B", [{ title: "b1" }]);
+        // main.tsx creates the reader at startup: a newer built-in here leaves older browsers with a blank page.
+        const reader = withoutNewerBuiltIns(() => createReader({ sources: [source] }));
+        const { categories } = reader.getState().list;
+        expect(categories.map((category) => [category.name, category.feeds.map((feed) => feed.title)])).toEqual([
+            ["Blogs", ["D"]],
+            ["News", ["A", "B"]]
+        ]);
     });
 
     it("s opens feeds in order and marks the departed feed read with the items the reader saw", async () => {

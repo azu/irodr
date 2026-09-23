@@ -2,6 +2,7 @@ import { afterAll, beforeEach, describe, expect, it } from "vite-plus/test";
 import { githubNotifications, iso } from "../../../e2e/fake-api/fixtures.ts";
 import { startFakeApi } from "../../../e2e/fake-api/server.ts";
 import { createMemoryStore, noWriteLock, type WriteLock } from "../../lib/kv-store.ts";
+import { withoutNewerBuiltIns } from "../../lib/runtime-baseline.ts";
 import { CONTENT_VERSION, createGitHubApi, type GitHubNotification } from "./github-api.ts";
 import type { CachedItem, CachedSource, CacheSnapshot } from "./github-cache.ts";
 import {
@@ -499,6 +500,25 @@ describe("GitHub source state", () => {
         expect(second.items.get(githubFeedId("octo/docs"))).toEqual(first.items.get(githubFeedId("octo/docs")));
         expect(second.items.get(githubFeedId("octo/docs"))?.[0]).toBe(first.items.get(githubFeedId("octo/docs"))?.[0]);
         expect(first.feeds.map((feed) => feed.title)).toEqual(["acme/rocket", "octo/docs"]);
+    });
+
+    it("projects feeds without the built-ins newer than ES2022", () => {
+        const state = withoutNewerBuiltIns(() =>
+            projectFeeds(
+                INITIAL_STATE,
+                cacheSnapshot([
+                    cachedItem("3", "acme/rocket"),
+                    cachedItem("2", "octo/docs"),
+                    cachedItem("1", "acme/rocket")
+                ]),
+                WEB
+            )
+        );
+        expect(feedTitles(state)).toEqual(["acme/rocket (2)", "octo/docs (1)"]);
+        expect(state.items.get(githubFeedId("acme/rocket"))?.map((item) => item.title)).toEqual([
+            "Notification 1",
+            "Notification 3"
+        ]);
     });
 
     it("skips read, foreign and malformed notifications", () => {
