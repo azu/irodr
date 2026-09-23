@@ -44,8 +44,11 @@ export class InoreaderRequestError extends Error {
 }
 
 const SETTINGS_DESCRIPTION: readonly string[] = [
-    "Click Connect to Inoreader, then click Authorize on the Inoreader site.",
-    "To use your own Inoreader app, create one in Inoreader Preferences → Developer (Read and Write scope, no redirect URL needed) and enter its Client ID and secret. Leave both empty to use the default app."
+    "Click Connect to Inoreader, then click Authorize on the Inoreader site."
+];
+
+const CUSTOM_APP_DESCRIPTION: readonly string[] = [
+    "Optional. Create an app in Inoreader Preferences → Developer (Read and Write scope, no redirect URL needed) and enter its Client ID and secret. Leave both empty to use the default irodr app."
 ];
 
 /** A mark-read sent by this browser: the timestamp (µs) through which the stream was marked read, and when. */
@@ -106,22 +109,27 @@ function streamIdOf(feedId: string): string {
 function sourceSettings(connected: boolean, custom: OAuthClient | undefined): SourceSettings {
     return {
         description: SETTINGS_DESCRIPTION,
-        fields: [
-            {
-                name: "clientId",
-                label: "Inoreader App Client Id",
-                type: "text",
-                value: custom?.clientId ?? "",
-                placeholder: "Default irodr app"
-            },
-            {
-                name: "clientSecret",
-                label: "Inoreader App Client secret",
-                type: "password",
-                value: custom?.clientSecret ?? "",
-                placeholder: "Default irodr app"
-            }
-        ],
+        fields: [],
+        advanced: {
+            summary: "Use your own Inoreader app",
+            description: CUSTOM_APP_DESCRIPTION,
+            fields: [
+                {
+                    name: "clientId",
+                    label: "Inoreader App Client Id",
+                    type: "text",
+                    value: custom?.clientId ?? "",
+                    placeholder: "Default irodr app"
+                },
+                {
+                    name: "clientSecret",
+                    label: "Inoreader App Client secret",
+                    type: "password",
+                    value: custom?.clientSecret ?? "",
+                    placeholder: "Default irodr app"
+                }
+            ]
+        },
         actions: [
             { id: "connect", label: connected ? "Reconnect to Inoreader" : "Connect to Inoreader", primary: true },
             ...(connected ? [{ id: "disconnect", label: "Disconnect" }] : [])

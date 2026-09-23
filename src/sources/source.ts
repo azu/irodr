@@ -87,9 +87,19 @@ export interface SettingAction {
     readonly requires?: readonly string[];
 }
 
+/** Optional settings, collapsed so that their empty fields do not look like missing input. */
+export interface SettingGroup {
+    /** The collapsed group's label, e.g. "Use your own Inoreader app". */
+    readonly summary: string;
+    readonly description: readonly string[];
+    readonly fields: readonly SettingField[];
+}
+
 export interface SourceSettings {
     readonly description: readonly string[];
     readonly fields: readonly SettingField[];
+    /** Shown collapsed, and expanded when one of its fields has a value. */
+    readonly advanced?: SettingGroup;
     readonly actions: readonly SettingAction[];
 }
 

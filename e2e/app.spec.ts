@@ -229,3 +229,21 @@ test("the current feed is not hidden behind the sticky category header", async (
     await expect(currentFeed(page)).toHaveText("Feed 11 (0)");
     await expect.poll(coveredEdges, { message: "Feed 11 after a" }).toBe(0);
 });
+
+test("the optional Inoreader app fields stay collapsed until used", async ({ page }) => {
+    await page.goto("/");
+    const dialog = page.getByRole("dialog", { name: "Sources" });
+    const clientId = dialog.getByLabel("Inoreader App Client Id");
+    // Empty fields for the default app must not look like missing input.
+    await expect(clientId).toBeHidden();
+    await dialog.getByText("Use your own Inoreader app").click();
+    await clientId.fill("e2e-client");
+    await dialog.getByLabel("Inoreader App Client secret").fill("e2e-secret");
+    await dialog.getByRole("button", { name: "Connect to Inoreader" }).click();
+    await page.locator("#authorize").click();
+    await expect(page).toHaveURL("http://127.0.0.1:4173/");
+    await expect(page.locator(".SubscriptionListContainer-item").first()).toBeVisible();
+    // A saved app is shown expanded.
+    await page.getByRole("button", { name: "Sources" }).click();
+    await expect(dialog.getByLabel("Inoreader App Client Id")).toHaveValue("e2e-client");
+});

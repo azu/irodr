@@ -11,7 +11,8 @@ This document describes the behavior of each source.
   `localStorage["inoreader-token"]` (the irodr 1.x format, so existing logins keep working) and refreshed
   with the refresh token when it expires or a request returns 401. A token refreshed by another tab is reused.
   Only a rejected grant (HTTP 400/401) disconnects; outages of the token endpoint keep the session.
-- **Custom app**: a Client ID and secret entered in Sources are stored in `localStorage["irodr:inoreader-client"]`.
+- **Custom app**: optional. A Client ID and secret entered under **Use your own Inoreader app** in Sources (collapsed
+  while unused) are stored in `localStorage["irodr:inoreader-client"]`.
 - **Feeds**: `subscription/list` and `unread-count`. A feed is listed under its first category.
 - **Items**: `stream/contents` with `n` = "Fetch subscription contents Count" (default 20). `Shift+J` and
   **Read More** load older items with the continuation. The Unread/All toggle (`t`) switches between items that

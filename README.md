@@ -61,7 +61,7 @@ To use your own Inoreader app:
 
 1. Visit https://www.inoreader.com/ and open **Preferences → Developer**
 2. Create a new app with the **Read and Write** scope (a redirect URL is not required)
-3. Enter its Client ID and Client Secret in irodr's **Sources** before clicking **Connect to Inoreader**
+3. In irodr's **Sources**, open **Use your own Inoreader app**, enter its Client ID and Client Secret, and click **Connect to Inoreader**
 
 ## User Script API
 

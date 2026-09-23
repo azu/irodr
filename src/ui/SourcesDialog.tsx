@@ -1,7 +1,7 @@
 import * as stylex from "@stylexjs/stylex";
 import { useState } from "react";
 import type { Reader, SourceView } from "../app/reader.ts";
-import type { SettingAction, SettingField } from "../sources/source.ts";
+import type { SettingAction, SettingField, SourceSettings } from "../sources/source.ts";
 import { useReader, useReaderState } from "./context.tsx";
 import { Dialog } from "./Dialog.tsx";
 import { colors } from "./tokens.stylex.ts";
@@ -14,6 +14,8 @@ const styles = stylex.create({
     connected: { color: "#1a7f37", fontWeight: "bold" },
     description: { fontSize: 13, lineHeight: 1.5, color: colors.text },
     fieldset: { display: "grid", gap: 8, borderStyle: "none", margin: 0, padding: 0 },
+    fields: { display: "grid", gap: 8 },
+    summary: { fontSize: 13, color: colors.link, cursor: "pointer" },
     field: { display: "grid", gap: 4, fontSize: 13 },
     checkbox: { display: "flex", alignItems: "center", gap: 6, fontSize: 13 },
     input: {
@@ -42,6 +44,57 @@ const styles = stylex.create({
 });
 
 type Values = Record<string, string | boolean>;
+
+/** Every field of the form, including the collapsed ones. */
+function allFields(settings: SourceSettings): readonly SettingField[] {
+    return [...settings.fields, ...(settings.advanced?.fields ?? [])];
+}
+
+function hasValue(field: SettingField): boolean {
+    return typeof field.value === "string" ? field.value !== "" : field.value;
+}
+
+function SettingInput({
+    field,
+    value,
+    onChange,
+    onApply
+}: {
+    field: SettingField;
+    value: string | boolean | undefined;
+    onChange: (value: string | boolean) => void;
+    /** Runs the field's `setting:<name>` action, for checkboxes with applyOnChange. */
+    onApply: (checked: boolean) => void;
+}) {
+    return field.type === "checkbox" ? (
+        <label {...stylex.props(styles.checkbox)}>
+            <input
+                type="checkbox"
+                name={field.name}
+                checked={value === true}
+                onChange={(event) => {
+                    const checked = event.currentTarget.checked;
+                    onChange(checked);
+                    if (field.applyOnChange) onApply(checked);
+                }}
+            />
+            {field.label}
+        </label>
+    ) : (
+        <label {...stylex.props(styles.field)}>
+            {field.label}
+            <input
+                type={field.type}
+                name={field.name}
+                autoComplete="off"
+                placeholder={field.placeholder}
+                value={String(value ?? "")}
+                onChange={(event) => onChange(event.currentTarget.value)}
+                {...stylex.props(styles.input)}
+            />
+        </label>
+    );
+}
 
 function initialValues(fields: readonly SettingField[]): Values {
     return Object.fromEntries(fields.map((field) => [field.name, field.value]));
@@ -79,7 +132,8 @@ async function runAction(
 function SourceSettingsForm({ source }: { source: SourceView }) {
     const reader = useReader();
     const { settings, status, connected } = source.snapshot;
-    const [values, setValues] = useState<Values>(() => initialValues(settings.fields));
+    const fields = allFields(settings);
+    const [values, setValues] = useState<Values>(() => initialValues(fields));
     const [busy, setBusy] = useState(false);
     const [result, setResult] = useState("");
 
@@ -91,9 +145,7 @@ function SourceSettingsForm({ source }: { source: SourceView }) {
             setResult(outcome.message);
             // Never keep secrets in component state after use; undo optimistic changes on failure.
             setValues((current) =>
-                outcome.ok
-                    ? clearTransient(current, settings.fields)
-                    : { ...current, ...revert(overrides, settings.fields) }
+                outcome.ok ? clearTransient(current, fields) : { ...current, ...revert(overrides, fields) }
             );
             setBusy(false);
         });
@@ -105,6 +157,15 @@ function SourceSettingsForm({ source }: { source: SourceView }) {
             const value = values[name];
             return typeof value === "string" ? value.trim() !== "" : Boolean(value);
         });
+    const input = (field: SettingField) => (
+        <SettingInput
+            key={field.name}
+            field={field}
+            value={values[field.name]}
+            onChange={(value) => setValues((current) => ({ ...current, [field.name]: value }))}
+            onApply={(checked) => run(`setting:${field.name}`, { [field.name]: checked })}
+        />
+    );
 
     return (
         <section aria-labelledby={`source-${source.id}`} {...stylex.props(styles.section)}>
@@ -134,40 +195,18 @@ function SourceSettingsForm({ source }: { source: SourceView }) {
                 }}
             >
                 <fieldset disabled={busy} {...stylex.props(styles.fieldset)}>
-                    {settings.fields.map((field) =>
-                        field.type === "checkbox" ? (
-                            <label key={field.name} {...stylex.props(styles.checkbox)}>
-                                <input
-                                    type="checkbox"
-                                    name={field.name}
-                                    checked={values[field.name] === true}
-                                    onChange={(event) => {
-                                        const checked = event.currentTarget.checked;
-                                        setValues((current) => ({ ...current, [field.name]: checked }));
-                                        if (field.applyOnChange)
-                                            run(`setting:${field.name}`, { [field.name]: checked });
-                                    }}
-                                />
-                                {field.label}
-                            </label>
-                        ) : (
-                            <label key={field.name} {...stylex.props(styles.field)}>
-                                {field.label}
-                                <input
-                                    type={field.type}
-                                    name={field.name}
-                                    autoComplete="off"
-                                    placeholder={field.placeholder}
-                                    value={String(values[field.name] ?? "")}
-                                    onChange={(event) => {
-                                        const value = event.currentTarget.value;
-                                        setValues((current) => ({ ...current, [field.name]: value }));
-                                    }}
-                                    {...stylex.props(styles.input)}
-                                />
-                            </label>
-                        )
-                    )}
+                    {settings.fields.map(input)}
+                    {settings.advanced ? (
+                        <details open={settings.advanced.fields.some(hasValue)}>
+                            <summary {...stylex.props(styles.summary)}>{settings.advanced.summary}</summary>
+                            {settings.advanced.description.map((paragraph) => (
+                                <p key={paragraph} {...stylex.props(styles.description)}>
+                                    {paragraph}
+                                </p>
+                            ))}
+                            <div {...stylex.props(styles.fields)}>{settings.advanced.fields.map(input)}</div>
+                        </details>
+                    ) : null}
                     <div {...stylex.props(styles.actions)}>
                         {settings.actions.map((action) => (
                             <button

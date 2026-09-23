@@ -97,7 +97,7 @@ describe("createInoreaderSource", () => {
         expect(new URL(navigations[0] ?? "").searchParams.get("client_id")).toBe("mine");
         await source.restore(await authorize(navigations[0] ?? ""));
         expect(source.getSnapshot().connected).toBe(true);
-        expect(source.getSnapshot().settings.fields.map((field) => field.value)).toEqual(["mine", "secret"]);
+        expect(source.getSnapshot().settings.advanced?.fields.map((field) => field.value)).toEqual(["mine", "secret"]);
     });
 
     it("lists subscriptions with unread counts", async () => {
