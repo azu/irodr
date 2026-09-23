@@ -96,6 +96,8 @@ Its behavior:
   after they are read, so the list does not shift while reading.
 - Opening another feed marks the departed one read on its source, with the items loaded at that moment;
   items that arrive later stay unread. Shift+S skips without marking read. Reselecting is not navigation.
+- Items the reader marked read are kept in memory while their feed is listed as recently visited, so going back
+  shows them even when the source returns unread items only (GitHub Notifications).
 - The next feeds are prefetched, so `s` usually switches instantly. Pressing `s` again while a feed is
   loading continues from that feed, and only the latest navigation takes effect.
 - A failed mark-read keeps the feed unread and shows the error in the header.

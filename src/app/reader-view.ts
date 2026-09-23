@@ -2,7 +2,7 @@ import { shallowEqual } from "../lib/equal.ts";
 import { uniqueBy } from "../lib/unique.ts";
 import type { Feed, Item, Source, SourceCapabilities, SourceSnapshot } from "../sources/source.ts";
 import type { Preferences } from "./preferences.ts";
-import type { Message, Panel, ReaderModel, ScrollRequest } from "./reader-model.ts";
+import { type Message, type Panel, type ReaderModel, recentFeeds, type ScrollRequest } from "./reader-model.ts";
 
 /**
  * The public reader state, projected from the model and the sources' snapshots.
@@ -10,9 +10,6 @@ import type { Message, Panel, ReaderModel, ScrollRequest } from "./reader-model.
  * The projection keeps the previous objects (lists, categories, views, the 0-unread copies of feeds) while their
  * contents are unchanged, so components selecting them with `useSyncExternalStore` do not re-render.
  */
-
-/** Feeds visited within this many navigations stay listed even when read. */
-const RECENT_FEEDS = 5;
 
 export interface SourceView {
     readonly id: string;
@@ -180,7 +177,7 @@ function feedList(
         currentFeedId && !listed.some((feed) => feed.id === currentFeedId) && retainedCurrent
             ? [...listed, inputs.asRead(retainedCurrent)]
             : listed;
-    const recent = new Set(model.history.slice(-RECENT_FEEDS));
+    const recent = recentFeeds(model);
     const shown = feeds.map((feed) => displayed(model, inputs, feed));
     const unread = shown.reduce((sum, feed) => sum + feed.unreadCount, 0);
     const byCategory = Map.groupBy(

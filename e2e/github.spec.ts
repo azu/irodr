@@ -104,8 +104,12 @@ test("leaving a repository marks it read on GitHub through the loaded timestamp"
     expect(JSON.parse(put[0]?.body ?? "{}")).toEqual({ last_read_at: iso(1) });
     // Like a read RSS feed, the repository stays in place so the list does not shift.
     await expect(feedRow(page, "acme/rocket")).toHaveText("acme/rocket (0)");
+    // Going back shows the notifications it marked read, which GitHub no longer lists as unread.
     await page.keyboard.press("a");
-    await expect(page.getByText("No unread items in this feed.")).toBeVisible();
+    await expect(currentFeed(page)).toHaveText("acme/rocket (0)");
+    await expect(articles(page)).toHaveCount(2);
+    await expect(articles(page).filter({ hasText: "v2.0.0" })).toBeVisible();
+    await expect(articles(page).and(page.locator("[data-unread]"))).toHaveCount(0);
 });
 
 test("Shift+S skips a repository and m marks the current one read", async ({ page, api }) => {
@@ -122,7 +126,9 @@ test("Shift+S skips a repository and m marks the current one read", async ({ pag
     await page.keyboard.press("m");
     await expect.poll(() => unreadOnServer(api)).toEqual(["101", "102", "301"]);
     await expect(currentFeed(page)).toHaveText("acme/tools (0)");
-    await expect(page.getByText("No unread items in this feed.")).toBeVisible();
+    // The read notification stays readable while the repository is open.
+    await expect(articles(page)).toHaveCount(1);
+    await expect(articles(page).and(page.locator("[data-unread]"))).toHaveCount(0);
 });
 
 test("a failed mark-read keeps the notifications unread", async ({ page, api }) => {
