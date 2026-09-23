@@ -1,6 +1,7 @@
 import * as stylex from "@stylexjs/stylex";
 import { useState } from "react";
 import type { Reader, SourceView } from "../app/reader.ts";
+import { safeUrl } from "../lib/sanitize.ts";
 import type { SettingAction, SettingField, SourceSettings } from "../sources/source.ts";
 import { useReader, useReaderState } from "./context.tsx";
 import { Dialog } from "./Dialog.tsx";
@@ -15,6 +16,8 @@ const styles = stylex.create({
     description: { fontSize: 13, lineHeight: 1.5, color: colors.text },
     fieldset: { display: "grid", gap: 8, borderStyle: "none", margin: 0, padding: 0 },
     fields: { display: "grid", gap: 8 },
+    links: { display: "grid", gap: 4, margin: 0, marginBottom: 12, paddingInlineStart: 20, fontSize: 13 },
+    link: { color: colors.link },
     summary: { fontSize: 13, color: colors.link, cursor: "pointer" },
     field: { display: "grid", gap: 4, fontSize: 13 },
     checkbox: { display: "flex", alignItems: "center", gap: 6, fontSize: 13 },
@@ -188,6 +191,17 @@ function SourceSettingsForm({ source }: { source: SourceView }) {
                     {paragraph}
                 </p>
             ))}
+            {settings.links?.length ? (
+                <ul {...stylex.props(styles.links)}>
+                    {settings.links.map((link) => (
+                        <li key={link.href}>
+                            <a href={safeUrl(link.href)} target="_blank" rel="noopener" {...stylex.props(styles.link)}>
+                                {link.label} ↗
+                            </a>
+                        </li>
+                    ))}
+                </ul>
+            ) : null}
             <form
                 onSubmit={(event) => {
                     event.preventDefault();

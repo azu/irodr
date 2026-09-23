@@ -28,6 +28,18 @@ async function connect(page: import("@playwright/test").Page): Promise<void> {
     await expect(feedRow(page, "octo/docs")).toBeVisible();
 }
 
+test("links to GitHub's token form with the scopes selected", async ({ page }) => {
+    const dialog = page.getByRole("dialog", { name: "Sources" });
+    await expect(dialog.getByRole("link", { name: "Create a token (notifications scope) ↗" })).toHaveAttribute(
+        "href",
+        "https://github.com/settings/tokens/new?scopes=notifications&description=irodr"
+    );
+    await expect(dialog.getByRole("link", { name: /notifications and repo scopes/ })).toHaveAttribute(
+        "href",
+        "https://github.com/settings/tokens/new?scopes=notifications,repo&description=irodr"
+    );
+});
+
 test("groups unread notifications of every type by repository", async ({ page, api }) => {
     await connect(page);
     const nav = page.getByRole("navigation", { name: "Subscriptions" });

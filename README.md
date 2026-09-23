@@ -27,6 +27,7 @@ Irodr provides a similar experience to [LDR](http://reader.livedoor.com/): feeds
 ### GitHub Notifications
 
 In **Sources**, enter a classic GitHub personal access token with the `notifications` scope and click **Connect GitHub**.
+Sources links to GitHub's token form with the scopes already selected.
 Unread notifications of every type are grouped by repository under **GitHub Notifications**.
 Moving to another feed marks the departed repository's notifications read on GitHub, through the newest loaded notification.
 **Shift+S** skips without marking read, and **m** marks the current feed read without moving.

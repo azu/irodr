@@ -87,6 +87,12 @@ export interface SettingAction {
     readonly requires?: readonly string[];
 }
 
+/** An external page that helps with the settings, e.g. a pre-filled token form. */
+export interface SettingLink {
+    readonly label: string;
+    readonly href: string;
+}
+
 /** Optional settings, collapsed so that their empty fields do not look like missing input. */
 export interface SettingGroup {
     /** The collapsed group's label, e.g. "Use your own Inoreader app". */
@@ -97,6 +103,8 @@ export interface SettingGroup {
 
 export interface SourceSettings {
     readonly description: readonly string[];
+    /** Shown under the description, opened in a new tab. */
+    readonly links?: readonly SettingLink[];
     readonly fields: readonly SettingField[];
     /** Shown collapsed, and expanded when one of its fields has a value. */
     readonly advanced?: SettingGroup;

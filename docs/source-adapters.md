@@ -33,7 +33,8 @@ browser storage is only a cache.
 1. Configure repository Watch settings on GitHub. **Custom → Releases** is an option for release-only watching,
    not a requirement.
 2. Open irodr's **Sources**.
-3. Supply a **classic personal access token** with the `notifications` scope. Fine-grained tokens are not
+3. Supply a **classic personal access token** with the `notifications` scope. Sources links to GitHub's token form
+   with the scopes selected (`/settings/tokens/new?scopes=notifications`). Fine-grained tokens are not
    supported by the Notifications endpoint. Private notification subjects additionally require `repo` access;
    inaccessible subjects still appear with a repository link.
 4. Click **Connect GitHub**. The token is saved in this browser without encryption and restored after reload.

@@ -72,7 +72,7 @@ const LOCKED: SourceStatus = {
 };
 
 const SETTINGS_DESCRIPTION = [
-    "Use a classic personal access token with the notifications scope. The repo scope is also needed for private repository release bodies. On GitHub, use Watch → Custom → Releases for repositories whose release notifications you want to follow.",
+    "Use a classic personal access token with the notifications scope; the links below open GitHub's token form with the scopes selected. The repo scope is also needed for private repository release bodies. On GitHub, use Watch → Custom → Releases for repositories whose release notifications you want to follow.",
     "Unread notifications of all types are grouped by repository under GitHub Notifications. Moving to another feed marks that repository's notifications read on GitHub up to the loaded timestamp, including Issue and Pull Request notifications. Shift+S skips without marking read. Other browsers see the change on their next refresh.",
     "Your token is saved unencrypted in this browser and restored automatically after reload. Scripts running on this origin, including user scripts, can access it.",
     "Each sync reloads the current unread inbox without a date cutoff. Repositories with no unread notifications disappear once you leave them. Cached article bodies, including private content, are not encrypted."
@@ -162,10 +162,25 @@ function externalIdOf(id: string): string | undefined {
     return id.startsWith(ITEM_PREFIX) ? decodeURIComponent(id.slice(ITEM_PREFIX.length)) : undefined;
 }
 
+/**
+ * GitHub's classic token form with `scopes` selected. GitHub documents pre-filled forms only for fine-grained
+ * tokens, which the Notifications API does not accept; this classic form URL is the one Composer uses too.
+ */
+function tokenFormUrl(web: string, scopes: readonly string[]): string {
+    return `${web}/settings/tokens/new?scopes=${scopes.join(",")}&description=irodr`;
+}
+
 /** The settings form. The display filter appears once an account is bound (`releaseOnly` is defined). */
-function sourceSettings(releaseOnly: boolean | undefined, disconnectable: boolean): SourceSettings {
+function sourceSettings(releaseOnly: boolean | undefined, disconnectable: boolean, web: string): SourceSettings {
     return {
         description: SETTINGS_DESCRIPTION,
+        links: [
+            { label: "Create a token (notifications scope)", href: tokenFormUrl(web, ["notifications"]) },
+            {
+                label: "Create a token for private repositories too (notifications and repo scopes)",
+                href: tokenFormUrl(web, ["notifications", "repo"])
+            }
+        ],
         fields: [
             ...(releaseOnly === undefined
                 ? []
@@ -418,7 +433,7 @@ export function createGitHubSource(options: GitHubSourceOptions): GitHubSource {
         const releaseOnly = source ? source.config.releaseOnly === true : undefined;
         const disconnectable = current.savedCredential || current.token !== undefined;
         const key = `${releaseOnly}:${disconnectable}`;
-        const form = forms.get(key) ?? sourceSettings(releaseOnly, disconnectable);
+        const form = forms.get(key) ?? sourceSettings(releaseOnly, disconnectable, web);
         forms.set(key, form);
         return form;
     };
