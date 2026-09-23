@@ -1,4 +1,5 @@
 import { shallowEqual } from "../../lib/equal.ts";
+import { uniqueBy } from "../../lib/unique.ts";
 import { decodeEntities, escapeHtml } from "../../lib/html.ts";
 import { createStore } from "../../lib/store.ts";
 import type {
@@ -152,7 +153,10 @@ export function projectFeeds(
     const previous = new Map(state.feeds.map((feed) => [feed.id, feed]));
     const counts = new Map(lists.unreadCounts.unreadcounts.map((count) => [count.id, count]));
     const limit = Number(lists.unreadCounts.max) || 1000;
-    const listed = lists.subscriptions.subscriptions.flatMap((subscription) => {
+    // A subscription can be listed twice. It is one feed, as in irodr 1.x, whose repository was keyed by ID:
+    // two feeds with one ID would both be current, and `s` would move from one to the other.
+    const subscriptions = uniqueBy(lists.subscriptions.subscriptions, (subscription) => subscription.id);
+    const listed = subscriptions.flatMap((subscription) => {
         const unread = counts.get(unreadCountId(subscription.id));
         // Inoreader returns no unread entry for some streams; irodr 1.x skipped them too.
         if (!unread) return [];

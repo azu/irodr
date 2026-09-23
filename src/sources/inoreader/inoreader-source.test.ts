@@ -356,6 +356,24 @@ describe("projectFeeds", () => {
         ]);
     });
 
+    it("makes one feed of a subscription listed twice, in its first place and category", () => {
+        const state = project(
+            initialState(true),
+            lists(
+                [
+                    subscription(A, { categories: [{ id: "user/1/label/Blogs", label: "Blogs" }] }),
+                    subscription(B),
+                    subscription(A, { categories: [{ id: "user/1/label/Later", label: "Later" }] })
+                ],
+                [unread(A, 3, T), unread(B, 1, T)]
+            )
+        );
+        expect(state.feeds.map((feed) => [feed.id, feed.category])).toEqual([
+            [`inoreader:${A}`, "Blogs"],
+            [`inoreader:${B}`, "Uncategorized"]
+        ]);
+    });
+
     it("counts up to 1000 when Inoreader reports no limit", () => {
         const state = project(initialState(true), lists([subscription(A)], [unread(A, 5, T)], "unknown"));
         expect(state.feeds[0]?.unreadCountLimit).toBe(1000);

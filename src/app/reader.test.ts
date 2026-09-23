@@ -20,6 +20,8 @@ interface MemorySource extends Source {
     configure: (patch: Partial<MemorySourceConfig>) => void;
     setFeed: (title: string, items: readonly { title: string; unread?: boolean }[], category?: string) => Feed;
     removeFeed: (id: string) => void;
+    /** List a feed a second time, right after itself, as Inoreader did for a duplicated subscription. */
+    duplicateFeed: (id: string) => void;
     setStatus: (status: SourceStatus) => void;
     /** Mark-read requests, oldest first, with the titles of the items they were given. */
     marked: () => readonly { readonly feedId: string; readonly items: readonly string[] }[];
@@ -87,6 +89,11 @@ function createMemorySource(id: string, capabilities: Partial<SourceCapabilities
         },
         removeFeed: (feedId) =>
             snapshot.update((current) => ({ ...current, feeds: current.feeds.filter((feed) => feed.id !== feedId) })),
+        duplicateFeed: (feedId) =>
+            snapshot.update((current) => ({
+                ...current,
+                feeds: current.feeds.flatMap((feed) => (feed.id === feedId ? [feed, { ...feed }] : [feed]))
+            })),
         setStatus: (status) => snapshot.update((current) => ({ ...current, status })),
         marked: () => records.get().marked,
         loads: () => records.get().loads,
@@ -333,6 +340,15 @@ describe("Reader", () => {
         expect(list.categories.flatMap((category) => category.feeds)).toContain(view?.feed);
         await reader.prevFeed();
         expect(listed()).not.toContain("C(0)");
+    });
+
+    it("lists a feed its source reports twice once, so s moves past it", async () => {
+        const { reader, source, current, listed } = await setup();
+        source.duplicateFeed("memory:A");
+        expect(listed().filter((title) => title.startsWith("A("))).toHaveLength(1);
+        await reader.openFeed("memory:A");
+        await reader.nextFeed();
+        expect(current()).toBe("B");
     });
 
     it("z collapses every category, then expands them", async () => {

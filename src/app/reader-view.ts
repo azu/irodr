@@ -1,4 +1,5 @@
 import { shallowEqual } from "../lib/equal.ts";
+import { uniqueBy } from "../lib/unique.ts";
 import type { Feed, Item, Source, SourceCapabilities, SourceSnapshot } from "../sources/source.ts";
 import type { Preferences } from "./preferences.ts";
 import type { Message, Panel, ReaderModel, ScrollRequest } from "./reader-model.ts";
@@ -170,7 +171,11 @@ function feedList(
     inputs: ViewInputs
 ): { list: FeedListState; totals: ReaderState["totals"] } {
     const { currentFeedId, retainedCurrent } = model;
-    const listed = inputs.sources.flatMap(({ snapshot }) => snapshot.feeds);
+    // Feed IDs must be unique: navigation finds the current feed by ID, and `s` would get stuck on a repeat.
+    const listed = uniqueBy(
+        inputs.sources.flatMap(({ snapshot }) => snapshot.feeds),
+        (feed) => feed.id
+    );
     const feeds =
         currentFeedId && !listed.some((feed) => feed.id === currentFeedId) && retainedCurrent
             ? [...listed, inputs.asRead(retainedCurrent)]
