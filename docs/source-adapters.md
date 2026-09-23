@@ -17,8 +17,8 @@ This document describes the behavior of each source.
   **Read More** load older items with the continuation. The Unread/All toggle (`t`) switches between items that
   were unread when loaded and all loaded items.
 - **Mark read**: leaving a feed (or `m`) calls `mark-all-as-read` with `ts` just after the newest loaded item,
-  so items that arrived afterwards stay unread. Nothing is marked when no item was loaded. Until the next unread
-  count reflects it, the feed shows 0.
+  so items that arrived afterwards stay unread. Nothing is marked when no item was loaded. Until Inoreader's unread
+  count reflects it, the feed shows 0, for at most 5 minutes.
 - **CORS**: requests go through `VITE_CORS_PROXY` (`/cors-proxy/`), unless `localStorage["REACT_APP_CORS_PROXY"]`
   overrides it (see `resources/userScript/irodr-cors.js`).
 
