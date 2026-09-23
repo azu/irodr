@@ -10,6 +10,7 @@ import { AppSubscriptionActivityItem } from "../../../../../domain/App/User/AppS
 import { AppSubscriptionActivity } from "../../../../../domain/App/User/AppSubscriptionActivity";
 import { AppPreferences } from "../../../../../domain/App/Preferences/AppPreferences";
 import { ToggleAllListGroupUseCasePayload } from "./use-case/ToggleAllListGroupUseCase";
+import { isGitHubRepositorySubscriptionId } from "../../../../../infra/sources/SourceSubscription";
 
 export interface SubscriptionListStateProps {
     prevSubscriptionId?: SubscriptionIdentifier;
@@ -83,7 +84,7 @@ export class SubscriptionListState {
         );
         if (index === -1) {
             // A GitHub repository disappears after its final notification is read.
-            if (currentSubscriptionId.toValue().startsWith("github-notifications/repository/")) {
+            if (isGitHubRepositorySubscriptionId(currentSubscriptionId)) {
                 return this.groupSubscriptions[0];
             }
             return;
@@ -131,7 +132,8 @@ export class SubscriptionListState {
             const readableSubscriptions = subscriptions.filter((subscription) => {
                 // Keep local archives reachable after all items are read, including
                 // after restart when there is no recent navigation activity.
-                if (subscription.props.sourceId) {
+                // GitHub repositories follow the RSS rule below instead.
+                if (subscription.props.sourceId && !isGitHubRepositorySubscriptionId(subscription.props.id)) {
                     return true;
                 }
                 if (subscription.hasUnreadContents) {
