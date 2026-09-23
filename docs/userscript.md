@@ -108,3 +108,12 @@ window.irodrTranslator = {
   }
 };
 ```
+
+Irodr uses the Translator API first and the user script's translator when the Translator API is unavailable
+(e.g. Firefox and Safari, or Chrome without the language pack).
+
+[irodr-translate.user.js](../resources/userScript/irodr-translate.user.js) is a translator with Google Translate.
+It calls `translate.googleapis.com/translate_a/single`, the unofficial endpoint that browser extensions such as
+[Traduzir-paginas-web](https://github.com/FilipePS/Traduzir-paginas-web) use, through `GM_xmlhttpRequest`
+because the endpoint does not allow CORS. The endpoint is not a documented API: Google may rate-limit or change it,
+so use it at your own risk. Change `CLIENT` in the script when requests start failing with HTTP 429 or 403.
