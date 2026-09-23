@@ -1,154 +1,116 @@
 # Irodr [![Actions Status: test](https://github.com/azu/irodr/workflows/test/badge.svg)](https://github.com/azu/irodr/actions?query=workflow%3A"test")
 
-RSS reader client for [Inoreader](http://www.inoreader.com/ "Inoreader").
+A keyboard-driven reader for [Inoreader](https://www.inoreader.com/ "Inoreader") and GitHub Notifications.
 
-This RSS reader provide a similar experience to [LDR](http://reader.livedoor.com/). 
+Irodr provides a similar experience to [LDR](http://reader.livedoor.com/): feeds with unread items are listed on the left,
+`s`/`a` move between feeds, `j`/`k` move between items, and a feed is marked read when you leave it.
 
 ![Screen Shot](./docs/img/irodr-behavior.gif)
 
-## Purpose
+## Features
 
-- [x] Fast read RSS like [LDR](http://reader.livedoor.com/)
-    - [x] Prefetch contents
-    - [x] Mark as "read" on idle time
-- [x] Keyboard Shortcut
-- [x] Customizable by UserScript
-    - [x] Provide [UserScript API](src/component/container/App/Hidden/UserScript) like `window.getActiveItem`
+- Fast reading like LDR
+  - Prefetches the next feeds, so moving to them is instant
+  - Marks a feed read when you move to another one, through the newest item you have loaded
+  - Keyboard shortcuts for everything
+- Sources side by side: Inoreader feeds and GitHub notifications (grouped by repository) in one list
+- Customizable by user scripts through [`window.userScript`](./docs/userscript.md)
 
 ## Usage
 
 ![login gif](./docs/img/login-irodr.gif)
 
 1. Open <https://irodr.netlify.app/>
-2. Click **Connect to Inoreader**
-3. Click **Authorize** on Inoreader site
+2. **Sources** opens automatically. Click **Connect to Inoreader**
+3. Click **Authorize** on the Inoreader site
 
 ### GitHub Notifications
 
-Open **Sources → GitHub / source settings** and connect a classic GitHub PAT
-with the `notifications` scope. irodr groups unread notifications of every type by repository under
-**GitHub Notifications**. Moving to another feed marks the departed repository's
-notifications read on GitHub with one repository-wide request, through the latest
-loaded notification timestamp. This includes Issue and Pull Request notifications.
-Other browsers reflect the change on
-their next sync. Use **Shift+S** to skip without marking read, or **m** to mark the
-current feed read without moving. Inoreader login is not required.
+In **Sources**, enter a classic GitHub personal access token with the `notifications` scope and click **Connect GitHub**.
+Sources links to GitHub's token form with the scopes already selected.
+Unread notifications of every type are grouped by repository under **GitHub Notifications**.
+Moving to another feed marks the departed repository's notifications read on GitHub, through the newest loaded notification.
+**Shift+S** skips without marking read, and **m** marks the current feed read without moving.
+Inoreader login is not required.
 
-Each sync refreshes the current unread inbox, without a date cutoff.
-Repositories with no visible unread notifications disappear; read history and local Star
-controls are not shown. Sources has an optional **Show only Release notifications**
-display filter; read operations still apply to all types in the repository.
-GitHub is identified by the sidebar folder, without settings buttons or sync counters
-in the article view. The token is
-saved in this browser and restored automatically after reload, without a passphrase.
-The token and cached articles are not encrypted.
-See [Source adapters](./docs/source-adapters.md) for setup, architecture and limitations.
+The token and cached notifications are stored unencrypted in this browser.
+See [Source adapters](./docs/source-adapters.md) for details, storage and limitations.
 
-### Keyboard Shortcut 
+### Keyboard Shortcuts
 
-- <kbd>j</kbd>: move-next-content-item
-- <kbd>shift</kbd>+<kbd>j</kbd>: load-more-past-contents
-- <kbd>t</kbd>: toggle-content-filter
-- <kbd>k</kbd>: move-prev-content-item
-- <kbd>a</kbd>: move-prev-subscription-feed
-- <kbd>s</kbd>: move-next-subscription-feed
-- <kbd>m</kbd>: make-subscription-read
-- <kbd>v</kbd>: open-current-content-url
-- <kbd>z</kbd>: toggle-subscription-feed-list
-- <kbd>space</kbd>: scroll-down-content
-- <kbd>shift</kbd>+<kbd>space</kbd>: scroll-up-content
-- <kbd>shift</kbd>+<kbd>s</kbd>: skip-and-move-next-subscription-feed
+| Key                                                  | Action                                                |
+| ---------------------------------------------------- | ----------------------------------------------------- |
+| <kbd>j</kbd> / <kbd>k</kbd>                          | Next / previous item                                  |
+| <kbd>s</kbd> / <kbd>a</kbd>                          | Next / previous feed (leaving a feed marks it read)   |
+| <kbd>Shift</kbd>+<kbd>s</kbd>                        | Skip to the next feed without marking the current one |
+| <kbd>m</kbd>                                         | Mark the current feed read                            |
+| <kbd>Shift</kbd>+<kbd>j</kbd>                        | Show all items and load older ones                    |
+| <kbd>t</kbd>                                         | Toggle unread / all items                             |
+| <kbd>v</kbd>                                         | Open the current item in a new tab                    |
+| <kbd>z</kbd>                                         | Collapse / expand all categories                      |
+| <kbd>Space</kbd> / <kbd>Shift</kbd>+<kbd>Space</kbd> | Scroll down / up                                      |
+| <kbd>Shift</kbd>+<kbd>t</kbd>                        | Toggle translate mode (English → Japanese)            |
+| <kbd>Shift</kbd>+<kbd>h</kbd>                        | Print read items of this session to the console       |
 
-### Custom Client Id and Client Secret
+Shortcuts use the physical key, so they also work with non-Latin keyboard layouts.
+Irodr supports current browsers: features that are [Baseline Widely available](https://developer.mozilla.org/en-US/docs/Glossary/Baseline/Compatibility).
+Preferences saved by irodr 1.x are carried over on the first start.
 
-If you want to your Client ID/Secret of inoreader, do following steps:
+### Custom Inoreader Client ID and Client Secret
 
-1. Visit https://www.inoreader.com/
-2. Open "Preferences"
-3. Open "Developer" tab
-4. Create new App
-    - "Redirect URL" is not required
-    - "Scoped": Read and Write
-5. Copy Client Id and Client Secret
+To use your own Inoreader app:
 
-![Create new App](https://monosnap.com/file/uKYqAHpIjibLkffvfHWXoSys1wVxl7.png)
+1. Visit https://www.inoreader.com/ and open **Preferences → Developer**
+2. Create a new app with the **Read and Write** scope (a redirect URL is not required)
+3. In irodr's **Sources**, open **Use your own Inoreader app**, enter its Client ID and Client Secret, and click **Connect to Inoreader**
 
-You paste the Client ID and secret to Irodr Authorization.
+## User Script API
 
-![Irodr Authorization](https://monosnap.com/file/ki0yNr9jfRu9TBHvHxrrLOH78w8JyY.png) 
+Irodr provides an API for user scripts such as Greasemonkey scripts:
 
-## UserScript API
+- `window.addEventListener("userscript-init", (event) => { /* window.userScript is ready */ })`
+- `window.userScript.getActiveContent()`
+- `window.userScript.getActiveSubscription()`
+- `window.userScript.triggerKey(keys)` / `window.userScript.registerKey(keys, handler)`
+- `window.userScript.event.subscribe("SubscriptionContent::componentDidMount", handler)`
 
-Irodr provide some UserScript API for UserScript like Greasemonkey.
- 
-- `window.addEventListener("userscript-init", (event) => { /* Initialize UseScript object */ })`
-- `window.userScript.getActiveContent(): UserScriptActiveContent | undefined`
-- `window.userScript.getActiveSubscription(): UserScriptActiveSubscription | undefined`
-- `window.userScript.triggerKey(keys: string, action?: string): void`
+See the [User Script API document](./docs/userscript.md) and [resources/userScript](./resources/userScript).
 
-For more details, see [UserScript API document](src/component/container/App/Hidden/UserScript).
-See also [resources/userScript](./resources/userScript) directory.
+## CORS
 
-## :memo: Notes
+Inoreader's API does not allow CORS, so irodr sends Inoreader requests through a proxy.
 
-- Inoreader doesn't support CORS
-    - Please support CORS :bow:
-    - [x] Comment to [Inoreader Developers - User authentication via OAuth 2.0](http://www.inoreader.com/developers/oauth "Inoreader Developers - User authentication via OAuth 2.0")
-- Currently, We need CORS proxy in `package.json`
-    - In other word, require proxy or proxy server
+- Production (<https://irodr.netlify.app/>): a [Netlify Edge Function](./netlify/edge-functions/cors-proxy.ts) at `/cors-proxy/`
+- Development: the Vite dev server proxies the same path (see `vite.config.ts`)
+- Without a proxy: install [irodr-cors.js](./resources/userScript/irodr-cors.js), or use your own proxy with [irodr-custom-cors-proxy.js](./resources/userScript/irodr-custom-cors-proxy.js)
+
+GitHub's API allows CORS and is called directly.
 
 ## Development
 
-### Usage
+Irodr is a client-side React application built with [Vite+](https://viteplus.dev/) (`vp`),
+[React](https://react.dev/) with [React Compiler](https://react.dev/learn/react-compiler), and [StyleX](https://stylexjs.com/).
 
-Run following command and open local server.
+```sh
+pnpm install          # or: vp install
+pnpm run dev          # http://localhost:8888/
+pnpm run check        # vp check: format (Oxfmt), lint (Oxlint) and type check
+pnpm run fix          # vp check --fix
+pnpm test             # vp test: unit tests (Vitest)
+pnpm run test:e2e     # integration tests (Playwright) against fake Inoreader and GitHub APIs
+pnpm run build        # production build into dist/
+```
 
-    npm start
-    # open http://localhost:13245/
+The pre-commit hook (`.vite-hooks/pre-commit`) formats and lints staged files and runs the unit tests.
+It is installed by `pnpm install` (`vp config`).
 
-
-### :memo: CORS workaround
-
-Inoreader doesn't support CORS for API.
-So, Irodr use CORS proxy for Inoreader API.
-
-#### Production
-
-http://irodr.netlify.app/ work on [Netlify](https://www.netlify.com/ "Netlify").
-It uses [Netlify Edge Functions](https://docs.netlify.com/edge-functions/overview/) for CORS proxy.
-
-- [netlify/edge-functions/cors-proxy.ts](./netlify/edge-functions/cors-proxy.ts)
-
-Recommend: You can connect to Inoreader API without CORS proxy via UserScripts.
-
-- [irodr-cros.js](./resources/userScript/irodr-cors.js "irodr-cros.js")
-
-Also, you can use own CORS proxy.
-
-- [irodr-custom-cors-proxy.js](./resources/userScript/irodr-custom-cors-proxy.js)
-
-#### Local server
-
-In local, you can just run `npm run dev` and open `http://localhost:8888/`.
-
-    npm run dev
-
-### :memo: Limitation of Mixed-content
-
-A browser show a warning  on https://irodr.netlify.app/
-It is caused by Mixed content.
-
-- [Mixed content - Web security | MDN](https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content "Mixed content - Web security | MDN")
+- [Architecture](./docs/architecture.md): layers, and how to add a new source
+- [Source adapters](./docs/source-adapters.md): Inoreader and GitHub Notifications behavior
+- [AGENTS.md](./AGENTS.md): conventions for coding agents
 
 ## Changelog
 
 See [Releases page](https://github.com/azu/irodr/releases).
-
-## Running tests
-
-Install devDependencies and Run `npm test`:
-
-    npm test
 
 ## Code of Conduct
 

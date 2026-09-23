@@ -1,0 +1,41 @@
+# Local packages, e.g. lint rules under lib/.
+packages:
+  - lib/*
+
+# Every dependency version lives here, pinned; package.json files refer to it with "catalog:".
+# https://pnpm.io/catalogs
+catalog:
+  # Exact: CI runs the Playwright Docker image of this version (.github/workflows/test.yml).
+  "@playwright/test": 1.63.0
+  "@stylexjs/eslint-plugin": 0.19.1
+  "@stylexjs/stylex": 0.19.1
+  "@stylexjs/unplugin": 0.19.1
+  "@types/markdown-it": 14.2.0
+  "@types/node": 24.13.6
+  "@types/react": 19.3.0
+  "@types/react-dom": 19.3.0
+  "@vitejs/plugin-react": 6.1.1
+  eslint-plugin-baseline-js: 0.7.2
+  markdown-it: 15.0.2
+  # The React Compiler for @vitejs/plugin-react (react({ compiler: true })), Oxc's port of it.
+  oxc-transform-react: 0.151.0
+  react: 19.3.0
+  react-dom: 19.3.0
+  vite-plus: 1.0.0-rc.0
+  # Vite+ bundles Vite and Vitest; the overrides below keep plugins on those copies.
+  vite: "npm:@voidzero-dev/vite-plus-core@1.0.0-rc.0"
+  vitest: 5.0.1
+# Only catalog versions are allowed: adding a dependency outside the catalog's range is an error.
+catalogMode: strict
+
+# Keep plugins that import `vite` or `vitest` on the copies bundled by Vite+.
+# https://viteplus.dev/guide/local-cli#manual-installation
+overrides:
+  vite: "catalog:"
+  vitest: "catalog:"
+peerDependencyRules:
+  # The vite alias above reports the Vite+ version instead of Vite's.
+  allowedVersions:
+    vite: "*"
+onlyBuiltDependencies:
+  - vite-plus

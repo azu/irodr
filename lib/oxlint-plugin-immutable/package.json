@@ -1,0 +1,8 @@
+{
+  "name": "@irodr/oxlint-plugin-immutable",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Oxlint JS plugin enforcing irodr's immutable style",
+  "type": "module",
+  "exports": "./index.ts"
+}

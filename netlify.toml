@@ -1,7 +1,7 @@
 [build]
-  base    = "."
-  publish = "build"
-  command = "npm run netlify"
-[dev]
-  command = "npm run start"
-  targetPort = 13245
+base = "."
+publish = "dist"
+command = "pnpm run build"
+
+# The CORS proxy for Inoreader is netlify/edge-functions/cors-proxy.ts (path: /cors-proxy/*).
+# For local development, `pnpm run dev` serves the same path through the Vite dev server proxy.

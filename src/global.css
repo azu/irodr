@@ -1,0 +1,59 @@
+/* Global styles that StyleX cannot express: resets and third-party article HTML. */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    font-family:
+        system-ui,
+        -apple-system,
+        "Segoe UI",
+        "Hiragino Sans",
+        "Noto Sans JP",
+        sans-serif;
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Sanitized article bodies */
+.irodr-article-body {
+    padding: 0.5rem 1rem;
+    overflow-wrap: anywhere;
+}
+
+.irodr-article-body * {
+    max-width: 100%;
+}
+
+.irodr-article-body img {
+    max-width: min(650px, 100%);
+    height: auto;
+    object-fit: contain;
+}
+
+/* As in irodr 1.x. Blockquotes, tables and lists keep the browser defaults. */
+.irodr-article-body pre {
+    padding: 1em;
+    overflow-x: auto;
+    background: rgb(244, 242, 239);
+    border: 1px solid rgb(128, 128, 128);
+    line-height: 1;
+}
+
+/* Used by resources/userScript/irodr-ng-content.user.js */
+.ng-content > * {
+    display: none;
+}
+
+.ng-content::after {
+    content: "NG Item";
+}

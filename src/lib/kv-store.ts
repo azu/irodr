@@ -1,0 +1,131 @@
+/** Asynchronous key-value storage. */
+export interface KeyValueStore {
+    get<T>(key: string): Promise<T | undefined>;
+    set(key: string, value: unknown): Promise<void>;
+    delete(key: string): Promise<void>;
+}
+
+// localforage's IndexedDB layout, so data written by irodr 1.x stays readable.
+const OBJECT_STORE = "keyvaluepairs";
+
+function promisify<T>(request: IDBRequest<T>): Promise<T> {
+    return new Promise((resolve, reject) => {
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error ?? new Error("IndexedDB request failed"));
+    });
+}
+
+function openDatabase(name: string): Promise<IDBDatabase> {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(name);
+        request.onupgradeneeded = () => {
+            if (!request.result.objectStoreNames.contains(OBJECT_STORE)) {
+                request.result.createObjectStore(OBJECT_STORE);
+            }
+        };
+        request.onsuccess = () => {
+            const db = request.result;
+            if (db.objectStoreNames.contains(OBJECT_STORE)) {
+                resolve(db);
+                return;
+            }
+            // The database exists without our store: add it in a new version.
+            const version = db.version + 1;
+            db.close();
+            const upgrade = indexedDB.open(name, version);
+            upgrade.onupgradeneeded = () => upgrade.result.createObjectStore(OBJECT_STORE);
+            upgrade.onsuccess = () => resolve(upgrade.result);
+            upgrade.onerror = () => reject(upgrade.error ?? new Error("IndexedDB upgrade failed"));
+        };
+        request.onerror = () => reject(request.error ?? new Error("IndexedDB open failed"));
+    });
+}
+
+export function createIndexedDBStore(name: string): KeyValueStore {
+    const cached: { database: Promise<IDBDatabase> | undefined } = { database: undefined };
+    const forget = (stale: Promise<IDBDatabase>) => {
+        if (cached.database === stale) cached.database = undefined;
+    };
+    const db = () => {
+        if (cached.database) return cached.database;
+        const opening: Promise<IDBDatabase> = openDatabase(name).then(
+            (opened) => {
+                // Reopen after the browser closes the connection, e.g. when site data is cleared.
+                opened.addEventListener("close", () => forget(opening));
+                opened.addEventListener("versionchange", () => {
+                    opened.close();
+                    forget(opening);
+                });
+                return opened;
+            },
+            (error: unknown) => {
+                forget(opening);
+                throw error;
+            }
+        );
+        cached.database = opening;
+        return opening;
+    };
+    /** Resolves when the transaction commits, so aborted writes (e.g. quota errors) are reported. */
+    const run = async <T>(mode: IDBTransactionMode, action: (store: IDBObjectStore) => IDBRequest<T>) => {
+        const transaction = (await db()).transaction(OBJECT_STORE, mode);
+        const committed = new Promise<void>((resolve, reject) => {
+            transaction.oncomplete = () => resolve();
+            transaction.onabort = () => reject(transaction.error ?? new Error("IndexedDB transaction aborted"));
+            transaction.onerror = () => reject(transaction.error ?? new Error("IndexedDB transaction failed"));
+        });
+        const [result] = await Promise.all([promisify(action(transaction.objectStore(OBJECT_STORE))), committed]);
+        return result;
+    };
+    return {
+        async get<T>(key: string) {
+            const value = await run("readonly", (store) => store.get(key));
+            return (value ?? undefined) as T | undefined;
+        },
+        async set(key, value) {
+            await run("readwrite", (store) => store.put(value, key));
+        },
+        async delete(key) {
+            await run("readwrite", (store) => store.delete(key));
+        }
+    };
+}
+
+/**
+ * All values of an existing localforage database, e.g. irodr 1.x `AppRepository`.
+ * Returns [] without creating the database when it does not exist.
+ */
+export async function readAllValues(name: string): Promise<unknown[]> {
+    if (typeof indexedDB === "undefined" || typeof indexedDB.databases !== "function") return [];
+    const databases = await indexedDB.databases();
+    if (!databases.some((database) => database.name === name)) return [];
+    const db = await openDatabase(name);
+    try {
+        return await promisify(db.transaction(OBJECT_STORE, "readonly").objectStore(OBJECT_STORE).getAll());
+    } finally {
+        db.close();
+    }
+}
+
+export function createMemoryStore(initial: Record<string, unknown> = {}): KeyValueStore {
+    const map = new Map(Object.entries(initial));
+    return {
+        async get<T>(key: string) {
+            return structuredClone(map.get(key)) as T | undefined;
+        },
+        async set(key, value) {
+            map.set(key, structuredClone(value));
+        },
+        async delete(key) {
+            map.delete(key);
+        }
+    };
+}
+
+/** Serializes read-modify-write cycles across tabs where Web Locks are available. */
+export type WriteLock = <T>(name: string, write: () => Promise<T>) => Promise<T>;
+
+export const browserWriteLock: WriteLock = (name, write) =>
+    typeof navigator !== "undefined" && navigator.locks ? navigator.locks.request(name, write) : write();
+
+export const noWriteLock: WriteLock = (_name, write) => write();

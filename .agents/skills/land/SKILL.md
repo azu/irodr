@@ -89,8 +89,8 @@ without discarding it, and create the second PR from the updated target.
 ## Prepare and verify
 
 Use the Node version in `.node-version` (24.14.1 at setup) and pnpm from
-`package.json#packageManager` (10.34.5 at setup). The CI matrix currently uses
-Node 22; local Node 24 verification does not replace CI. Do not silently use
+`package.json#packageManager` (10.34.5 at setup). CI reads `.node-version` through
+`voidzero-dev/setup-vp`; local verification does not replace CI. Do not silently use
 whichever Node happens to be first on `PATH`.
 
 Let the runtime manager read the project version files rather than overriding
@@ -122,27 +122,32 @@ Ask before installing global tooling or changing the user's external configurati
    pnpm install --frozen-lockfile
    ```
 
-   Source: `.github/workflows/test.yml` installs with pnpm;
+   Source: `.github/workflows/test.yml` installs with `vp install --frozen-lockfile`
+   (Vite+ runs the pnpm version from `package.json#packageManager`);
    `package.json#packageManager` and `pnpm-lock.yaml` define the dependency state.
-   `--frozen-lockfile` was verified with pnpm's install help and prevents
-   incidental lockfile changes. `package.json#scripts.prepare` configures the
-   repository-local `.githooks` path. Preserve that hook behavior. If the
+   `--frozen-lockfile` prevents incidental lockfile changes.
+   `package.json#scripts.prepare` runs `vp config --no-agent`, which installs the
+   Vite+ hook dispatcher for `.vite-hooks`. Preserve that hook behavior. If the
    manifest and lockfile are inconsistent, fix only the intended dependency
    change and rerun verification; do not bypass the failure.
 
 3. For code, dependency, or build/test configuration changes, run:
 
    ```sh
-   CI=true pnpm test
+   pnpm run check
+   pnpm test
    pnpm run build
+   CI=true pnpm run test:e2e
    ```
 
-   Sources: `.github/workflows/test.yml` sets `CI: true` and runs `pnpm test`;
-   `package.json#scripts.test` runs React Scripts tests and then `test:proxy`;
-   `package.json#scripts.test:proxy` runs `tools/no-console-proxy.mjs`;
-   `package.json#scripts.build` runs the production React Scripts build.
-   `CI=true` prevents interactive watch mode. Do not forward extra arguments
-   through the compound `test` script without checking where they go.
+   Sources: `.github/workflows/test.yml` runs `vp check`, `vp test` and `vp build`
+   (job "Check, unit test and build") and `vp run test:e2e` (job "Integration tests").
+   `package.json#scripts.check` runs `vp check` (Oxfmt, Oxlint with type checking);
+   `package.json#scripts.test` runs the Vitest unit tests once (`vp test` does not watch);
+   `package.json#scripts.test:e2e` builds with `--mode e2e` and runs Playwright against
+   the fake APIs in `e2e/fake-api`. `CI=true` makes Playwright start fresh servers.
+   Playwright needs Chromium (`pnpm exec playwright install chromium`, or set
+   `PLAYWRIGHT_CHROMIUM_EXECUTABLE`).
 
    For skill/documentation-only changes, local verification can instead check
    syntax, links, command references, frontmatter, and the scoped diff. This
@@ -162,8 +167,9 @@ Ask before installing global tooling or changing the user's external configurati
    ```
 
    Preserve the user's signing configuration (SSH commit signing was enabled at
-   setup). Never use `--no-verify` to bypass `.githooks/pre-commit`, which invokes
-   `pnpm exec lint-staged`; `package.json#lint-staged` formats staged source files.
+   setup). Never use `--no-verify` to bypass `.vite-hooks/pre-commit`, which runs
+   `vp staged` (the `staged` block in `vite.config.ts` formats and lints staged files)
+   and `vp test`.
    Inspect the resulting commit and any hook changes. Verification must cover
    the final contents, not the pre-hook or earlier version.
 
@@ -194,8 +200,8 @@ Ask before installing global tooling or changing the user's external configurati
 
 4. Verify all applicable required checks and reviews for the exact current head.
    Always require the repository's `test` workflow, including every current
-   matrix job (`Test on Node.js 22` at setup), even if branch protection does not
-   mark it required. Inspect both workflow runs and PR check/status results.
+   job ("Check, unit test and build" and "Integration tests"), even if branch
+   protection does not mark it required. Inspect both workflow runs and PR check/status results.
    Check a Netlify deploy preview when present; do not mistake neutral informational
    Netlify checks for a successful build.
 

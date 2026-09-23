@@ -1,6 +1,4 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "github>azu/renovate-config:non-major"
-  ]
+  "extends": ["github>azu/renovate-config:non-major"]
 }

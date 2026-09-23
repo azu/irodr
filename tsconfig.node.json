@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "tsBuildInfoFile": "./node_modules/.cache/tsconfig.node.tsbuildinfo",
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
+    "types": ["node", "vite-plus/client"]
+  },
+  // Unit tests run in Node and use the fake API server, so they belong here with the code they test.
+  "include": ["vite.config.ts", "playwright.config.ts", "e2e", "netlify", "src/**/*.ts", "lib"]
+}
