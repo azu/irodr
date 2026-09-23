@@ -10,6 +10,8 @@ import { normalizePreferences, type Preferences } from "./preferences.ts";
 
 /** Feeds whose loaded items are kept in memory, least recently used first out. */
 export const CACHE_LIMIT = 100;
+/** Feeds visited within this many navigations stay listed even when read. */
+export const RECENT_FEEDS = 5;
 /** Items kept for the Shift+H debug dump. */
 export const READ_HISTORY_LIMIT = 100;
 /** Routine messages do not replace an error shown within this time. */
@@ -76,6 +78,11 @@ export interface ReaderModel {
     readonly preferences: Preferences;
     /** Items marked read in this session, oldest first. */
     readonly readHistory: readonly Item[];
+    /**
+     * Items marked read in this session by feed ID, newest mark first, for the recently visited feeds only.
+     * A source may stop returning read items; these keep a read feed readable while it stays listed.
+     */
+    readonly readItems: ReadonlyMap<string, readonly Item[]>;
     /** The error message last seen per source ID ("" for none), so each error is reported once. */
     readonly lastErrors: ReadonlyMap<string, string>;
 }
@@ -94,6 +101,7 @@ export function initialModel(preferences: Preferences): ReaderModel {
         errorShownAt: -Infinity,
         preferences,
         readHistory: [],
+        readItems: new Map(),
         lastErrors: new Map()
     };
 }
@@ -129,6 +137,16 @@ export function remember(model: ReaderModel, feedId: string, entry: CacheEntry):
     return { ...model, cache: new Map(entries.filter(([id]) => !evicted.has(id))) };
 }
 
+/**
+ * `items` followed by the items of `feedId` marked read in this session that `items` lacks,
+ * or `items` itself when it lacks none.
+ */
+export function withRetainedItems(model: ReaderModel, feedId: string, items: readonly Item[]): readonly Item[] {
+    const loaded = new Set(items.map((item) => item.id));
+    const missing = (model.readItems.get(feedId) ?? []).filter((item) => !loaded.has(item.id));
+    return missing.length === 0 ? items : [...items, ...missing];
+}
+
 /** Append an older page to a feed's items, skipping items already loaded. Unchanged when the feed is not cached. */
 export function withOlderItems(model: ReaderModel, feedId: string, page: ItemPage): ReaderModel {
     const latest = model.cache.get(feedId);
@@ -146,6 +164,11 @@ export function withOlderItems(model: ReaderModel, feedId: string, page: ItemPag
 }
 
 // ---------------------------------------------------------------- navigation
+
+/** The feeds listed as recently visited even when read. */
+export function recentFeeds(model: Pick<ReaderModel, "history">): ReadonlySet<string> {
+    return new Set(model.history.slice(-RECENT_FEEDS));
+}
 
 /** Start a navigation, superseding the ones in progress. */
 export function navigationStarted(model: ReaderModel): ReaderModel {
@@ -181,10 +204,14 @@ export function opened(model: ReaderModel, feed: Feed, skipCurrent: boolean): Re
     const settled = withPending(model, undefined);
     const entry = settled.cache.get(feed.id);
     const cached = entry ? remember(settled, feed.id, entry) : settled;
-    const history = skipCurrent ? cached.history.slice(0, -1) : cached.history;
+    const skipped = skipCurrent ? cached.history.slice(0, -1) : cached.history;
+    const history = skipped.at(-1) === feed.id ? skipped : [...skipped, feed.id];
+    const recent = recentFeeds({ history });
     return {
         ...scrolledTo(cached, undefined),
-        history: history.at(-1) === feed.id ? history : [...history, feed.id],
+        history,
+        // Read items are kept only while their feed is listed as recently visited.
+        readItems: new Map([...cached.readItems].filter(([id]) => recent.has(id))),
         currentFeedId: feed.id,
         retainedCurrent: feed,
         filterEnabled: true,
@@ -223,6 +250,30 @@ export function withReadPending(model: ReaderModel, feedId: string): ReaderModel
 
 export function withoutReadPending(model: ReaderModel, feedId: string): ReaderModel {
     return { ...model, readPending: new Set([...model.readPending].filter((id) => id !== feedId)) };
+}
+
+/**
+ * Keep `items`, which the source marked read, as read items of `feedId` while the feed is recently visited,
+ * and add them to its cached items. A reload that finished first may already lack them.
+ */
+export function withReadItems(model: ReaderModel, feedId: string, items: readonly Item[]): ReaderModel {
+    if (items.length === 0 || !recentFeeds(model).has(feedId)) return model;
+    const read = items.map((item) => (item.unread ? { ...item, unread: false } : item));
+    const marked = new Set(read.map((item) => item.id));
+    const earlier = (model.readItems.get(feedId) ?? []).filter((item) => !marked.has(item.id));
+    const next = { ...model, readItems: new Map([...model.readItems, [feedId, [...read, ...earlier]]]) };
+    const entry = next.cache.get(feedId);
+    const merged = entry ? withRetainedItems(next, feedId, entry.items) : undefined;
+    return entry && merged && merged !== entry.items
+        ? {
+              ...next,
+              cache: new Map(
+                  [...next.cache].map(([id, cached]) =>
+                      id === feedId ? [id, cacheEntry(entry.revision, merged, entry.continuation)] : [id, cached]
+                  )
+              )
+          }
+        : next;
 }
 
 /** Add items marked read to the history, keeping the latest READ_HISTORY_LIMIT. */

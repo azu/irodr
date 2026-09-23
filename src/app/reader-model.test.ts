@@ -11,6 +11,7 @@ import {
     opened,
     prefetchStarted,
     READ_HISTORY_LIMIT,
+    RECENT_FEEDS,
     type ReaderModel,
     relativeFeed,
     remember,
@@ -26,7 +27,9 @@ import {
     withPending,
     withPreferences,
     withReadHistory,
+    withReadItems,
     withReadPending,
+    withRetainedItems,
     withSourceErrors
 } from "./reader-model.ts";
 
@@ -215,6 +218,34 @@ describe("mark read", () => {
         expect(history).toHaveLength(READ_HISTORY_LIMIT);
         expect(history[0]?.id).toBe("i1");
         expect(history.at(-1)?.id).toBe(`i${READ_HISTORY_LIMIT}`);
+    });
+
+    it("keeps the items it marked read as read, for a feed the source no longer returns them for", () => {
+        const visited = opened(model, feed("A"), false);
+        const read = withReadItems(withReadItems(visited, "A", [item("a1")]), "A", [item("a2"), item("a1")]);
+        expect(read.readItems.get("A")).toEqual([item("a2", false), item("a1", false)]);
+        // A reload returns what the source still has, followed by the read items it lacks.
+        expect(withRetainedItems(read, "A", [item("a3")]).map((loaded) => loaded.id)).toEqual(["a3", "a2", "a1"]);
+        const unchanged = [item("a2", false), item("a1", false)];
+        expect(withRetainedItems(read, "A", unchanged)).toBe(unchanged);
+    });
+
+    it("adds read items to the cached items of a reload that finished first", () => {
+        const reloaded = remember(opened(model, feed("A"), false), "A", entry("empty", []));
+        const read = withReadItems(reloaded, "A", [item("a1")]);
+        expect(read.cache.get("A")?.revision).toBe("empty");
+        expect(read.cache.get("A")?.items).toEqual([item("a1", false)]);
+    });
+
+    it("keeps read items only while the feed is recently visited", () => {
+        expect(withReadItems(model, "A", [item("a1")])).toBe(model);
+        const visited = withReadItems(opened(model, feed("A"), false), "A", [item("a1")]);
+        const later = Array.from({ length: RECENT_FEEDS - 1 }, (_, index) => feed(`f${index}`)).reduce(
+            (current, next) => opened(current, next, false),
+            visited
+        );
+        expect(later.readItems.has("A")).toBe(true);
+        expect(opened(later, feed("next"), false).readItems.has("A")).toBe(false);
     });
 });
 

@@ -27,7 +27,9 @@ import {
     withPending,
     withPreferences,
     withReadHistory,
+    withReadItems,
     withReadPending,
+    withRetainedItems,
     withSourceErrors
 } from "./reader-model.ts";
 import {
@@ -302,7 +304,9 @@ export function createReader(options: ReaderOptions): Reader {
         const promise = sourceOf(feed)
             .loadItems(feed.id, { count: model.get().preferences.fetchContentsCount })
             .then((page) => {
-                const entry = cacheEntry(feed.revision, page.items, page.continuation);
+                // Items marked read stay readable even when the source no longer returns them.
+                const items = withRetainedItems(model.get(), feed.id, page.items);
+                const entry = cacheEntry(feed.revision, items, page.continuation);
                 // A load started later for a newer revision wins, even if this one finishes last.
                 if (loads.get(feed.id)?.token === token) {
                     model.update((current) => remember(current, feed.id, entry));
@@ -399,7 +403,7 @@ export function createReader(options: ReaderOptions): Reader {
         apply((current) => withReadPending(current, feed.id), { list: true, view: true });
         try {
             await source.markRead(feed.id, items);
-            model.update((current) => withReadHistory(current, items));
+            model.update((current) => withReadItems(withReadHistory(current, items), feed.id, items));
         } catch (error) {
             // Show the source's error when this request caused it, e.g. an expired login.
             const status = source.getSnapshot().status;

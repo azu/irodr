@@ -11,6 +11,8 @@ interface MemorySourceConfig {
     readonly markReadStatus?: SourceStatus;
     /** Loads wait for this promise, to simulate a slow network. */
     readonly gate: Promise<void>;
+    /** Marking a feed read removes its items, as GitHub Notifications returns unread notifications only. */
+    readonly forgetRead?: boolean;
 }
 
 /** An in-memory Source that records what the reader asks for. */
@@ -118,16 +120,21 @@ function createMemorySource(id: string, capabilities: Partial<SourceCapabilities
                 ...current,
                 marked: [...current.marked, { feedId, items: loadedItems.map((item) => item.title) }]
             }));
-            const { failMarkRead, markReadStatus } = records.get().config;
+            const { failMarkRead, markReadStatus, forgetRead } = records.get().config;
             if (failMarkRead.has(feedId)) {
                 if (markReadStatus) snapshot.update((current) => ({ ...current, status: markReadStatus }));
                 throw new Error("mark failed");
+            }
+            if (forgetRead) {
+                records.update((current) => ({ ...current, items: new Map([...current.items, [feedId, []]]) }));
             }
             if (snapshot.get().feeds.some((candidate) => candidate.id === feedId)) {
                 snapshot.update((current) => ({
                     ...current,
                     feeds: current.feeds.map((candidate) =>
-                        candidate.id === feedId ? { ...candidate, unreadCount: 0 } : candidate
+                        candidate.id === feedId
+                            ? { ...candidate, unreadCount: 0, revision: forgetRead ? "" : candidate.revision }
+                            : candidate
                     )
                 }));
             }
@@ -182,6 +189,46 @@ describe("Reader", () => {
         expect(source.marked()).toEqual([{ feedId: "memory:D", items: ["d1"] }]);
         // D stays listed while it is in the recent history.
         expect(listed()).toEqual(["D(0)", "A(2)", "B(1)", "C(1)"]);
+    });
+
+    it("shows the items it marked read while the feed stays listed, though the source drops them", async () => {
+        const { reader, source, current, titles, listed } = await setup({
+            capabilities: { unreadFilter: false, liveItems: true }
+        });
+        source.configure({ forgetRead: true });
+        await reader.openFeed("memory:A");
+        await reader.nextFeed();
+        expect(current()).toBe("B");
+        await settle();
+        expect(listed()).toEqual(["D(1)", "A(0)", "B(1)", "C(1)"]);
+        await reader.prevFeed();
+        expect(current()).toBe("A");
+        expect(reader.getState().view?.items.map((item) => [item.title, item.unread])).toEqual([
+            ["a1", false],
+            ["a2", false]
+        ]);
+        // m keeps the open feed readable too.
+        await reader.nextFeed();
+        await reader.markCurrentFeedRead();
+        await settle();
+        expect(current()).toBe("B");
+        expect(titles()).toEqual(["b1", "b2", "b3"]);
+    });
+
+    it("forgets the items it marked read once the feed leaves the list", async () => {
+        const { reader, source, titles } = await setup({ capabilities: { unreadFilter: false, liveItems: true } });
+        source.configure({ forgetRead: true });
+        await reader.openFeed("memory:A");
+        await reader.openFeed("memory:B");
+        await settle();
+        // Visit other feeds until A is no longer among the recently visited ones.
+        for (const feedId of ["memory:C", "memory:D", "memory:B", "memory:C", "memory:D"]) {
+            await reader.openFeed(feedId);
+        }
+        await settle();
+        expect(reader.getState().list.navigation).not.toContain("memory:A");
+        await reader.openFeed("memory:A");
+        expect(titles()).toEqual([]);
     });
 
     it("reselecting the current feed is not navigation", async () => {
