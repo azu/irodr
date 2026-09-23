@@ -54,14 +54,15 @@ test("Inoreader and GitHub feeds are read in one sequence", async ({ page, api }
         .toBe(3);
     await expect
         .poll(async () =>
-            requests(await api.log(), "github", /^\/repos\/.+\/notifications$/)
+            requests(await api.log(), "github", /^\/notifications\/threads\/\w+$/)
                 .map((entry) => entry.path)
                 .sort()
         )
         .toEqual([
-            "/repos/acme/rocket/notifications",
-            "/repos/acme/tools/notifications",
-            "/repos/octo/docs/notifications"
+            "/notifications/threads/101",
+            "/notifications/threads/102",
+            "/notifications/threads/201",
+            "/notifications/threads/301"
         ]);
     await expect(page.getByTestId("total-unread")).toHaveText("Unread: 1");
 });

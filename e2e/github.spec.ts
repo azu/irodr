@@ -79,7 +79,7 @@ test("renders notification details safely", async ({ page }) => {
     await expect(articles(page).locator("pre")).toHaveText("Fix typo in <README>");
 });
 
-test("leaving a repository marks it read on GitHub through the loaded timestamp", async ({ page, api }) => {
+test("leaving a repository marks each of its loaded notifications read on GitHub", async ({ page, api }) => {
     await connect(page);
     await page.keyboard.press("s");
     await expect(articles(page)).toHaveCount(2);
@@ -99,9 +99,11 @@ test("leaving a repository marks it read on GitHub through the loaded timestamp"
     await page.keyboard.press("s");
     await expect(currentFeed(page)).toHaveText("acme/tools (1)");
     await expect.poll(async () => (await unreadOnServer(api)).sort()).toEqual(["103", "201", "301"]);
-    const put = requests(await api.log(), "github", "/repos/acme/rocket/notifications");
-    expect(put).toHaveLength(1);
-    expect(JSON.parse(put[0]?.body ?? "{}")).toEqual({ last_read_at: iso(1) });
+    const patches = requests(await api.log(), "github", /^\/notifications\/threads\//);
+    expect(patches.map((entry) => `${entry.method} ${entry.path}`).sort()).toEqual([
+        "PATCH /notifications/threads/101",
+        "PATCH /notifications/threads/102"
+    ]);
     // Like a read RSS feed, the repository stays in place so the list does not shift.
     await expect(feedRow(page, "acme/rocket")).toHaveText("acme/rocket (0)");
     // Going back shows the notifications it marked read, which GitHub no longer lists as unread.
@@ -119,9 +121,7 @@ test("Shift+S skips a repository and m marks the current one read", async ({ pag
     await page.keyboard.press("Shift+S");
     await expect(currentFeed(page)).toHaveText("acme/tools (1)");
     await expect(headerMessage(page)).toContainText(/Skip current subscription|Complete prefetch/);
-    expect(
-        requests(await api.log(), "github", /\/notifications$/).filter((entry) => entry.method === "PUT")
-    ).toHaveLength(0);
+    expect(requests(await api.log(), "github", /^\/notifications\/threads\//)).toHaveLength(0);
 
     await page.keyboard.press("m");
     await expect.poll(() => unreadOnServer(api)).toEqual(["101", "102", "301"]);

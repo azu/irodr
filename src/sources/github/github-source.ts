@@ -27,6 +27,7 @@ import {
     cachedSource,
     createGitHubCache,
     isCoveredByRead,
+    readThroughOf,
     withInbox,
     withItems,
     withoutRead,
@@ -42,6 +43,7 @@ const ITEM_PREFIX = `source:${GITHUB_SOURCE_ID}:`;
 const CREDENTIAL_KEY = `credential:${encodeURIComponent(GITHUB_SOURCE_ID)}`;
 const DEFAULT_ICON = "https://github.githubassets.com/favicons/favicon.svg";
 const DETAILS_CONCURRENCY = 4;
+const MARK_READ_CONCURRENCY = 4;
 const CAPABILITIES = { loadMore: false, unreadFilter: false, liveItems: true } as const;
 
 export interface GitHubSourceOptions extends GitHubApiOptions {
@@ -73,7 +75,7 @@ const LOCKED: SourceStatus = {
 
 const SETTINGS_DESCRIPTION = [
     "Use a classic personal access token with the notifications scope; the links below open GitHub's token form with the scopes selected. The repo scope is also needed for private repository release bodies. On GitHub, use Watch → Custom → Releases for repositories whose release notifications you want to follow.",
-    "Unread notifications of all types are grouped by repository under GitHub Notifications. Moving to another feed marks that repository's notifications read on GitHub up to the loaded timestamp, including Issue and Pull Request notifications. Shift+S skips without marking read. Other browsers see the change on their next refresh.",
+    "Unread notifications of all types are grouped by repository under GitHub Notifications. Moving to another feed marks each of that repository's notifications up to the loaded timestamp read on GitHub, including Issue and Pull Request notifications. Shift+S skips without marking read. Other browsers see the change on their next refresh.",
     "Your token is saved unencrypted in this browser and restored automatically after reload. Scripts running on this origin, including user scripts, can access it.",
     "Each sync reloads the current unread inbox without a date cutoff. Repositories with no unread notifications disappear once you leave them. Cached article bodies, including private content, are not encrypted."
 ];
@@ -95,8 +97,8 @@ export interface GitHubState {
     /** Items by feed ID. */
     readonly items: ReadonlyMap<string, readonly Item[]>;
     /**
-     * For each running sync, by generation: repositories marked read since it started, with their cutoffs.
-     * The sync filters its writes with them, so it cannot bring back read notifications.
+     * For each running sync, by generation: notifications marked read since it started, with the `updated_at`
+     * they were read through. The sync filters its writes with them, so it cannot bring back read notifications.
      */
     readonly readsDuringSync: ReadonlyMap<number, ReadonlyMap<string, number>>;
 }
@@ -288,20 +290,23 @@ export function withSyncFinished(state: GitHubState, generation: number): GitHub
     };
 }
 
-/** Record that GitHub marked `repository` read through `cutoff`, for every running sync. */
-export function withRepositoryRead(state: GitHubState, repository: string, cutoff: number): GitHubState {
+/** Record that GitHub marked notifications read through `readThrough` (external ID → epoch ms), for every running sync. */
+export function withThreadsRead(state: GitHubState, readThrough: ReadonlyMap<string, number>): GitHubState {
     return {
         ...state,
         readsDuringSync: new Map(
             [...state.readsDuringSync].map(([generation, reads]) => [
                 generation,
-                new Map([...reads, [repository, Math.max(reads.get(repository) ?? 0, cutoff)]])
+                new Map([
+                    ...reads,
+                    ...[...readThrough].map(([id, updated]) => [id, Math.max(reads.get(id) ?? 0, updated)] as const)
+                ])
             ])
         )
     };
 }
 
-/** `items` without those that a repository read during the sync of `generation` covers. */
+/** `items` without those that a read during the sync of `generation` covers. */
 export function unreadDuringSync(
     state: GitHubState,
     generation: number,
@@ -705,7 +710,26 @@ export function createGitHubSource(options: GitHubSourceOptions): GitHubSource {
         return { items: state.get().items.get(feedId) ?? [] };
     };
 
-    /** One PUT per repository; every notification type up to the cutoff is acknowledged. */
+    /** Mark `threads` read on GitHub, a few at a time. Results are in the order of `threads`. */
+    const markThreads = async (
+        threads: readonly string[],
+        token: string,
+        signal: AbortSignal,
+        settled: readonly PromiseSettledResult<void>[] = []
+    ): Promise<readonly PromiseSettledResult<void>[]> => {
+        if (settled.length >= threads.length) return settled;
+        const results = await Promise.allSettled(
+            threads
+                .slice(settled.length, settled.length + MARK_READ_CONCURRENCY)
+                .map((thread) => api.markThreadRead(thread, token, signal))
+        );
+        return markThreads(threads, token, signal, [...settled, ...results]);
+    };
+
+    /**
+     * One PATCH per notification of the repository up to the cutoff, every type included. GitHub's repository-wide
+     * PUT can answer 205 and still leave notifications unread, so each thread is marked read explicitly.
+     */
     const markRead = async (feedId: string, loadedItems: readonly Item[]): Promise<void> => {
         if (!state.get().token) throw new GitHubSourceError("Connect GitHub before marking notifications read.");
         await cache.load();
@@ -716,33 +740,27 @@ export function createGitHubSource(options: GitHubSourceOptions): GitHubSource {
         if (!Number.isFinite(cutoff) || cutoff <= 0) {
             throw new GitHubSourceError("Cannot safely mark a repository read without its notification timestamp.");
         }
+        // Hidden by the display filter or not, every stored notification up to the cutoff is read.
+        const readThrough = readThroughOf(cache.snapshot(), GITHUB_SOURCE_ID, repository, cutoff);
+        if (readThrough.size === 0) return;
         // The session may have ended while the cache loaded.
         const { token, generation } = state.get();
         if (!token) throw new GitHubSourceError("Connect GitHub before marking notifications read.");
         const controller = new AbortController();
         requests.add(controller);
         try {
-            const finished = await api.markRepositoryRead(
-                repository,
-                new Date(cutoff).toISOString(),
-                token,
-                controller.signal
-            );
+            const threads = [...readThrough.keys()];
+            const results = await markThreads(threads, token, controller.signal);
             if (!isCurrent(generation)) throw new GitHubSourceError("GitHub read operation cancelled.");
-            if (finished) {
-                state.update((current) => withRepositoryRead(current, repository, cutoff));
+            const read = new Map([...readThrough].filter((_, index) => results[index]?.status === "fulfilled"));
+            if (read.size > 0) {
+                state.update((current) => withThreadsRead(current, read));
                 // Compare with the latest stored timestamps: an update that arrived meanwhile stays.
-                await cache.write((snapshot) =>
-                    withoutRead(snapshot, GITHUB_SOURCE_ID, new Map([[repository, cutoff]]))
-                );
+                await cache.write((snapshot) => withoutRead(snapshot, GITHUB_SOURCE_ID, read));
                 if (isCurrent(generation)) project();
-            } else {
-                updateStatus({
-                    phase: "waiting",
-                    message:
-                        "GitHub is marking repository notifications read in the background. The next refresh will confirm completion."
-                });
             }
+            const failure = results.find((result) => result.status === "rejected");
+            if (failure) throw failure.reason;
         } catch (error) {
             if (isCurrent(generation)) {
                 updateStatus({
