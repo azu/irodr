@@ -147,12 +147,7 @@ export class GitHubApi {
         if (!response.ok) {
             throw new GitHubRequestError("notifications", response.status, response.headers, this.options.now());
         }
-        let notifications: unknown;
-        try {
-            notifications = await response.json();
-        } catch {
-            throw new Error("Invalid GitHub notifications response.");
-        }
+        const notifications = await readJson(response, "Invalid GitHub notifications response.");
         if (!Array.isArray(notifications)) throw new Error("Invalid GitHub notifications response.");
         for (const notification of notifications as GitHubNotification[]) {
             if (typeof notification?.id !== "string" || typeof notification.subject?.title !== "string") {
@@ -215,18 +210,13 @@ export class GitHubApi {
         if (!response.ok) {
             throw new GitHubRequestError("notification details", response.status, response.headers, this.options.now());
         }
-        let detail: {
+        const detail = (await readJson(response, "Invalid GitHub notification details response.")) as {
             html_url?: unknown;
             body?: unknown;
             published_at?: unknown;
             created_at?: unknown;
             commit?: { message?: unknown; author?: { date?: unknown } };
         };
-        try {
-            detail = (await response.json()) as typeof detail;
-        } catch {
-            throw new Error("Invalid GitHub notification details response.");
-        }
         if (!detail || typeof detail !== "object") throw new Error("Invalid GitHub notification details response.");
         const browserUrl = safeUrl(detail.html_url, this.#web.origin);
         const content =
@@ -264,6 +254,15 @@ export class GitHubApi {
             throw new GitHubRequestError("mark-read", response.status, response.headers, this.options.now());
         }
         return response.status === 205;
+    }
+}
+
+/** Parse a JSON body, reporting malformed JSON as `message`. */
+async function readJson(response: Response, message: string): Promise<unknown> {
+    try {
+        return await response.json();
+    } catch {
+        throw new Error(message);
     }
 }
 

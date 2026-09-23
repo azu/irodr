@@ -18,6 +18,7 @@ import {
     type GitHubNotification,
     GitHubRequestError,
     isoDate,
+    type NotificationPage,
     validRepository
 } from "./github-api.ts";
 import { type CachedItem, type CachedSource, type CacheSnapshot, GitHubCache } from "./github-cache.ts";
@@ -380,14 +381,10 @@ export class GitHubSource implements Source {
                 );
                 const items = new Map<string, CachedItem>();
                 const pending = new Map<string, { notification: GitHubNotification; item: CachedItem }>();
-                const visited = new Set<string>();
-                let next: string | undefined = this.#api.firstNotificationsUrl();
-                let pollSeconds = 60;
-                while (next) {
-                    if (visited.has(next)) throw new Error("Invalid GitHub pagination.");
-                    visited.add(next);
-                    const page = await this.#api.notificationPage(next, token, controller.signal);
-                    pollSeconds = Math.max(pollSeconds, page.pollSeconds ?? 0);
+                const pollIntervals: number[] = [];
+                const pages = notificationPages(this.#api, this.#api.firstNotificationsUrl(), token, controller.signal);
+                for await (const page of pages) {
+                    pollIntervals.push(page.pollSeconds ?? 0);
                     const pageItems: CachedItem[] = [];
                     for (const notification of page.notifications) {
                         if (notification.unread === false) continue;
@@ -426,11 +423,11 @@ export class GitHubSource implements Source {
                     });
                     // Titles appear page by page, before details are resolved.
                     await saveItems(pageItems);
-                    next = page.next;
                 }
                 // Absence means read only after every page succeeded. Body enrichment is
                 // optional and must not block cross-browser read reconciliation.
                 cancelled();
+                const pollSeconds = Math.max(60, ...pollIntervals);
                 const cursor = { nextPollAt: new Date(this.options.now() + pollSeconds * 1000).toISOString() };
                 await this.#cache.write((snapshot) => {
                     const complete = unread([...items.values()]);
@@ -448,12 +445,17 @@ export class GitHubSource implements Source {
                 if (generation === this.#generation) this.project();
                 // Resolve bodies in groups, checkpointing every 100 successes (or on completion/failure).
                 const unresolved = [...pending.values()];
-                let resolved = items.size - unresolved.length;
-                let checkpoint: CachedItem[] = [];
-                for (let offset = 0; offset < unresolved.length; offset += DETAILS_CONCURRENCY) {
+                const reused = items.size - unresolved.length;
+                const checkpoint: CachedItem[] = [];
+                const offsets = Array.from(
+                    { length: Math.ceil(unresolved.length / DETAILS_CONCURRENCY) },
+                    (_, index) => index * DETAILS_CONCURRENCY
+                );
+                for (const offset of offsets) {
+                    // Every earlier group resolved completely: a failure ends the loop.
                     this.updateStatus({
                         phase: "syncing",
-                        message: `Loading notification details (${resolved}/${items.size})…`
+                        message: `Loading notification details (${reused + offset}/${items.size})…`
                     });
                     const results = await Promise.allSettled(
                         unresolved
@@ -462,19 +464,15 @@ export class GitHubSource implements Source {
                                 this.resolveItem(notification, item, token, controller.signal)
                             )
                     );
-                    let failure: PromiseRejectedResult | undefined;
                     for (const result of results) {
                         if (result.status === "fulfilled") {
                             items.set(result.value.externalId, result.value);
                             checkpoint.push(result.value);
-                            resolved++;
-                        } else {
-                            failure ??= result;
                         }
                     }
+                    const failure = results.find((result) => result.status === "rejected");
                     if (checkpoint.length >= 100 || failure || offset + DETAILS_CONCURRENCY >= unresolved.length) {
-                        await saveItems(checkpoint);
-                        checkpoint = [];
+                        await saveItems(checkpoint.splice(0));
                     }
                     if (failure) throw failure.reason;
                 }
@@ -641,6 +639,21 @@ export class GitHubSource implements Source {
                 throw new Error(`Unknown action: ${actionId}`);
         }
     }
+}
+
+/** Unread notification pages in order, following `rel="next"` links to the last page. */
+async function* notificationPages(
+    api: GitHubApi,
+    url: string,
+    token: string,
+    signal: AbortSignal,
+    visited = new Set<string>()
+): AsyncGenerator<NotificationPage> {
+    if (visited.has(url)) throw new Error("Invalid GitHub pagination.");
+    visited.add(url);
+    const page = await api.notificationPage(url, token, signal);
+    yield page;
+    if (page.next) yield* notificationPages(api, page.next, token, signal, visited);
 }
 
 function upsertItems(snapshot: CacheSnapshot, sourceId: string, items: readonly CachedItem[]): void {

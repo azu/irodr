@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",
+    "@irodr/oxlint-plugin-immutable": "workspace:*",
     "@playwright/test": "^1.63.0",
     "@rolldown/plugin-babel": "^0.2.4",
     "@stylexjs/eslint-plugin": "^0.19.1",

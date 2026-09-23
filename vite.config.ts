@@ -38,13 +38,22 @@ export default defineConfig({
         jsPlugins: [
             { name: "react-compiler", specifier: "eslint-plugin-react-hooks" },
             // StyleX drops unsupported values silently; catch them at lint time.
-            { name: "stylex", specifier: "@stylexjs/eslint-plugin" }
+            { name: "stylex", specifier: "@stylexjs/eslint-plugin" },
+            { name: "immutable", specifier: "@irodr/oxlint-plugin-immutable" }
         ],
         categories: { correctness: "error", suspicious: "warn", perf: "warn" },
         options: { typeAware: true, typeCheck: true },
         ignorePatterns: ["dist/**", "dist-e2e/**", "playwright-report/**", "test-results/**", "resources/**"],
         rules: {
             "no-console": ["error", { allow: ["info", "warn", "error"] }],
+            // Immutable style: no reassignment, no in-place merging.
+            "immutable/no-let": "error",
+            "no-var": "error",
+            "no-param-reassign": "error",
+            "no-restricted-properties": [
+                "error",
+                { object: "Object", property: "assign", message: "Create a new object with spread syntax instead." }
+            ],
             "react/react-in-jsx-scope": "off",
             "react/rules-of-hooks": "error",
             "react/exhaustive-deps": "error",
@@ -113,7 +122,7 @@ export default defineConfig({
         "*.{json,md,yml,yaml,css,html}": "vp fmt"
     },
     test: {
-        include: ["src/**/*.test.ts", "e2e/fake-api/**/*.test.ts"],
+        include: ["src/**/*.test.ts", "e2e/fake-api/**/*.test.ts", "lib/**/*.test.ts"],
         environment: "node"
     }
 });

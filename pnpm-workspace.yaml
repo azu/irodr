@@ -1,3 +1,6 @@
+# Local packages, e.g. lint rules under lib/.
+packages:
+  - lib/*
 # Keep plugins that import `vite` or `vitest` on the copies bundled by Vite+.
 # https://viteplus.dev/guide/local-cli#manual-installation
 overrides:

@@ -16,6 +16,8 @@ src/
 e2e/
   fake-api/       Fake Inoreader and GitHub APIs used by unit and integration tests
   *.spec.ts       Playwright integration tests
+lib/
+  oxlint-plugin-immutable/  Lint rules for the immutable style (a pnpm workspace package)
 ```
 
 Dependencies point downwards only: `ui → app → sources → lib`. The UI and the reader never import a

@@ -150,11 +150,12 @@ export class InoreaderSource implements Source {
             }
         };
         const accessToken = await this.#oauth.accessToken();
-        let response = await send(accessToken);
-        if (response.status === 401) {
-            // The token may have been revoked or expired early: refresh once.
-            response = await send((await this.#oauth.refresh(accessToken)).accessToken);
-        }
+        const firstResponse = await send(accessToken);
+        // The token may have been revoked or expired early: refresh once.
+        const response =
+            firstResponse.status === 401
+                ? await send((await this.#oauth.refresh(accessToken)).accessToken)
+                : firstResponse;
         if (!response.ok) {
             throw new InoreaderRequestError(`Inoreader request failed (HTTP ${response.status}).`, response.status);
         }
@@ -203,15 +204,7 @@ export class InoreaderSource implements Source {
             // Inoreader returns no unread entry for some streams; irodr 1.x skipped them too.
             if (!unread) continue;
             const newest = Number(unread.newestItemTimestampUsec) || 0;
-            let unreadCount = Number(unread.count) || 0;
-            // A mark-all-as-read request may not be reflected by the next count yet.
-            const readThrough = this.#readThrough.get(subscription.id);
-            if (readThrough && (unreadCount === 0 || this.options.now() - readThrough.at > READ_THROUGH_MS)) {
-                // Inoreader caught up, or the items were marked unread again elsewhere.
-                this.#readThrough.delete(subscription.id);
-            } else if (readThrough && newest <= readThrough.through) {
-                unreadCount = 0;
-            }
+            const unreadCount = this.effectiveUnreadCount(subscription.id, Number(unread.count) || 0, newest);
             const feed: Feed = {
                 id: `${FEED_PREFIX}${subscription.id}`,
                 sourceId: this.id,
@@ -231,6 +224,18 @@ export class InoreaderSource implements Source {
             feeds.push(old && shallowEqual(old, feed) ? old : feed);
         }
         return feeds;
+    }
+
+    /** The unread count to show: a mark-all-as-read request may not be reflected by `count` yet. */
+    private effectiveUnreadCount(streamId: string, count: number, newest: number): number {
+        const readThrough = this.#readThrough.get(streamId);
+        if (!readThrough) return count;
+        if (count === 0 || this.options.now() - readThrough.at > READ_THROUGH_MS) {
+            // Inoreader caught up, or the items were marked unread again elsewhere.
+            this.#readThrough.delete(streamId);
+            return count;
+        }
+        return newest <= readThrough.through ? 0 : count;
     }
 
     private streamId(feedId: string): string {

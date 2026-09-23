@@ -42,12 +42,12 @@ function openDatabase(name: string): Promise<IDBDatabase> {
 }
 
 export function createIndexedDBStore(name: string): KeyValueStore {
-    let database: Promise<IDBDatabase> | undefined;
+    const cached: { database: Promise<IDBDatabase> | undefined } = { database: undefined };
     const forget = (stale: Promise<IDBDatabase>) => {
-        if (database === stale) database = undefined;
+        if (cached.database === stale) cached.database = undefined;
     };
     const db = () => {
-        if (database) return database;
+        if (cached.database) return cached.database;
         const opening: Promise<IDBDatabase> = openDatabase(name).then(
             (opened) => {
                 // Reopen after the browser closes the connection, e.g. when site data is cleared.
@@ -63,7 +63,7 @@ export function createIndexedDBStore(name: string): KeyValueStore {
                 throw error;
             }
         );
-        database = opening;
+        cached.database = opening;
         return opening;
     };
     /** Resolves when the transaction commits, so aborted writes (e.g. quota errors) are reported. */

@@ -44,14 +44,20 @@ async function createTranslator(sourceLanguage: string, targetLanguage: string):
     );
 }
 
+/** Whether `node` is inside a skipped element (code, ...) below `root`. */
+function insideSkipped(node: Node, root: Element): boolean {
+    const parent = node.parentElement;
+    if (!parent || parent === root) return false;
+    return SKIPPED.has(parent.tagName) || insideSkipped(parent, root);
+}
+
 function textNodes(element: Element): Text[] {
     const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
     const nodes: Text[] = [];
-    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    while (walker.nextNode()) {
+        const node = walker.currentNode;
         if (!(node instanceof Text) || !node.textContent?.trim()) continue;
-        let parent = node.parentElement;
-        while (parent && parent !== element && !SKIPPED.has(parent.tagName)) parent = parent.parentElement;
-        if (parent && parent !== element) continue;
+        if (insideSkipped(node, element)) continue;
         nodes.push(node);
     }
     return nodes;

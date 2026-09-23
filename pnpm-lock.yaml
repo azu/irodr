@@ -28,6 +28,9 @@ importers:
       '@babel/core':
         specifier: ^7.29.7
         version: 7.29.7
+      '@irodr/oxlint-plugin-immutable':
+        specifier: workspace:*
+        version: link:lib/oxlint-plugin-immutable
       '@playwright/test':
         specifier: ^1.63.0
         version: 1.63.0
@@ -64,6 +67,8 @@ importers:
       vite-plus:
         specifier: 1.0.0-rc.0
         version: 1.0.0-rc.0(@types/node@24.13.6)(@vitest/ui@5.0.1(vitest@5.0.1))
+
+  lib/oxlint-plugin-immutable: {}
 
 packages:
 

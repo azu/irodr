@@ -2,7 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { hasSavedPreferences, legacyPreferences, loadPreferences, savePreferences } from "./app/preferences.ts";
 import { Reader } from "./app/reader.ts";
-import { loadConfig } from "./config.ts";
+import { type AppConfig, loadConfig } from "./config.ts";
 import "./global.css";
 import { Emitter } from "./lib/emitter.ts";
 import { browserWriteLock, createIndexedDBStore, readAllValues } from "./lib/kv-store.ts";
@@ -14,6 +14,12 @@ import { ReaderContext, UserScriptEventsContext } from "./ui/context.tsx";
 import { createShortcuts } from "./ui/shortcuts.ts";
 import { TranslateMode } from "./ui/translate.ts";
 import { installUserScriptApi } from "./ui/userscript.ts";
+
+declare global {
+    interface Window {
+        irodr?: { reader: Reader; config: AppConfig };
+    }
+}
 
 const config = loadConfig(import.meta.env, localStorage, location.origin);
 const fetcher: typeof fetch = (input, init) => fetch(input, init);
@@ -64,11 +70,11 @@ const events = new Emitter();
 shortcuts.attach(document);
 
 // Leaving a feed turns translate mode off, however the feed was left.
-let currentFeedId = reader.getState().list.currentFeedId;
+const last = { feedId: reader.getState().list.currentFeedId };
 reader.subscribe(() => {
     const next = reader.getState().list.currentFeedId;
-    if (next !== currentFeedId) translate.off();
-    currentFeedId = next;
+    if (next !== last.feedId) translate.off();
+    last.feedId = next;
 });
 
 const root = document.getElementById("root");
@@ -97,4 +103,4 @@ if (document.readyState === "loading") {
 }
 setTimeout(() => installUserScriptApi(window, reader, shortcuts, events), 0);
 
-Object.assign(window, { irodr: { reader, config } });
+window.irodr = { reader, config };

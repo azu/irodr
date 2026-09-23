@@ -276,11 +276,10 @@ export class Reader {
     /** The feed with 0 unread, memoized so its identity is stable across commits. */
     #asRead(feed: Feed): Feed {
         if (feed.unreadCount === 0) return feed;
-        let override = this.#readOverrides.get(feed);
-        if (!override) {
-            override = { ...feed, unreadCount: 0 };
-            this.#readOverrides.set(feed, override);
-        }
+        const memoized = this.#readOverrides.get(feed);
+        if (memoized) return memoized;
+        const override = { ...feed, unreadCount: 0 };
+        this.#readOverrides.set(feed, override);
         return override;
     }
 
@@ -295,11 +294,10 @@ export class Reader {
             feeds.push(this.#asRead(this.#retainedCurrent));
         }
         const recent = new Set(this.#history.slice(-RECENT_FEEDS));
+        const displayed = feeds.map((feed) => this.#displayed(feed));
+        const unread = displayed.reduce((sum, feed) => sum + feed.unreadCount, 0);
         const byCategory = new Map<string, Feed[]>();
-        let unread = 0;
-        for (const raw of feeds) {
-            const feed = this.#displayed(raw);
-            unread += feed.unreadCount;
+        for (const feed of displayed) {
             // Like LDR, read feeds leave the list, except recently visited ones so the list does not shift.
             if (feed.unreadCount === 0 && !recent.has(feed.id) && feed.id !== this.#currentFeedId) continue;
             const category = byCategory.get(feed.category);
@@ -338,12 +336,7 @@ export class Reader {
         const entry = this.#cache.get(id);
         const all = entry?.items ?? [];
         const filterEnabled = this.#filterEnabled && source.capabilities.unreadFilter;
-        let items = all;
-        if (filterEnabled && entry) {
-            // Unread when loaded; revisiting a read feed shows everything instead of nothing.
-            entry.filtered ??= all.some((item) => item.unread) ? all.filter((item) => item.unread) : all;
-            items = entry.filtered;
-        }
+        const items = filterEnabled && entry ? unreadItems(entry) : all;
         const previous = this.#store.get().view;
         const view: ArticleView = {
             feed,
@@ -359,37 +352,34 @@ export class Reader {
 
     #commit(parts: { sources?: boolean; list?: boolean; view?: boolean }): void {
         const state = this.#store.get();
-        let next: ReaderState = {
+        const sources = parts.sources ? this.#buildSources(state.sources) : state.sources;
+        const { list, totals } = parts.list ? this.#buildList() : state;
+        const next: ReaderState = {
             ...state,
             focusItemId: this.#focusItemId,
             scrollRequest: this.#scrollRequest,
             loading: this.#loading > 0,
             message: this.#message,
             preferences: this.#preferences,
-            panel: this.#panel
+            panel: this.#panel,
+            sources,
+            list: shallowEqual(list, state.list) ? state.list : list,
+            totals: shallowEqual(totals, state.totals) ? state.totals : totals,
+            view: parts.view ? this.#buildView() : state.view
         };
-        if (parts.sources) {
-            const sources = this.#sources.map((source, index) => {
-                const snapshot = source.getSnapshot();
-                const old = state.sources[index];
-                return old?.snapshot === snapshot
-                    ? old
-                    : { id: source.id, title: source.title, homeUrl: source.homeUrl, snapshot };
-            });
-            if (
-                sources.some((view, index) => view !== state.sources[index]) ||
-                sources.length !== state.sources.length
-            ) {
-                next = { ...next, sources };
-            }
-        }
-        if (parts.list) {
-            const { list, totals } = this.#buildList();
-            if (!shallowEqual(list, state.list)) next = { ...next, list };
-            if (!shallowEqual(totals, state.totals)) next = { ...next, totals };
-        }
-        if (parts.view) next = { ...next, view: this.#buildView() };
         this.#store.set(shallowEqual(next, state) ? state : next);
+    }
+
+    /** Source views, keeping the previous ones while their snapshots are unchanged. */
+    #buildSources(previous: readonly SourceView[]): readonly SourceView[] {
+        const sources = this.#sources.map((source, index) => {
+            const snapshot = source.getSnapshot();
+            const old = previous[index];
+            return old?.snapshot === snapshot
+                ? old
+                : { id: source.id, title: source.title, homeUrl: source.homeUrl, snapshot };
+        });
+        return sameArray(previous, sources) ? previous : sources;
     }
 
     // ---------------------------------------------------------------- loading
@@ -467,9 +457,11 @@ export class Reader {
                 this.#setLoading(1);
                 this.setMessage("Start loading contents...");
             }
-            let loaded: CacheEntry;
             try {
-                loaded = await this.#load(feed);
+                const loaded = await this.#load(feed);
+                if (token !== this.#navigation) return "superseded";
+                // A newer load of this feed may still be running and has not cached anything yet.
+                if (!this.#cache.has(feedId)) this.#remember(feedId, loaded);
             } catch {
                 if (token !== this.#navigation) return "superseded";
                 this.#setPending(undefined);
@@ -478,9 +470,6 @@ export class Reader {
             } finally {
                 if (slow) this.#setLoading(-1);
             }
-            if (token !== this.#navigation) return "superseded";
-            // A newer load of this feed may still be running and has not cached anything yet.
-            if (!this.#cache.has(feedId)) this.#remember(feedId, loaded);
             if (slow) this.setMessage("Finish loading contents");
         }
         this.#pendingFeedId = undefined;
@@ -519,12 +508,12 @@ export class Reader {
     /** `s`: open the next feed. Feeds that fail to load are skipped. */
     async nextFeed(options: { skipCurrent?: boolean } = {}): Promise<void> {
         const { navigation } = this.#store.get().list;
-        let target = this.#relative(1);
-        while (target) {
+        const first = this.#relative(1);
+        if (!first) return;
+        for (const target of navigation.slice(navigation.indexOf(first))) {
             const result = await this.openFeed(target, options);
             if (result !== "failed") return;
             this.setMessage(`Can't load... Skip ${this.#feed(target)?.title ?? target}.`, { error: true });
-            target = navigation[navigation.indexOf(target) + 1];
         }
     }
 
@@ -576,12 +565,9 @@ export class Reader {
         const token = ++this.#prefetch;
         const count = this.#preferences.prefetchSubscriptionCount;
         if (count <= 0) return;
-        let failed = false;
-        let id = feedId;
-        for (let index = 0; index < count; index++) {
-            const { navigation } = this.#store.get().list;
-            const next = navigation[navigation.indexOf(id) + 1];
-            if (!next || token !== this.#prefetch) break;
+        const failed: string[] = [];
+        for (const next of this.#feedsAfter(feedId, count)) {
+            if (token !== this.#prefetch) break;
             const feed = this.#feed(next);
             if (feed && !this.#fresh(feed)) {
                 try {
@@ -589,14 +575,23 @@ export class Reader {
                     // The open feed can be among them when a newer revision arrived.
                     this.#commit({ list: true, view: true });
                 } catch {
-                    failed = true;
+                    failed.push(next);
                 }
             }
-            id = next;
         }
         if (token !== this.#prefetch) return;
-        if (failed) this.setMessage("Could not prefetch the next feeds.", { error: true });
+        if (failed.length > 0) this.setMessage("Could not prefetch the next feeds.", { error: true });
         else this.setMessage(`Complete prefetch ${count} items`);
+    }
+
+    /** Up to `count` feeds following `feedId`, each looked up in the list as it is when requested. */
+    *#feedsAfter(feedId: string, count: number): Generator<string> {
+        if (count <= 0) return;
+        const { navigation } = this.#store.get().list;
+        const next = navigation[navigation.indexOf(feedId) + 1];
+        if (!next) return;
+        yield next;
+        yield* this.#feedsAfter(next, count - 1);
     }
 
     // ---------------------------------------------------------------- items
@@ -737,6 +732,14 @@ export class Reader {
         this.#commit({ sources: true, list: true, view: true });
         return message;
     }
+}
+
+/** Unread items when loaded; revisiting a read feed shows everything instead of nothing. Memoized on the entry. */
+function unreadItems(entry: CacheEntry): readonly Item[] {
+    entry.filtered ??= entry.items.some((item) => item.unread)
+        ? entry.items.filter((item) => item.unread)
+        : entry.items;
+    return entry.filtered;
 }
 
 function sameCategories(a: readonly CategoryView[], b: readonly CategoryView[]): boolean {

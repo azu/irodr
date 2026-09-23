@@ -26,6 +26,7 @@ See [docs/architecture.md](docs/architecture.md).
 - `src/app/reader.ts`: navigation and read-state behavior, independent of React and of any provider.
 - `src/ui/`: React components. They depend on the reader only, never on a specific source.
 - `e2e/fake-api/`: fake Inoreader and GitHub APIs, used by unit tests and Playwright tests.
+- `lib/`: local packages of the pnpm workspace, e.g. `lib/oxlint-plugin-immutable` (the `immutable/*` lint rules).
 
 ## Rules
 
@@ -35,6 +36,9 @@ See [docs/architecture.md](docs/architecture.md).
   no mutation during render, no `try/finally` in components, no reading refs during render.
 - Styles use StyleX `stylex.create` with longhand properties (`borderWidth`, not `border`); `stylex/valid-styles`
   reports what StyleX would silently drop. Keep the stable class names in `src/ui/dom.ts`; user scripts use them.
+- Immutable style: no `let` or `var`, no reassigned parameters, no `Object.assign` (enforced by lint). Use `const`
+  and derive new values with expressions, helper functions, `map`/`filter`/`reduce`. State that really changes over
+  time lives in one place (a store, a const holder object) and is replaced, not patched.
 - Article HTML is untrusted: render it only through `HtmlContent` (`src/lib/sanitize.ts`).
 - Keep credentials out of feeds, items, caches and logs.
 - TypeScript uses erasable syntax only (no enums, no parameter properties) so Node can run `e2e/fake-api` directly.

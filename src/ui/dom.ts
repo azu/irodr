@@ -33,21 +33,20 @@ export function activeItemId(scroller: HTMLElement): string | undefined {
     if (elements.length === 0) return undefined;
     if (elements.length === 1) return elements[0]?.dataset.contentId;
     const view = scroller.getBoundingClientRect();
-    let best: HTMLElement | undefined;
-    let bestVisible = 0;
+    const partlyVisible: { element: HTMLElement; visible: number }[] = [];
     for (const element of elements) {
         const rect = element.getBoundingClientRect();
         if (rect.bottom <= view.top) continue;
         if (rect.top >= view.bottom) break;
         // Allow sub-pixel rounding at the top edge after scrollIntoView().
         if (rect.top >= view.top - 1 && rect.bottom <= view.bottom + 1) return element.dataset.contentId;
-        const visible = Math.min(rect.bottom, view.bottom) - Math.max(rect.top, view.top);
-        if (visible > bestVisible) {
-            best = element;
-            bestVisible = visible;
-        }
+        partlyVisible.push({ element, visible: Math.min(rect.bottom, view.bottom) - Math.max(rect.top, view.top) });
     }
-    return (best ?? elements.at(-1))?.dataset.contentId;
+    const best = partlyVisible.reduce<{ element?: HTMLElement; visible: number }>(
+        (most, candidate) => (candidate.visible > most.visible ? candidate : most),
+        { visible: 0 }
+    );
+    return (best.element ?? elements.at(-1))?.dataset.contentId;
 }
 
 /** Scroll by a share of half the window height, like LDR's space key. */

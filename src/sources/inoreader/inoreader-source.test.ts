@@ -1,6 +1,6 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vite-plus/test";
+import { afterAll, beforeEach, describe, expect, it } from "vite-plus/test";
 import { inoreaderSubscriptions } from "../../../e2e/fake-api/fixtures.ts";
-import { type FakeApiServer, startFakeApi } from "../../../e2e/fake-api/server.ts";
+import { startFakeApi } from "../../../e2e/fake-api/server.ts";
 import { InoreaderSource } from "./inoreader-source.ts";
 
 class MemoryStorage implements Pick<Storage, "getItem" | "setItem" | "removeItem"> {
@@ -13,16 +13,13 @@ class MemoryStorage implements Pick<Storage, "getItem" | "setItem" | "removeItem
 const ALPHA = "feed/https://alpha.example.com/rss";
 const REDIRECT = "https://irodr.test/";
 
-let server: FakeApiServer;
-beforeAll(async () => {
-    server = await startFakeApi();
-});
+const server = await startFakeApi();
 afterAll(() => server.close());
 beforeEach(() => server.reset({ inoreader: { subscriptions: inoreaderSubscriptions() } }));
 
-let clockOffset = 0;
+const clock = { offset: 0 };
 beforeEach(() => {
-    clockOffset = 0;
+    clock.offset = 0;
 });
 
 function createSource(storage = new MemoryStorage()) {
@@ -35,7 +32,7 @@ function createSource(storage = new MemoryStorage()) {
         fetch: (input, init) => fetch(input, init),
         storage,
         session: new MemoryStorage(),
-        now: () => Date.now() + clockOffset,
+        now: () => Date.now() + clock.offset,
         navigate: (url) => navigations.push(url)
     });
     return { source, storage, navigations };
@@ -144,7 +141,7 @@ describe("InoreaderSource", () => {
         for (const item of server.inoreader.streams.get(ALPHA)?.items ?? []) item.read = false;
         await source.sync();
         expect(alpha()).toBe(0);
-        clockOffset = 6 * 60 * 1000;
+        clock.offset = 6 * 60 * 1000;
         await source.sync();
         expect(alpha()).toBe(3);
     });

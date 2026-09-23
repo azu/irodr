@@ -47,7 +47,8 @@ export async function startFakeApi(options: { port?: number; host?: string } = {
     const inoreader = new FakeInoreader();
     const github = new FakeGitHub();
     const log: LoggedRequest[] = [];
-    let origin = "";
+    // Known once the server listens.
+    const listening = { origin: "" };
 
     const reset = (scenario: Scenario = {}) => {
         inoreader.reset(scenario.inoreader);
@@ -92,7 +93,7 @@ export async function startFakeApi(options: { port?: number; host?: string } = {
             case "GET /github/unread":
                 return json(github.unread());
             case "POST /github/config":
-                Object.assign(github, body);
+                for (const [key, value] of Object.entries(body ?? {})) Reflect.set(github, key, value);
                 return json({ ok: true });
             default:
                 return json({ error: `Unknown control ${request.method} ${path}` }, 404);
@@ -118,7 +119,7 @@ export async function startFakeApi(options: { port?: number; host?: string } = {
         });
         return service === "inoreader"
             ? inoreader.handle(request, rest)
-            : github.handle(request, rest, `${origin}/github`);
+            : github.handle(request, rest, `${listening.origin}/github`);
     };
 
     const handle = async (incoming: IncomingMessage, outgoing: ServerResponse): Promise<void> => {
@@ -136,7 +137,7 @@ export async function startFakeApi(options: { port?: number; host?: string } = {
             }
             const request: FakeRequest = {
                 method: incoming.method ?? "GET",
-                url: new URL(incoming.url ?? "/", origin),
+                url: new URL(incoming.url ?? "/", listening.origin),
                 headers: incoming.headers as Record<string, string | undefined>,
                 body: await readBody(incoming)
             };
@@ -154,10 +155,10 @@ export async function startFakeApi(options: { port?: number; host?: string } = {
 
     await new Promise<void>((resolve) => server.listen(options.port ?? 0, options.host ?? "127.0.0.1", resolve));
     const address = server.address() as AddressInfo;
-    origin = `http://${options.host ?? "127.0.0.1"}:${address.port}`;
+    listening.origin = `http://${options.host ?? "127.0.0.1"}:${address.port}`;
 
     return {
-        origin,
+        origin: listening.origin,
         inoreader,
         github,
         log,

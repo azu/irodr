@@ -325,12 +325,12 @@ describe("Reader", () => {
     });
 
     it("keeps an error message visible over routine messages", async () => {
-        let now = 0;
-        const reader = new Reader({ sources: [], now: () => now });
+        const clock = { now: 0 };
+        const reader = new Reader({ sources: [], now: () => clock.now });
         reader.setMessage("Something failed", { error: true });
         reader.setMessage("Complete prefetch 5 items");
         expect(reader.getState().message.text).toBe("Something failed");
-        now = 6000;
+        clock.now = 6000;
         reader.setMessage("Complete prefetch 5 items");
         expect(reader.getState().message.text).toBe("Complete prefetch 5 items");
     });

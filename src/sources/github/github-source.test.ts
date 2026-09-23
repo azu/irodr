@@ -1,29 +1,26 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vite-plus/test";
+import { afterAll, beforeEach, describe, expect, it } from "vite-plus/test";
 import { githubNotifications, iso } from "../../../e2e/fake-api/fixtures.ts";
-import { type FakeApiServer, startFakeApi } from "../../../e2e/fake-api/server.ts";
+import { startFakeApi } from "../../../e2e/fake-api/server.ts";
 import { createMemoryStore, noWriteLock } from "../../lib/kv-store.ts";
 import { GitHubApi } from "./github-api.ts";
 import { githubFeedId, GitHubSource } from "./github-source.ts";
 
-let server: FakeApiServer;
-beforeAll(async () => {
-    server = await startFakeApi();
-});
+const server = await startFakeApi();
 afterAll(() => server.close());
 beforeEach(() => server.reset({ github: { notifications: githubNotifications(), pageSize: 2 } }));
 
 function createSource(options: { cache?: Record<string, unknown>; credentials?: Record<string, unknown> } = {}) {
-    let now = Date.now();
+    const clock = { now: Date.now() };
     const source = new GitHubSource({
         apiBaseUrl: `${server.origin}/github`,
         webBaseUrl: "https://github.com",
         fetch: (input, init) => fetch(input, init),
-        now: () => now,
+        now: () => clock.now,
         cache: createMemoryStore(options.cache),
         credentials: createMemoryStore(options.credentials),
         lock: noWriteLock
     });
-    return { source, advance: (ms: number) => (now += ms) };
+    return { source, advance: (ms: number) => (clock.now += ms) };
 }
 
 async function connected() {

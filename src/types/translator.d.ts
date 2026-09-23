@@ -9,7 +9,7 @@ interface TranslatorLanguages {
     targetLanguage: string;
 }
 
-declare var Translator:
+declare const Translator:
     | {
           availability(
               options: TranslatorLanguages

@@ -162,19 +162,7 @@ export class InoreaderOAuth {
     private async requestToken(params: Record<string, string>, previousRefreshToken?: string): Promise<StoredToken> {
         const { clientId, clientSecret } = this.client;
         const body = new URLSearchParams({ ...params, client_id: clientId, client_secret: clientSecret });
-        let response: Response;
-        try {
-            response = await this.options.fetch(`${this.options.corsProxy}${this.options.baseUrl}/oauth2/token`, {
-                method: "POST",
-                headers: {
-                    Accept: "application/json",
-                    "Content-Type": "application/x-www-form-urlencoded"
-                },
-                body
-            });
-        } catch {
-            throw new Error("Could not reach Inoreader. Check your connection.");
-        }
+        const response = await this.postToken(body);
         if (response.status === 400 || response.status === 401) {
             // The grant was rejected. Another tab may have refreshed with this refresh token
             // already: keep its token instead of deleting it.
@@ -199,5 +187,20 @@ export class InoreaderOAuth {
         };
         this.options.storage.setItem(TOKEN_KEY, JSON.stringify(token));
         return token;
+    }
+
+    private async postToken(body: URLSearchParams): Promise<Response> {
+        try {
+            return await this.options.fetch(`${this.options.corsProxy}${this.options.baseUrl}/oauth2/token`, {
+                method: "POST",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body
+            });
+        } catch {
+            throw new Error("Could not reach Inoreader. Check your connection.");
+        }
     }
 }

@@ -34,7 +34,7 @@ test("Inoreader and GitHub feeds are read in one sequence", async ({ page, api }
     await expect(page.getByTestId("total-feeds")).toHaveText("Subscriptions: 8");
 
     const visited: string[] = [];
-    for (let index = 0; index < 7; index++) {
+    for (const _ of Array.from({ length: 7 })) {
         await page.keyboard.press("s");
         await expect(currentFeed(page)).not.toHaveText(visited.at(-1) ?? "none");
         visited.push((await currentFeed(page).textContent()) ?? "");

@@ -5,11 +5,8 @@ export class Emitter {
     readonly #handlers = new Map<string, Set<Handler>>();
 
     subscribe(event: string, handler: Handler): () => void {
-        let handlers = this.#handlers.get(event);
-        if (!handlers) {
-            handlers = new Set();
-            this.#handlers.set(event, handlers);
-        }
+        const handlers = this.#handlers.get(event) ?? new Set<Handler>();
+        this.#handlers.set(event, handlers);
         handlers.add(handler);
         return () => {
             handlers.delete(handler);
