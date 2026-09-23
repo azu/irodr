@@ -26,9 +26,36 @@ jobs:
         run: vp test
       - name: Build
         run: vp build
+  playwright-version:
+    name: Playwright version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+          sparse-checkout: pnpm-workspace.yaml
+          sparse-checkout-cone-mode: false
+      - name: Read @playwright/test from the pnpm catalog
+        id: version
+        run: |
+          version="$(yq -r '.catalog."@playwright/test"' pnpm-workspace.yaml)"
+          if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error file=pnpm-workspace.yaml::@playwright/test must be an exact version for the Docker image, got '$version'"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
   e2e:
     name: Integration tests
+    needs: playwright-version
     runs-on: ubuntu-latest
+    # Browsers and their system dependencies come with the image: no `playwright install` per run.
+    # https://playwright.dev/docs/docker
+    container:
+      image: mcr.microsoft.com/playwright:v${{ needs.playwright-version.outputs.version }}-noble
+      options: --init --ipc=host --user=1001
     steps:
       - name: Checkout
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
@@ -41,8 +68,6 @@ jobs:
           cache: true
       - name: Install
         run: vp install --frozen-lockfile
-      - name: Install Playwright browser
-        run: vp exec playwright install --with-deps chromium
       - name: Integration tests against the fake Inoreader and GitHub APIs
         run: vp run test:e2e
       - name: Upload report
