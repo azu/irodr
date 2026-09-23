@@ -99,6 +99,50 @@ test("preferences are saved and applied", async ({ page, api }) => {
     expect(streams.map((entry) => entry.query.n)).toEqual(["2"]);
 });
 
+test("carries over irodr 1.x preferences", async ({ page, api }) => {
+    await connectInoreader(page);
+    await closeDialog(page);
+    // irodr 1.x saved preferences with localforage in IndexedDB "AppRepository".
+    await page.evaluate(
+        () =>
+            new Promise<void>((resolve, reject) => {
+                const request = indexedDB.open("AppRepository", 2);
+                request.onupgradeneeded = () => request.result.createObjectStore("keyvaluepairs");
+                request.onsuccess = () => {
+                    const transaction = request.result.transaction("keyvaluepairs", "readwrite");
+                    transaction.objectStore("keyvaluepairs").put(
+                        {
+                            id: "01HLEGACY",
+                            user: { id: "user" },
+                            preferences: {
+                                prefetchSubscriptionCount: 0,
+                                fetchContentsCount: 2,
+                                enableAutoRefreshSubscription: false,
+                                autoRefreshSubscriptionSec: 300
+                            }
+                        },
+                        "01HLEGACY"
+                    );
+                    transaction.oncomplete = () => {
+                        request.result.close();
+                        resolve();
+                    };
+                    transaction.onerror = () => reject(transaction.error);
+                };
+                request.onerror = () => reject(request.error);
+            })
+    );
+    await page.reload();
+    await page.getByRole("button", { name: "Preferences" }).click();
+    const dialog = page.getByRole("dialog", { name: "App Preference" });
+    await expect(dialog.getByLabel("Fetch subscription contents Count")).toHaveValue("2");
+    await expect(dialog.getByLabel("Enable Auto Refresh Subscription")).not.toBeChecked();
+    await closeDialog(page);
+    await page.keyboard.press("s");
+    await expect(articles(page)).toHaveCount(2);
+    expect(requests(await api.log(), "inoreader", /^\/reader\/api\/0\/stream\/contents\//)).toHaveLength(1);
+});
+
 test("auto refresh picks up new unread items", async ({ page, api }) => {
     await connectInoreader(page);
     await closeDialog(page);

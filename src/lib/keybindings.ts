@@ -15,10 +15,23 @@ export function normalizeCombo(combo: string): string {
     return [...modifiers, KEY_ALIASES[key] ?? key].join("+");
 }
 
-export function comboFromEvent(
-    event: Pick<KeyboardEvent, "key" | "ctrlKey" | "altKey" | "metaKey" | "shiftKey">
-): string {
+/**
+ * The key name, independent of non-Latin keyboard layouts: with a Russian layout, the J key
+ * produces "о" but its `code` is still "KeyJ". Combokeys (irodr 1.x) matched key codes too.
+ */
+function keyName(event: Pick<KeyboardEvent, "key" | "code">): string {
     const key = event.key.toLowerCase();
+    if (key.length === 1 && !/[\x20-\x7e]/.test(key)) {
+        const letter = /^Key([A-Z])$/.exec(event.code)?.[1];
+        if (letter) return letter.toLowerCase();
+    }
+    return key;
+}
+
+export function comboFromEvent(
+    event: Pick<KeyboardEvent, "key" | "code" | "ctrlKey" | "altKey" | "metaKey" | "shiftKey">
+): string {
+    const key = keyName(event);
     const pressed = { ctrl: event.ctrlKey, alt: event.altKey, meta: event.metaKey, shift: event.shiftKey };
     return [...MODIFIERS.filter((modifier) => pressed[modifier]), KEY_ALIASES[key] ?? key].join("+");
 }
@@ -33,9 +46,10 @@ export function isEditableTarget(target: EventTarget | null): boolean {
 export class KeyBindings {
     readonly #handlers = new Map<string, KeyHandler[]>();
 
-    bind(combo: string, handler: KeyHandler): () => void {
+    /** Add a handler. With `replace`, it replaces the handlers already bound to `combo`, like Combokeys. */
+    bind(combo: string, handler: KeyHandler, options: { replace?: boolean } = {}): () => void {
         const key = normalizeCombo(combo);
-        this.#handlers.set(key, [...(this.#handlers.get(key) ?? []), handler]);
+        this.#handlers.set(key, [...(options.replace ? [] : (this.#handlers.get(key) ?? [])), handler]);
         return () => {
             this.#handlers.set(
                 key,

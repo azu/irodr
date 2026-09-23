@@ -72,7 +72,8 @@ export function installUserScriptApi(
             shortcuts.bindings.trigger(keys);
         },
         registerKey(keys, handler) {
-            shortcuts.bindings.bind(keys, (event) => handler(event));
+            // Replaces a default binding, as Combokeys' bind() did in irodr 1.x.
+            shortcuts.bindings.bind(keys, (event) => handler(event), { replace: true });
         },
         getDefaultActions: () => shortcuts.actions,
         event: events

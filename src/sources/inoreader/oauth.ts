@@ -134,15 +134,25 @@ export class InoreaderOAuth {
         const token = this.token;
         if (!token) throw new InoreaderAuthError("Inoreader is not connected.");
         if (Date.parse(token.expires) > this.options.now()) return token.accessToken;
-        return (await this.refresh()).accessToken;
+        return (await this.refresh(token.accessToken)).accessToken;
     }
 
-    /** Refresh once even when several requests notice the expiry together. */
-    refresh(): Promise<StoredToken> {
+    /**
+     * Replace `rejectedAccessToken` with a new token. Refreshes once even when several
+     * requests notice the expiry together, and reuses a token another tab already refreshed.
+     */
+    refresh(rejectedAccessToken: string): Promise<StoredToken> {
         this.#refreshing ??= (async () => {
-            const refreshToken = this.token?.refreshToken;
-            if (!refreshToken) throw new InoreaderAuthError("Inoreader session expired. Connect again.");
-            return this.requestToken({ grant_type: "refresh_token", refresh_token: refreshToken }, refreshToken);
+            const current = this.token;
+            if (!current) throw new InoreaderAuthError("Inoreader is not connected.");
+            if (current.accessToken !== rejectedAccessToken && Date.parse(current.expires) > this.options.now()) {
+                return current;
+            }
+            if (!current.refreshToken) throw new InoreaderAuthError("Inoreader session expired. Connect again.");
+            return this.requestToken(
+                { grant_type: "refresh_token", refresh_token: current.refreshToken },
+                current.refreshToken
+            );
         })().finally(() => {
             this.#refreshing = undefined;
         });
@@ -165,9 +175,17 @@ export class InoreaderOAuth {
         } catch {
             throw new Error("Could not reach Inoreader. Check your connection.");
         }
-        if (!response.ok) {
-            if (response.status === 400 || response.status === 401) this.clearToken();
+        if (response.status === 400 || response.status === 401) {
+            // The grant was rejected. Another tab may have refreshed with this refresh token
+            // already: keep its token instead of deleting it.
+            const current = this.token;
+            if (previousRefreshToken && current && current.refreshToken !== previousRefreshToken) return current;
+            this.clearToken();
             throw new InoreaderAuthError(`Inoreader authorization failed (HTTP ${response.status}). Connect again.`);
+        }
+        if (!response.ok) {
+            // Outages and proxy errors are temporary: keep the session and retry later.
+            throw new Error(`Inoreader is unavailable (HTTP ${response.status}). Try again later.`);
         }
         const json = (await response.json()) as TokenResponse;
         if (typeof json.access_token !== "string" || !json.access_token) {

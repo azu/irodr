@@ -71,16 +71,8 @@ async function runAction(
     try {
         return { ok: true, message: await reader.runSourceAction(source.id, actionId, values) };
     } catch (error) {
-        const status = reader.getState().sources.find((view) => view.id === source.id)?.snapshot.status;
-        return {
-            ok: false,
-            message:
-                status?.phase === "error"
-                    ? status.message
-                    : error instanceof Error
-                      ? error.message
-                      : `${source.title} action failed.`
-        };
+        // Report this action's failure, not an earlier status such as a failed sync.
+        return { ok: false, message: error instanceof Error ? error.message : `${source.title} action failed.` };
     }
 }
 

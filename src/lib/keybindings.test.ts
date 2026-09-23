@@ -3,9 +3,11 @@ import { comboFromEvent, KeyBindings, normalizeCombo } from "./keybindings.ts";
 
 const key = (
     value: string,
-    modifiers: Partial<Record<"ctrlKey" | "altKey" | "metaKey" | "shiftKey", boolean>> = {}
+    modifiers: Partial<Record<"ctrlKey" | "altKey" | "metaKey" | "shiftKey", boolean>> = {},
+    code = ""
 ) => ({
     key: value,
+    code,
     ctrlKey: false,
     altKey: false,
     metaKey: false,
@@ -29,6 +31,11 @@ describe("key bindings", () => {
         expect(comboFromEvent(key("s", { metaKey: true }))).toBe("meta+s");
     });
 
+    it("uses the physical key on non-Latin keyboard layouts", () => {
+        expect(comboFromEvent(key("о", {}, "KeyJ"))).toBe("j");
+        expect(comboFromEvent(key("Ы", { shiftKey: true }, "KeyS"))).toBe("shift+s");
+    });
+
     it("binds, triggers and unbinds handlers", () => {
         const bindings = new KeyBindings();
         const calls: string[] = [];
@@ -40,5 +47,14 @@ describe("key bindings", () => {
         unbind();
         expect(bindings.trigger("shift+s", event)).toBe(false);
         expect(calls).toEqual(["skip", "next"]);
+    });
+
+    it("replaces existing handlers when asked, like Combokeys", () => {
+        const bindings = new KeyBindings();
+        const calls: string[] = [];
+        bindings.bind("v", () => calls.push("default"));
+        bindings.bind("v", () => calls.push("user script"), { replace: true });
+        bindings.trigger("v", {} as KeyboardEvent);
+        expect(calls).toEqual(["user script"]);
     });
 });

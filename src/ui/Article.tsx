@@ -1,7 +1,7 @@
 import * as stylex from "@stylexjs/stylex";
 import { useEffect, useEffectEvent, useRef } from "react";
 import { safeUrl } from "../lib/sanitize.ts";
-import { formatDateTime, formatRelative } from "../lib/time.ts";
+import { formatDateTime, formatRelative, isoDateTime } from "../lib/time.ts";
 import type { Item } from "../sources/source.ts";
 import { withClass } from "./classes.ts";
 import { useUserScriptEvents } from "./context.tsx";
@@ -25,7 +25,7 @@ const styles = stylex.create({
     unread: { borderLeftColor: colors.newItem },
     focused: { backgroundColor: colors.focus },
     title: { margin: 0, paddingTop: "0.5em", fontSize: "1.25rem", lineHeight: 1.4 },
-    titleLink: { color: colors.link, textDecoration: { default: "none", ":hover": "underline" } },
+    titleLink: { color: colors.link, textDecorationLine: { default: "none", ":hover": "underline" } },
     meta: { color: colors.muted, fontSize: 13 },
     metaLink: { color: colors.muted },
     author: { color: colors.text },
@@ -92,7 +92,7 @@ export function Article({ item, focused }: { item: Item; focused: boolean }) {
                         Original
                     </a>
                     {" | "}
-                    <time dateTime={new Date(item.updatedAt).toISOString()} title={formatDateTime(item.updatedAt)}>
+                    <time dateTime={isoDateTime(item.updatedAt)} title={formatDateTime(item.updatedAt)}>
                         {formatRelative(item.updatedAt, now)}
                     </time>
                     {item.author ? (
@@ -106,11 +106,11 @@ export function Article({ item, focused }: { item: Item; focused: boolean }) {
             <HtmlContent html={item.contentHtml} className={`${CLASS.itemBody} irodr-article-body`} />
             <footer {...stylex.props(styles.footer)}>
                 {"Posted: "}
-                <time dateTime={new Date(item.publishedAt).toISOString()}>{formatDateTime(item.publishedAt)}</time>
+                <time dateTime={isoDateTime(item.publishedAt)}>{formatDateTime(item.publishedAt)}</time>
                 {updated ? (
                     <>
                         {" | Updated: "}
-                        <time dateTime={new Date(item.updatedAt).toISOString()}>{formatDateTime(item.updatedAt)}</time>
+                        <time dateTime={isoDateTime(item.updatedAt)}>{formatDateTime(item.updatedAt)}</time>
                     </>
                 ) : null}
             </footer>

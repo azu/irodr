@@ -1,11 +1,11 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { loadPreferences, savePreferences } from "./app/preferences.ts";
+import { hasSavedPreferences, legacyPreferences, loadPreferences, savePreferences } from "./app/preferences.ts";
 import { Reader } from "./app/reader.ts";
 import { loadConfig } from "./config.ts";
 import "./global.css";
 import { Emitter } from "./lib/emitter.ts";
-import { browserWriteLock, createIndexedDBStore } from "./lib/kv-store.ts";
+import { browserWriteLock, createIndexedDBStore, readAllValues } from "./lib/kv-store.ts";
 import { safeUrl } from "./lib/sanitize.ts";
 import { GitHubSource } from "./sources/github/github-source.ts";
 import { InoreaderSource } from "./sources/inoreader/inoreader-source.ts";
@@ -82,6 +82,12 @@ createRoot(root).render(
         </ReaderContext>
     </StrictMode>
 );
+
+// Carry over preferences saved by irodr 1.x once.
+if (!hasSavedPreferences(localStorage)) {
+    const legacy = legacyPreferences(await readAllValues("AppRepository").catch(() => []));
+    if (legacy) reader.updatePreferences(legacy);
+}
 
 const started = await reader.start(new URL(location.href));
 if (started.consumedUrl) history.replaceState(null, "", location.pathname);

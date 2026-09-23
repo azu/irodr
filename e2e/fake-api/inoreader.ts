@@ -64,6 +64,8 @@ export class FakeInoreader {
     streams = new Map<string, Stream>();
     failingStreams = new Set<string>();
     failingMarkRead = new Set<string>();
+    /** HTTP status the token endpoint answers with, e.g. 503 for an outage. */
+    tokenFailure?: number;
     #codes = new Map<string, { redirectUri: string }>();
     #accessTokens = new Map<string, number>();
     #refreshTokens = new Set<string>();
@@ -77,6 +79,7 @@ export class FakeInoreader {
         for (const seed of scenario.subscriptions ?? []) this.addSubscription(seed);
         this.failingStreams = new Set(scenario.failingStreams ?? []);
         this.failingMarkRead = new Set(scenario.failingMarkRead ?? []);
+        this.tokenFailure = undefined;
         this.#codes.clear();
         this.#accessTokens.clear();
         this.#refreshTokens.clear();
@@ -149,6 +152,7 @@ export class FakeInoreader {
     }
 
     private token(request: FakeRequest): FakeResponse {
+        if (this.tokenFailure) return text("Service Unavailable", this.tokenFailure);
         const form = formBody(request);
         const basic = /^Basic\s+(.+)$/i.exec(request.headers.authorization ?? "")?.[1];
         const [basicId, basicSecret] = basic ? atob(basic).split(":") : [];

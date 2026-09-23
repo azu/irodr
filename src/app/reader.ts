@@ -12,6 +12,8 @@ import { DEFAULT_PREFERENCES, normalizePreferences, type Preferences } from "./p
 
 /** Feeds visited within this many navigations stay listed even when read. */
 const RECENT_FEEDS = 5;
+/** Feeds whose loaded items are kept in memory, least recently used first out. */
+const CACHE_LIMIT = 100;
 /** Items kept for the Shift+H debug dump. */
 const READ_HISTORY_LIMIT = 100;
 /** Routine messages do not replace an error shown within this time. */
@@ -50,7 +52,6 @@ export interface ArticleView {
     readonly filterEnabled: boolean;
     readonly canLoadMore: boolean;
     readonly loaded: boolean;
-    readonly error?: string;
 }
 
 export interface Message {
@@ -122,11 +123,10 @@ export class Reader {
     #retainedCurrent?: Feed;
     #collapsed = new Set<string>();
     #cache = new Map<string, CacheEntry>();
-    #loads = new Map<string, { revision: string; promise: Promise<CacheEntry> }>();
+    #loads = new Map<string, { revision: string; promise: Promise<CacheEntry>; token: object }>();
     #readPending = new Set<string>();
     #readOverrides = new WeakMap<Feed, Feed>();
     #filterEnabled = true;
-    #viewError?: string;
     #focusItemId?: string;
     #scrollRequest?: ScrollRequest;
     #navigation = 0;
@@ -295,7 +295,9 @@ export class Reader {
             unread += feed.unreadCount;
             // Like LDR, read feeds leave the list, except recently visited ones so the list does not shift.
             if (feed.unreadCount === 0 && !recent.has(feed.id) && feed.id !== this.#currentFeedId) continue;
-            byCategory.set(feed.category, [...(byCategory.get(feed.category) ?? []), feed]);
+            const category = byCategory.get(feed.category);
+            if (category) category.push(feed);
+            else byCategory.set(feed.category, [feed]);
         }
         const categories = [...byCategory.keys()].sort().map((name) => ({
             name,
@@ -343,8 +345,7 @@ export class Reader {
             loadedCount: all.length,
             filterEnabled,
             canLoadMore: source.capabilities.loadMore && entry?.continuation !== undefined,
-            loaded: entry !== undefined,
-            error: this.#viewError
+            loaded: entry !== undefined
         };
         return previous && shallowEqual(previous, view) ? previous : view;
     }
@@ -395,6 +396,7 @@ export class Reader {
     #load(feed: Feed): Promise<CacheEntry> {
         const inflight = this.#loads.get(feed.id);
         if (inflight?.revision === feed.revision) return inflight.promise;
+        const token = {};
         const promise = this.#source(feed)
             .loadItems(feed.id, { count: this.#preferences.fetchContentsCount })
             .then((page) => {
@@ -403,14 +405,25 @@ export class Reader {
                     items: page.items,
                     continuation: page.continuation
                 };
-                this.#cache.set(feed.id, entry);
+                // A load started later for a newer revision wins, even if this one finishes last.
+                if (this.#loads.get(feed.id)?.token === token) this.#remember(feed.id, entry);
                 return entry;
             })
             .finally(() => {
-                if (this.#loads.get(feed.id)?.promise === promise) this.#loads.delete(feed.id);
+                if (this.#loads.get(feed.id)?.token === token) this.#loads.delete(feed.id);
             });
-        this.#loads.set(feed.id, { revision: feed.revision, promise });
+        this.#loads.set(feed.id, { revision: feed.revision, promise, token });
         return promise;
+    }
+
+    /** Cache items, evicting the least recently used feeds beyond CACHE_LIMIT. */
+    #remember(feedId: string, entry: CacheEntry): void {
+        this.#cache.delete(feedId);
+        this.#cache.set(feedId, entry);
+        for (const id of this.#cache.keys()) {
+            if (this.#cache.size <= CACHE_LIMIT) break;
+            if (id !== this.#currentFeedId && id !== this.#pendingFeedId) this.#cache.delete(id);
+        }
     }
 
     #setLoading(delta: 1 | -1): void {
@@ -461,12 +474,13 @@ export class Reader {
             if (slow) this.setMessage("Finish loading contents");
         }
         this.#pendingFeedId = undefined;
+        const opened = this.#cache.get(feedId);
+        if (opened) this.#remember(feedId, opened);
         if (options.skipCurrent) this.#history.pop();
         if (this.#history.at(-1) !== feedId) this.#history.push(feedId);
         this.#currentFeedId = feedId;
         this.#retainedCurrent = feed;
         this.#filterEnabled = true;
-        this.#viewError = undefined;
         this.#focusItemId = undefined;
         this.#scrollTo(undefined, false);
         this.#commit({ list: true, view: true });
@@ -596,7 +610,7 @@ export class Reader {
             const latest = this.#cache.get(feed.id);
             if (!latest) return;
             const known = new Set(latest.items.map((item) => item.id));
-            this.#cache.set(feed.id, {
+            this.#remember(feed.id, {
                 revision: latest.revision,
                 items: [...latest.items, ...page.items.filter((item) => !known.has(item.id))],
                 continuation: page.continuation

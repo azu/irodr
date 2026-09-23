@@ -146,10 +146,11 @@ export class InoreaderSource implements Source {
                 throw new InoreaderRequestError("Could not reach Inoreader. Check your connection.", 0);
             }
         };
-        let response = await send(await this.#oauth.accessToken());
+        const accessToken = await this.#oauth.accessToken();
+        let response = await send(accessToken);
         if (response.status === 401) {
             // The token may have been revoked or expired early: refresh once.
-            response = await send((await this.#oauth.refresh()).accessToken);
+            response = await send((await this.#oauth.refresh(accessToken)).accessToken);
         }
         if (!response.ok) {
             throw new InoreaderRequestError(`Inoreader request failed (HTTP ${response.status}).`, response.status);
@@ -246,7 +247,9 @@ export class InoreaderSource implements Source {
 
     private toItem(feedId: string, streamId: string, response: StreamItemResponse): Item {
         const canonical = (response.canonical ?? []).map((link) => link.href).join(",");
-        const updated = response.updated ? response.updated : response.published;
+        // Seconds. Guard against missing values: an invalid date must not break rendering.
+        const published = response.published || 0;
+        const updated = response.updated || published;
         const item: Item = {
             // The irodr 1.x article ID, deliberately without the first whitespace run only.
             id: `${streamId}--${response.id}--${canonical}`.replace(/\s+/, ""),
@@ -255,7 +258,7 @@ export class InoreaderSource implements Source {
             url: response.canonical?.[0]?.href ?? response.alternate?.[0]?.href ?? "",
             author: response.author ?? "",
             contentHtml: toItemContent(response),
-            publishedAt: response.published * 1000,
+            publishedAt: published * 1000,
             updatedAt: updated * 1000,
             unread: !(response.categories ?? []).some((category) => READ_CATEGORY.test(category))
         };
@@ -266,10 +269,14 @@ export class InoreaderSource implements Source {
 
     async markRead(feedId: string, loadedItems: readonly Item[]): Promise<void> {
         const streamId = this.streamId(feedId);
-        const loaded = loadedItems.map((item) => this.#itemTimestamps.get(item) ?? item.updatedAt * 1000);
+        const loaded = loadedItems
+            .map((item) => this.#itemTimestamps.get(item) ?? item.updatedAt * 1000)
+            .filter((timestamp) => Number.isFinite(timestamp) && timestamp > 0);
+        // Nothing was shown, so nothing is marked read.
+        if (loaded.length === 0) return;
         // Through the newest loaded article: later arrivals stay unread.
         // mark-all-as-read covers articles older than `ts`, so add 1µs to include the newest.
-        const through = loaded.length > 0 ? Math.max(...loaded) + 1 : this.options.now() * 1000;
+        const through = Math.max(...loaded) + 1;
         try {
             await this.request("/mark-all-as-read", { s: streamId, ts: through });
         } catch (error) {

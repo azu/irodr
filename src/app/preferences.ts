@@ -45,6 +45,25 @@ export function normalizePreferences(value: Partial<Record<keyof Preferences, un
     };
 }
 
+export function hasSavedPreferences(storage: Pick<Storage, "getItem">): boolean {
+    try {
+        return storage.getItem(KEY) !== null;
+    } catch {
+        return false;
+    }
+}
+
+/** Preferences saved by irodr 1.x: `{ id, user, preferences }` records in IndexedDB `AppRepository`. */
+export function legacyPreferences(records: readonly unknown[]): Preferences | undefined {
+    for (const record of records) {
+        const preferences = (record as { preferences?: unknown } | null)?.preferences;
+        if (preferences && typeof preferences === "object") {
+            return normalizePreferences(preferences);
+        }
+    }
+    return undefined;
+}
+
 export function loadPreferences(storage: Pick<Storage, "getItem">): Preferences {
     try {
         return normalizePreferences(JSON.parse(storage.getItem(KEY) ?? "{}") as Partial<Preferences>);

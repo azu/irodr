@@ -2,7 +2,7 @@ import * as stylex from "@stylexjs/stylex";
 import { useEffect, useRef } from "react";
 import type { ArticleView as View } from "../app/reader.ts";
 import { safeUrl } from "../lib/sanitize.ts";
-import { formatDateTime } from "../lib/time.ts";
+import { formatDateTime, isoDateTime } from "../lib/time.ts";
 import { formatUnreadCount } from "../sources/source.ts";
 import { Article } from "./Article.tsx";
 import { withClass } from "./classes.ts";
@@ -14,7 +14,7 @@ import { colors } from "./tokens.stylex.ts";
 
 const styles = stylex.create({
     main: { position: "relative", minWidth: 0, minHeight: 0, display: "flex", flexDirection: "column" },
-    scroller: { flexGrow: 1, flexBasis: 0, overflowY: "auto", overflowX: "hidden", outline: "none" },
+    scroller: { flexGrow: 1, flexBasis: 0, overflowY: "auto", overflowX: "hidden", outlineStyle: "none" },
     header: {
         display: "flex",
         alignItems: "center",
@@ -99,7 +99,7 @@ function FeedHeader({ view }: { view: View }) {
                 <span {...stylex.props(styles.updated)}>
                     {"Last updated: "}
                     {feed.updatedAt ? (
-                        <time dateTime={new Date(feed.updatedAt).toISOString()}>{formatDateTime(feed.updatedAt)}</time>
+                        <time dateTime={isoDateTime(feed.updatedAt)}>{formatDateTime(feed.updatedAt)}</time>
                     ) : (
                         "Not synced yet"
                     )}

@@ -51,6 +51,9 @@ See [Source adapters](./docs/source-adapters.md) for details, storage and limita
 | <kbd>Shift</kbd>+<kbd>t</kbd>                        | Toggle translate mode (English → Japanese)            |
 | <kbd>Shift</kbd>+<kbd>h</kbd>                        | Print read items of this session to the console       |
 
+Shortcuts use the physical key, so they also work with non-Latin keyboard layouts.
+Preferences saved by irodr 1.x are carried over on the first start.
+
 ### Custom Inoreader Client ID and Client Secret
 
 To use your own Inoreader app:

@@ -68,6 +68,22 @@ export function createIndexedDBStore(name: string): KeyValueStore {
     };
 }
 
+/**
+ * All values of an existing localforage database, e.g. irodr 1.x `AppRepository`.
+ * Returns [] without creating the database when it does not exist.
+ */
+export async function readAllValues(name: string): Promise<unknown[]> {
+    if (typeof indexedDB === "undefined" || typeof indexedDB.databases !== "function") return [];
+    const databases = await indexedDB.databases();
+    if (!databases.some((database) => database.name === name)) return [];
+    const db = await openDatabase(name);
+    try {
+        return await promisify(db.transaction(OBJECT_STORE, "readonly").objectStore(OBJECT_STORE).getAll());
+    } finally {
+        db.close();
+    }
+}
+
 export function createMemoryStore(initial: Record<string, unknown> = {}): KeyValueStore {
     const map = new Map(Object.entries(initial));
     return {

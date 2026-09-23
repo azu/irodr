@@ -140,6 +140,37 @@ describe("InoreaderSource", () => {
         expect(source.getSnapshot().feeds).toHaveLength(5);
     });
 
+    it("keeps the session when the token endpoint is temporarily unavailable", async () => {
+        const { source, storage } = await connected();
+        server.inoreader.expireTokens();
+        server.inoreader.tokenFailure = 503;
+        await expect(source.sync()).rejects.toThrow("Inoreader is unavailable (HTTP 503). Try again later.");
+        expect(source.getSnapshot().connected).toBe(true);
+        expect(source.getSnapshot().status.phase).toBe("error");
+        expect(storage.getItem("inoreader-token")).not.toBeNull();
+        server.inoreader.tokenFailure = undefined;
+        await source.sync();
+        expect(source.getSnapshot().feeds).toHaveLength(5);
+    });
+
+    it("reuses a token another tab already refreshed", async () => {
+        const { source, storage } = await connected();
+        const otherTab = createSource(storage).source;
+        server.inoreader.expireTokens();
+        await otherTab.sync();
+        await source.sync();
+        const grants = server.log.filter((entry) => entry.path === "/oauth2/token");
+        expect(grants).toHaveLength(2);
+        expect(source.getSnapshot().feeds).toHaveLength(5);
+    });
+
+    it("marks nothing read when no item was loaded", async () => {
+        const { source } = await connected();
+        await source.markRead(`inoreader:${ALPHA}`, []);
+        expect(server.log.some((entry) => entry.path.endsWith("/mark-all-as-read"))).toBe(false);
+        expect(server.inoreader.unreadCount(ALPHA)).toBe(3);
+    });
+
     it("disconnects when the session cannot be refreshed", async () => {
         const { source, storage } = await connected();
         server.reset({ inoreader: { subscriptions: inoreaderSubscriptions() } });

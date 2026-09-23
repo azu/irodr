@@ -198,7 +198,9 @@ export class GitHubSource implements Source {
                 hidden.add(repository);
                 continue;
             }
-            groups.set(repository, [...(groups.get(repository) ?? []), item]);
+            const group = groups.get(repository);
+            if (group) group.push(item);
+            else groups.set(repository, [item]);
         }
         const previousFeeds = new Map(this.#store.get().feeds.map((feed) => [feed.id, feed]));
         const previousItems = this.#items;
@@ -349,9 +351,10 @@ export class GitHubSource implements Source {
         // Checkpoint items without claiming a complete sync: a retry starts from the previous cursor.
         const saveItems = async (items: CachedItem[]) => {
             cancelled();
-            const incoming = unread(items);
-            if (incoming.length === 0) return;
-            await this.#cache.write((snapshot) => upsertItems(snapshot, this.id, incoming));
+            if (items.length === 0) return;
+            // Filter inside the serialized write: a repository marked read while this write
+            // waited in the queue must not come back.
+            await this.#cache.write((snapshot) => upsertItems(snapshot, this.id, unread(items)));
             if (generation === this.#generation) this.project();
         };
         const promise = (async () => {
@@ -428,8 +431,8 @@ export class GitHubSource implements Source {
                 // optional and must not block cross-browser read reconciliation.
                 cancelled();
                 const cursor = { nextPollAt: new Date(this.options.now() + pollSeconds * 1000).toISOString() };
-                const complete = unread([...items.values()]);
                 await this.#cache.write((snapshot) => {
+                    const complete = unread([...items.values()]);
                     const record = snapshot.sources.find((entry) => entry.id === this.id);
                     if (!record) throw new GitHubSourceError("GitHub source was removed.");
                     // Notifications absent from a complete unread snapshot were read elsewhere.

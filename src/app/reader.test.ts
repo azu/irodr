@@ -265,6 +265,20 @@ describe("Reader", () => {
         expect(source.marked).toEqual([]);
     });
 
+    it("keeps newer items when an older load finishes last", async () => {
+        const { reader, source, titles } = await setup();
+        const slow = Promise.withResolvers<void>();
+        source.gate = slow.promise;
+        const first = reader.openFeed("memory:A");
+        // The feed changes while the first load is in flight; opening it again loads the new revision.
+        source.setFeed("A", [{ title: "a0" }, { title: "a1" }, { title: "a2" }]);
+        source.gate = Promise.resolve();
+        expect(await reader.openFeed("memory:A")).toBe("opened");
+        slow.resolve();
+        expect(await first).toBe("superseded");
+        expect(titles()).toEqual(["a0", "a1", "a2"]);
+    });
+
     it("skips feeds that fail to load", async () => {
         const { reader, source, current } = await setup();
         source.failLoad.add("memory:A");

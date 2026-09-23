@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vite-plus/test";
-import { DEFAULT_PREFERENCES, loadPreferences, normalizePreferences, savePreferences } from "./preferences.ts";
+import {
+    DEFAULT_PREFERENCES,
+    legacyPreferences,
+    loadPreferences,
+    normalizePreferences,
+    savePreferences
+} from "./preferences.ts";
 
 describe("preferences", () => {
     it("falls back to defaults for missing or invalid values", () => {
@@ -27,5 +33,21 @@ describe("preferences", () => {
         expect(loadPreferences(storage).prefetchSubscriptionCount).toBe(2);
         values.set("irodr:preferences", "{broken");
         expect(loadPreferences(storage)).toEqual(DEFAULT_PREFERENCES);
+    });
+
+    it("reads irodr 1.x preferences", () => {
+        const record = {
+            id: "01H",
+            user: { id: "u" },
+            preferences: {
+                prefetchSubscriptionCount: 0,
+                fetchContentsCount: 50,
+                enableAutoRefreshSubscription: false,
+                autoRefreshSubscriptionSec: 300
+            }
+        };
+        expect(legacyPreferences([record])).toEqual(record.preferences);
+        expect(legacyPreferences([])).toBeUndefined();
+        expect(legacyPreferences([null, "x"])).toBeUndefined();
     });
 });

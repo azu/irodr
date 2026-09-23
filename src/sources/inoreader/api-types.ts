@@ -46,8 +46,8 @@ export interface Enclosure {
 export interface StreamItemResponse {
     id: string;
     title: string;
-    /** Seconds. */
-    published: number;
+    /** Seconds. Missing for some items. */
+    published?: number;
     /** Seconds. 0 or absent when never updated. */
     updated?: number;
     /** Microseconds, as a string. Used by mark-all-as-read. */

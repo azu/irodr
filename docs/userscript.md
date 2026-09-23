@@ -46,7 +46,7 @@ interface UserScriptActiveSubscription {
 
 ## `window.userScript.registerKey(keys: string, handler: (event?: Event) => void): void`
 
-Bind a shortcut, e.g. `"n"` or `"shift+n"`.
+Bind a shortcut, e.g. `"n"` or `"shift+n"`. It replaces a default binding of the same keys, as in irodr 1.x.
 
 ## `window.userScript.triggerKey(keys: string): void`
 

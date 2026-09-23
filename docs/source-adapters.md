@@ -9,15 +9,16 @@ This document describes the behavior of each source.
 
 - **Login**: OAuth 2.0 authorization code flow with a random `state`. The token is stored in
   `localStorage["inoreader-token"]` (the irodr 1.x format, so existing logins keep working) and refreshed
-  with the refresh token when it expires or a request returns 401. If refreshing fails, the source
-  disconnects and asks you to connect again.
+  with the refresh token when it expires or a request returns 401. A token refreshed by another tab is reused.
+  Only a rejected grant (HTTP 400/401) disconnects; outages of the token endpoint keep the session.
 - **Custom app**: a Client ID and secret entered in Sources are stored in `localStorage["irodr:inoreader-client"]`.
 - **Feeds**: `subscription/list` and `unread-count`. A feed is listed under its first category.
 - **Items**: `stream/contents` with `n` = "Fetch subscription contents Count" (default 20). `Shift+J` and
   **Read More** load older items with the continuation. The Unread/All toggle (`t`) switches between items that
   were unread when loaded and all loaded items.
 - **Mark read**: leaving a feed (or `m`) calls `mark-all-as-read` with `ts` just after the newest loaded item,
-  so items that arrived afterwards stay unread. Until the next unread count reflects it, the feed shows 0.
+  so items that arrived afterwards stay unread. Nothing is marked when no item was loaded. Until the next unread
+  count reflects it, the feed shows 0.
 - **CORS**: requests go through `VITE_CORS_PROXY` (`/cors-proxy/`), unless `localStorage["REACT_APP_CORS_PROXY"]`
   overrides it (see `resources/userScript/irodr-cors.js`).
 

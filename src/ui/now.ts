@@ -7,10 +7,15 @@ let timer: ReturnType<typeof setInterval> | undefined;
 
 function subscribe(listener: () => void): () => void {
     listeners.add(listener);
-    timer ??= setInterval(() => {
+    if (timer === undefined) {
+        // The clock stops while nothing shows a time; catch up when it restarts.
+        // useSyncExternalStore re-reads the snapshot after subscribing.
         now = Date.now();
-        for (const notify of listeners) notify();
-    }, 60_000);
+        timer = setInterval(() => {
+            now = Date.now();
+            for (const notify of listeners) notify();
+        }, 60_000);
+    }
     return () => {
         listeners.delete(listener);
         if (listeners.size === 0 && timer !== undefined) {
