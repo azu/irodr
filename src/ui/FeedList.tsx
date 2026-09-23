@@ -18,7 +18,9 @@ const styles = stylex.create({
         borderRightWidth: 1,
         borderRightStyle: "solid",
         borderRightColor: colors.border,
-        minHeight: 0
+        minHeight: 0,
+        // Feeds scrolled into view must stay clear of the sticky category header.
+        scrollPaddingTop: sizes.categoryHeader
     },
     list: { listStyle: "none", margin: 0, padding: 0 },
     categoryButton: {
@@ -26,7 +28,7 @@ const styles = stylex.create({
         alignItems: "center",
         gap: 4,
         width: "100%",
-        height: 24,
+        height: sizes.categoryHeader,
         paddingInline: 6,
         borderStyle: "none",
         backgroundColor: colors.subtle,
@@ -37,8 +39,12 @@ const styles = stylex.create({
         cursor: "pointer",
         position: "sticky",
         top: 0,
-        zIndex: 1
+        zIndex: 1,
+        // One line, so the header is exactly sizes.categoryHeader tall (the list's scroll padding).
+        overflow: "hidden",
+        whiteSpace: "nowrap"
     },
+    categoryName: { minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" },
     feed: {
         display: "flex",
         alignItems: "center",
@@ -142,12 +148,13 @@ function Category({
                 type="button"
                 {...stylex.props(styles.categoryButton)}
                 aria-expanded={!category.collapsed}
+                title={category.name}
                 tabIndex={-1}
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => reader.toggleCategory(category.name)}
             >
                 <ChevronIcon open={!category.collapsed} size={14} />
-                {category.name}
+                <span {...stylex.props(styles.categoryName)}>{category.name}</span>
             </button>
             {category.collapsed ? null : (
                 <ul {...stylex.props(styles.list)} aria-label={category.name}>

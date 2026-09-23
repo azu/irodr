@@ -20,5 +20,7 @@ export const colors = stylex.defineVars({
 export const sizes = stylex.defineVars({
     header: "40px",
     sidebar: "300px",
-    feedRow: "32px"
+    feedRow: "32px",
+    /** The sticky category header in the feed list. */
+    categoryHeader: "24px"
 });

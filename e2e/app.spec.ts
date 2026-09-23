@@ -1,4 +1,4 @@
-import { githubNotifications, inoreaderSubscriptions } from "./fake-api/fixtures.ts";
+import { githubNotifications, inoreaderSubscriptions, manyInoreaderSubscriptions } from "./fake-api/fixtures.ts";
 import {
     articles,
     closeDialog,
@@ -203,4 +203,29 @@ test("user script API", async ({ page }) => {
     const state = await page.evaluate(() => (window as unknown as TestWindow).userScriptState);
     expect(state.custom).toBe(1);
     expect(state.mounted).toEqual(["alpha article 1", "alpha article 2", "alpha article 3"]);
+});
+
+test("the current feed is not hidden behind the sticky category header", async ({ page, api }) => {
+    // A folder name too long for one line must not make the header taller.
+    const folder = "A folder name long enough to wrap onto a second line in the sidebar";
+    await api.reset({ inoreader: { subscriptions: manyInoreaderSubscriptions(30, folder) } });
+    // A short window, so moving through the feeds scrolls the sidebar.
+    await page.setViewportSize({ width: 1280, height: 400 });
+    await connectInoreader(page);
+    await closeDialog(page);
+    /** How many of the current feed's top and bottom edges something else covers. */
+    const coveredEdges = () =>
+        currentFeed(page).evaluate((row) => {
+            const rect = row.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            return [rect.top + 1, rect.bottom - 1].filter((y) => !row.contains(document.elementFromPoint(x, y))).length;
+        });
+    for (const index of Array.from({ length: 12 }, (_, offset) => offset + 1)) {
+        await page.keyboard.press("s");
+        await expect(currentFeed(page)).toHaveText(`Feed ${String(index).padStart(2, "0")} (1)`);
+        await expect.poll(coveredEdges, { message: `Feed ${index} after s` }).toBe(0);
+    }
+    await page.keyboard.press("a");
+    await expect(currentFeed(page)).toHaveText("Feed 11 (0)");
+    await expect.poll(coveredEdges, { message: "Feed 11 after a" }).toBe(0);
 });

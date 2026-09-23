@@ -19,6 +19,20 @@ function items(prefix: string, count: number, options: { read?: number; offset?:
     }));
 }
 
+/** `count` feeds with one unread item each, in one category: enough to scroll the sidebar. */
+export function manyInoreaderSubscriptions(count: number, category = "Many"): InoreaderSubscriptionSeed[] {
+    return Array.from({ length: count }, (_, index) => {
+        const name = `feed${String(index + 1).padStart(2, "0")}`;
+        return {
+            id: `feed/https://${name}.example.com/rss`,
+            title: `Feed ${String(index + 1).padStart(2, "0")}`,
+            categories: [category],
+            htmlUrl: `https://${name}.example.com/`,
+            items: items(name, 1)
+        };
+    });
+}
+
 /** Three categories, sorted by name in the sidebar: Blogs, News, Tech. */
 export function inoreaderSubscriptions(): InoreaderSubscriptionSeed[] {
     return [
