@@ -13,6 +13,7 @@ A client-side React 19 app built with Vite+ (`vp`), StyleX and React Compiler.
 | Unit tests (Vitest, Node)           | `vp test`                            |
 | Integration tests (Playwright)      | `vp run test:e2e`                    |
 | Production build                    | `vp build`                           |
+| irodr-local executable (Node 25.7+) | `vp build && vp pack`                |
 
 Run `vp check` and `vp test` before committing; the pre-commit hook runs `vp staged` and `vp test`.
 Run `vp run test:e2e` when changing behavior. If Playwright's Chromium is not installed, set
@@ -27,7 +28,9 @@ See [docs/architecture.md](docs/architecture.md).
   the immutable model and pure transitions (`reader-model.ts`), the projection for the UI (`reader-view.ts`)
   and `createReader` with the side effects (`reader.ts`).
 - `src/ui/`: React components. They depend on the reader only, never on a specific source.
-- `e2e/fake-api/`: fake Inoreader and GitHub APIs, used by unit tests and Playwright tests.
+- `server/`: irodr-local, the optional local server (docs/local-server.md). A `(Request) => Response` handler hosted
+  by Node; `swift/irodr-translate` is its macOS translation helper.
+- `e2e/fake-api/`: fake Inoreader, GitHub and irodr-local APIs, used by unit tests and Playwright tests.
 - `lib/`: local packages of the pnpm workspace, e.g. `lib/oxlint-plugin-immutable` (the `immutable/*` lint rules).
 
 ## Rules

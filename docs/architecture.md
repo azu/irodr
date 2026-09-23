@@ -1,7 +1,9 @@
 # Architecture
 
-Irodr is a client-side single-page application. There is no irodr server: the browser talks to the
+Irodr is a client-side single-page application. It needs no irodr server: the browser talks to the
 providers' APIs directly (Inoreader through a CORS proxy) and keeps credentials and caches in browser storage.
+[irodr-local](local-server.md) optionally serves the same app from the user's machine and adds a local API
+(e.g. on-device translation), detected at runtime.
 
 ```text
 src/
@@ -13,8 +15,11 @@ src/
   ui/             React components and browser glue (keyboard shortcuts, user script API)
   lib/            Small utilities (store, IndexedDB key-value store, sanitizer, key bindings)
   main.tsx        Wires sources, reader and UI together
+server/           irodr-local: serves the built app and the local API (Node single executable, `vp pack`)
+swift/
+  irodr-translate/  Translation helper for irodr-local (Apple's Translation framework, macOS)
 e2e/
-  fake-api/       Fake Inoreader and GitHub APIs used by unit and integration tests
+  fake-api/       Fake Inoreader, GitHub and irodr-local APIs used by unit and integration tests
   *.spec.ts       Playwright integration tests
 lib/
   oxlint-plugin-immutable/  Lint rules for the immutable style (a pnpm workspace package)

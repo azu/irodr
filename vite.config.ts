@@ -1,6 +1,8 @@
 import stylex from "@stylexjs/unplugin/vite";
 import react from "@vitejs/plugin-react";
+import { existsSync } from "node:fs";
 import { defineConfig } from "vite-plus";
+import { assetPaths, EMBEDDED_DIST, EMBEDDED_TRANSLATOR } from "./server/assets.ts";
 
 // Inoreader does not allow CORS. Production uses the Netlify edge function
 // (netlify/edge-functions/cors-proxy.ts); dev and preview use the same path.
@@ -16,6 +18,17 @@ const corsProxy = Object.fromEntries(
     ])
 );
 
+// irodr-local (`vp pack`) embeds the built app and, on macOS, the translation helper built by
+// `swift build -c release --package-path swift/irodr-translate`. See docs/local-server.md.
+const TRANSLATOR_BUILD = "swift/irodr-translate/.build/release/irodr-translate";
+function localServerAssets(): Record<string, string> {
+    const app = existsSync("dist") ? [...assetPaths("dist")] : [];
+    return Object.fromEntries([
+        ...app.map(([path, file]) => [`${EMBEDDED_DIST}${path.slice(1)}`, file]),
+        ...(existsSync(TRANSLATOR_BUILD) ? [[EMBEDDED_TRANSLATOR, TRANSLATOR_BUILD]] : [])
+    ]);
+}
+
 // Unit tests run in Node without UI; skip the UI compilers there.
 const unitTest = process.env.VITEST === "true";
 
@@ -29,6 +42,13 @@ export default defineConfig({
               react({ compiler: true })
           ],
     server: { port: 8888, strictPort: true, proxy: corsProxy },
+    // The single executable irodr-local. Node's Single Executable Applications need Node.js 25.7+.
+    pack: {
+        entry: ["server/main.ts"],
+        outDir: "dist-local",
+        platform: "node",
+        exe: { fileName: "irodr-local", seaConfig: { assets: localServerAssets() } }
+    },
     preview: { port: 8888, strictPort: true, proxy: corsProxy },
     lint: {
         plugins: ["eslint", "typescript", "unicorn", "oxc", "react", "jsx-a11y", "import"],
@@ -135,7 +155,7 @@ export default defineConfig({
         "*.{json,md,yml,yaml,css,html}": "vp fmt"
     },
     test: {
-        include: ["src/**/*.test.ts", "e2e/fake-api/**/*.test.ts", "lib/**/*.test.ts"],
+        include: ["src/**/*.test.ts", "e2e/fake-api/**/*.test.ts", "lib/**/*.test.ts", "server/**/*.test.ts"],
         environment: "node"
     }
 });

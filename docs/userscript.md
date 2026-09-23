@@ -98,8 +98,9 @@ window.addEventListener("userscript-init", () => {
 
 ## Translation
 
-`Shift+T` translates the focused item from English to Japanese with the browser's
-[Translator API](https://developer.chrome.com/docs/ai/translator-api). A user script can provide a translator instead:
+`Shift+T` translates the focused item from English to Japanese with [irodr-local](local-server.md) when irodr is
+served by it, otherwise with the browser's [Translator API](https://developer.chrome.com/docs/ai/translator-api).
+A user script can provide a translator instead:
 
 ```js
 window.irodrTranslator = {

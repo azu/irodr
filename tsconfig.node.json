@@ -7,5 +7,5 @@
     "types": ["node", "vite-plus/client"]
   },
   // Unit tests run in Node and use the fake API server, so they belong here with the code they test.
-  "include": ["vite.config.ts", "playwright.config.ts", "e2e", "netlify", "src/**/*.ts", "lib"]
+  "include": ["vite.config.ts", "playwright.config.ts", "e2e", "netlify", "server", "src/**/*.ts", "lib"]
 }
