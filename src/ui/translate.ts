@@ -1,3 +1,4 @@
+import type { LocalApi } from "../lib/local-api.ts";
 import { CLASS, itemElement } from "./dom.ts";
 
 type TranslateBatch = (texts: string[]) => Promise<string[]>;
@@ -27,9 +28,22 @@ function builtInTranslator(): typeof Translator | undefined {
     return typeof Translator === "undefined" ? undefined : Translator;
 }
 
-/** Priority: browser Translator API, the older experimental API, then a user script translator. */
-async function createTranslator(sourceLanguage: string, targetLanguage: string): Promise<TranslatorHandle> {
+/**
+ * Priority: the local server (irodr-local, e.g. Apple's Translation framework), the browser Translator API,
+ * the older experimental API, then a user script translator.
+ */
+async function createTranslator(
+    sourceLanguage: string,
+    targetLanguage: string,
+    local: LocalApi
+): Promise<TranslatorHandle> {
     const languages = { sourceLanguage, targetLanguage };
+    if ((await local.info())?.features.has("translate")) {
+        return {
+            translateBatch: (texts) => local.translate(texts, sourceLanguage, targetLanguage),
+            destroy: () => undefined
+        };
+    }
     const browserTranslator = builtInTranslator();
     if (browserTranslator) {
         if ((await browserTranslator.availability(languages)) !== "unavailable") {
@@ -47,7 +61,7 @@ async function createTranslator(sourceLanguage: string, targetLanguage: string):
         };
     }
     throw new Error(
-        "No translator available. Install the irodr-translate userscript or use a browser with Translation API support."
+        "No translator available. Run irodr-local, install the irodr-translate userscript or use a browser with Translation API support."
     );
 }
 
@@ -82,7 +96,10 @@ export interface TranslateMode {
     translate: (itemId: string) => Promise<void>;
 }
 
-export function createTranslateMode(notify: (message: string) => void): TranslateMode {
+export function createTranslateMode(
+    notify: (message: string, options?: { error?: boolean }) => void,
+    local: LocalApi
+): TranslateMode {
     const mode: {
         enabled: boolean;
         abort: AbortController | undefined;
@@ -101,7 +118,7 @@ export function createTranslateMode(notify: (message: string) => void): Translat
     };
 
     const getTranslator = async (): Promise<TranslatorHandle> => {
-        const pending = (mode.translator ??= createTranslator("en", "ja"));
+        const pending = (mode.translator ??= createTranslator("en", "ja", local));
         try {
             return await pending;
         } catch (error) {
@@ -131,7 +148,8 @@ export function createTranslateMode(notify: (message: string) => void): Translat
                 node.replaceWith(span);
             });
         } catch (error) {
-            if (!abort.signal.aborted) notify(error instanceof Error ? error.message : "Translation failed");
+            if (!abort.signal.aborted)
+                notify(error instanceof Error ? error.message : "Translation failed", { error: true });
         } finally {
             if (mode.abort === abort) mode.abort = undefined;
         }

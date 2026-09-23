@@ -8,15 +8,17 @@ import {
     type InoreaderItemSeed,
     type InoreaderScenario
 } from "./inoreader.ts";
+import { createFakeLocalServer, type FakeLocalServer, type LocalScenario } from "./local.ts";
 
 export interface Scenario {
     inoreader?: InoreaderScenario;
     github?: GitHubScenario;
+    local?: LocalScenario;
 }
 
 export interface LoggedRequest {
     readonly method: string;
-    readonly service: "inoreader" | "github";
+    readonly service: "inoreader" | "github" | "local";
     readonly path: string;
     readonly query: Readonly<Record<string, string>>;
     readonly body: string;
@@ -26,6 +28,7 @@ export interface FakeApiServer {
     readonly origin: string;
     readonly inoreader: FakeInoreader;
     readonly github: FakeGitHub;
+    readonly local: FakeLocalServer;
     /** Requests to the fake services since the last reset, oldest first. */
     log: () => readonly LoggedRequest[];
     reset: (scenario?: Scenario) => void;
@@ -46,12 +49,13 @@ async function readBody(request: IncomingMessage): Promise<string> {
 }
 
 /**
- * Starts fake Inoreader (`/inoreader`) and GitHub API (`/github`) services on one port.
+ * Starts fake Inoreader (`/inoreader`), GitHub API (`/github`) and irodr-local (`/local`) services on one port.
  * `/__control/*` lets tests seed data and inspect requests.
  */
 export async function startFakeApi(options: { port?: number; host?: string } = {}): Promise<FakeApiServer> {
     const inoreader = createFakeInoreader();
     const github = createFakeGitHub();
+    const local = createFakeLocalServer();
     const recorded: { log: readonly LoggedRequest[] } = { log: [] };
     // Known once the server listens.
     const listening = { origin: "" };
@@ -59,6 +63,7 @@ export async function startFakeApi(options: { port?: number; host?: string } = {
     const reset = (scenario: Scenario = {}) => {
         inoreader.reset(scenario.inoreader);
         github.reset(scenario.github);
+        local.reset(scenario.local);
         recorded.log = [];
     };
     reset();
@@ -101,6 +106,9 @@ export async function startFakeApi(options: { port?: number; host?: string } = {
             case "POST /github/config":
                 github.configure(body);
                 return json({ ok: true });
+            case "POST /local/config":
+                local.reset(body);
+                return json({ ok: true });
             default:
                 return json({ error: `Unknown control ${request.method} ${path}` }, 404);
         }
@@ -113,7 +121,9 @@ export async function startFakeApi(options: { port?: number; host?: string } = {
             ? "inoreader"
             : path.startsWith("/github/")
               ? "github"
-              : undefined;
+              : path.startsWith("/local/")
+                ? "local"
+                : undefined;
         if (!service) return json({ error: "not found" }, 404);
         const rest = path.slice(service.length + 1);
         recorded.log = [
@@ -126,9 +136,9 @@ export async function startFakeApi(options: { port?: number; host?: string } = {
                 body: request.body
             }
         ];
-        return service === "inoreader"
-            ? inoreader.handle(request, rest)
-            : github.handle(request, rest, `${listening.origin}/github`);
+        if (service === "inoreader") return inoreader.handle(request, rest);
+        if (service === "github") return github.handle(request, rest, `${listening.origin}/github`);
+        return local.handle(request, rest);
     };
 
     const handle = async (incoming: IncomingMessage, outgoing: ServerResponse): Promise<void> => {
@@ -170,6 +180,7 @@ export async function startFakeApi(options: { port?: number; host?: string } = {
         origin: listening.origin,
         inoreader,
         github,
+        local,
         log: () => recorded.log,
         reset,
         close: () =>

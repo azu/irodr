@@ -21,6 +21,7 @@ describe("loadConfig", () => {
                 clientSecret: "secret"
             },
             github: { apiBaseUrl: "https://api.github.com", webBaseUrl: "https://github.com" },
+            localApi: { baseUrl: "" },
             redirectUri: "https://irodr.netlify.app/"
         });
     });

@@ -6,6 +6,7 @@ const { values } = parseArgs({ options: { port: { type: "string", default: "4010
 const server = await startFakeApi({ port: Number(values.port), host: values.host ?? "127.0.0.1" });
 console.info(`Fake Inoreader: ${server.origin}/inoreader`);
 console.info(`Fake GitHub API: ${server.origin}/github`);
+console.info(`Fake irodr-local: ${server.origin}/local`);
 
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
     process.on(signal, () => {

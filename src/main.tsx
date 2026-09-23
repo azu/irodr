@@ -5,6 +5,7 @@ import { createReader, type Reader } from "./app/reader.ts";
 import { type AppConfig, loadConfig } from "./config.ts";
 import "./global.css";
 import { createEmitter } from "./lib/emitter.ts";
+import { createLocalApi } from "./lib/local-api.ts";
 import { browserWriteLock, createIndexedDBStore, readAllValues } from "./lib/kv-store.ts";
 import { safeUrl } from "./lib/sanitize.ts";
 import { createGitHubSource } from "./sources/github/github-source.ts";
@@ -64,7 +65,8 @@ const reader = createReader({
     }
 });
 
-const translate = createTranslateMode((message) => reader.setMessage(message));
+const localApi = createLocalApi({ baseUrl: config.localApi.baseUrl, fetch: fetcher });
+const translate = createTranslateMode((message, options) => reader.setMessage(message, options), localApi);
 const shortcuts = createShortcuts(reader, translate);
 const events = createEmitter();
 shortcuts.attach(document);

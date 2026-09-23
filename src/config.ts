@@ -13,6 +13,10 @@ export interface AppConfig {
         apiBaseUrl: string;
         webBaseUrl: string;
     };
+    /** The irodr-local server (docs/local-server.md). "" is the page's own origin. */
+    localApi: {
+        baseUrl: string;
+    };
     redirectUri: string;
 }
 
@@ -48,6 +52,7 @@ export function loadConfig(env: Env, storage: Pick<Storage, "getItem">, origin: 
             apiBaseUrl: trimSlash(value("VITE_GITHUB_API_BASE_URL", "https://api.github.com")),
             webBaseUrl: trimSlash(value("VITE_GITHUB_WEB_BASE_URL", "https://github.com"))
         },
+        localApi: { baseUrl: trimSlash(value("VITE_LOCAL_API_BASE_URL")) },
         redirectUri: value("VITE_OAUTH_REDIRECT_URI") || `${origin}/`
     };
 }
