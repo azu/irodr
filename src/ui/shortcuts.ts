@@ -35,7 +35,6 @@ export interface Shortcuts {
 export function createShortcuts(reader: Reader, translate: TranslateMode): Shortcuts {
     const focusItem = (itemId: string) => {
         reader.scrollToItem(itemId);
-        if (translate.enabled()) void translate.translate(itemId);
     };
 
     const actions: Record<ActionName, ShortcutAction> = {

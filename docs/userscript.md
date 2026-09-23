@@ -110,7 +110,9 @@ window.irodrTranslator = {
 ```
 
 Irodr uses the Translator API first and the user script's translator when the Translator API is unavailable
-(e.g. Firefox and Safari, or Chrome without the language pack).
+(e.g. Firefox and Safari, or Chrome without the language pack). Translation starts at the paragraphs on screen and
+continues as the article is scrolled: `translateBatch` receives about 300 characters of text at a time, and link
+labels are translated in place so links keep working.
 
 [irodr-translate.user.js](../resources/userScript/irodr-translate.user.js) is a translator with Google Translate.
 It calls `translate.googleapis.com/translate_a/single`, the unofficial endpoint that browser extensions such as
