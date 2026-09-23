@@ -7,6 +7,7 @@
 //
 // Translation runs on device with the language packages installed in System Settings.
 // TranslationSession(installedSource:target:) needs no UI (macOS 26), as in hotchpotch/trn.
+// Requests are translated concurrently; responses may come back in any order and are matched by id.
 import Foundation
 import Translation
 
@@ -47,6 +48,11 @@ func session(from sourceCode: String, to targetCode: String) async throws -> Tra
     let target = Locale.Language(identifier: targetCode)
     switch await LanguageAvailability().status(from: source, to: target) {
     case .installed:
+        // The traditional models: about 10x faster than Apple Intelligence's high fidelity models in
+        // hotchpotch/trn's measurements (translation-quality-check.md), and good enough for reading.
+        if #available(macOS 26.4, *) {
+            return TranslationSession(installedSource: source, target: target, preferredStrategy: .lowLatency)
+        }
         return TranslationSession(installedSource: source, target: target)
     case .supported:
         throw HelperError.notInstalled(sourceCode, targetCode)
@@ -73,22 +79,33 @@ func translate(_ request: TranslateRequest) async throws -> [String] {
     return results
 }
 
-func write<T: Encodable>(_ value: T) {
-    guard var data = try? JSONEncoder().encode(value) else { return }
+func encodeLine<T: Encodable>(_ value: T) -> Data {
+    var data = (try? JSONEncoder().encode(value)) ?? Data("{}".utf8)
     data.append(0x0A)
-    // FileHandle writes are unbuffered, unlike print() to a pipe.
-    FileHandle.standardOutput.write(data)
+    return data
 }
 
+/// Serializes writes so concurrent responses never interleave on a line.
+actor Output {
+    func write(_ line: Data) {
+        // FileHandle writes are unbuffered, unlike print() to a pipe.
+        FileHandle.standardOutput.write(line)
+    }
+}
+
+let output = Output()
 let decoder = JSONDecoder()
 for try await line in FileHandle.standardInput.bytes.lines {
     guard let request = try? decoder.decode(TranslateRequest.self, from: Data(line.utf8)) else {
         FileHandle.standardError.write(Data("irodr-translate: invalid request\n".utf8))
         continue
     }
-    do {
-        write(TranslateSuccess(id: request.id, texts: try await translate(request)))
-    } catch {
-        write(TranslateFailure(id: request.id, error: String(describing: error)))
+    Task {
+        do {
+            let texts = try await translate(request)
+            await output.write(encodeLine(TranslateSuccess(id: request.id, texts: texts)))
+        } catch {
+            await output.write(encodeLine(TranslateFailure(id: request.id, error: String(describing: error))))
+        }
     }
 }

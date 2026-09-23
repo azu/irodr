@@ -79,6 +79,10 @@ translates without UI on macOS 26 and later, like [hotchpotch/trn](https://githu
 packages must be installed in System Settings > General > Language & Region > Translation Languages; otherwise the
 helper returns an error that irodr shows in the header.
 
+For speed, the helper asks for the `lowLatency` strategy (traditional models, macOS 26.4+) and translates requests
+concurrently. The page sends a long article in parts of about 1,000 characters, up to 4 at a time from the top, and
+shows each part as soon as it is translated.
+
 The helper is a separate process because the Translation framework is only available from Swift. The executable
 embeds it and writes it to `~/Library/Caches/irodr-local/` on first use, since a process can only be started from a
 file.

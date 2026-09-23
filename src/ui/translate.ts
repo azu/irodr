@@ -1,3 +1,4 @@
+import { chunkBySize, forEachConcurrently } from "../lib/batch.ts";
 import type { LocalApi } from "../lib/local-api.ts";
 import { CLASS, itemElement } from "./dom.ts";
 
@@ -9,6 +10,9 @@ interface TranslatorHandle {
 }
 
 const ORIGINAL = "data-original-text";
+/** A long article is sent in parts of about this many characters, and each part is shown when translated. */
+const CHUNK_CHARACTERS = 1000;
+const CONCURRENT_CHUNKS = 4;
 const SKIPPED = new Set(["PRE", "CODE", "KBD", "SAMP", "VAR"]);
 
 function fromInstance(instance: { translate(text: string): Promise<string>; destroy(): void }): TranslatorHandle {
@@ -78,7 +82,8 @@ function textNodes(element: Element): Text[] {
     while (walker.nextNode()) {
         const node = walker.currentNode;
         if (!(node instanceof Text) || !node.textContent?.trim()) continue;
-        if (insideSkipped(node, element)) continue;
+        // Already translated, e.g. the first parts of an article left before it was done.
+        if (insideSkipped(node, element) || node.parentElement?.hasAttribute(ORIGINAL)) continue;
         nodes.push(node);
     }
     return nodes;
@@ -130,7 +135,7 @@ export function createTranslateMode(
 
     const translate = async (itemId: string): Promise<void> => {
         const body = bodyOf(itemId);
-        if (!body || body.querySelector(`[${ORIGINAL}]`)) return;
+        if (!body) return;
         mode.abort?.abort();
         const abort = new AbortController();
         mode.abort = abort;
@@ -138,14 +143,19 @@ export function createTranslateMode(
             const translator = await getTranslator();
             const nodes = textNodes(body);
             if (nodes.length === 0 || abort.signal.aborted) return;
-            const originals = nodes.map((node) => node.textContent ?? "");
-            const translated = await translator.translateBatch(originals);
-            if (abort.signal.aborted) return;
-            nodes.forEach((node, index) => {
-                const span = document.createElement("span");
-                span.setAttribute(ORIGINAL, originals[index] ?? "");
-                span.textContent = translated[index] ?? "";
-                node.replaceWith(span);
+            // Parts start from the top of the article, so the text read first appears first.
+            const chunks = chunkBySize(nodes, (node) => node.length, CHUNK_CHARACTERS);
+            await forEachConcurrently(chunks, CONCURRENT_CHUNKS, async (chunk) => {
+                if (abort.signal.aborted) return;
+                const originals = chunk.map((node) => node.textContent ?? "");
+                const translated = await translator.translateBatch(originals);
+                if (abort.signal.aborted) return;
+                chunk.forEach((node, index) => {
+                    const span = document.createElement("span");
+                    span.setAttribute(ORIGINAL, originals[index] ?? "");
+                    span.textContent = translated[index] ?? "";
+                    node.replaceWith(span);
+                });
             });
         } catch (error) {
             if (!abort.signal.aborted)
