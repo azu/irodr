@@ -34,7 +34,8 @@ const styles = stylex.create({
         backgroundColor: colors.subtle,
         color: colors.text,
         fontSize: 13,
-        fontWeight: "bold",
+        // Regular weight as in irodr 1.x, so the sidebar does not draw the eye away from the articles.
+        fontWeight: "normal",
         textAlign: "start",
         cursor: "pointer",
         position: "sticky",
@@ -55,7 +56,7 @@ const styles = stylex.create({
         paddingInlineStart: 8,
         borderStyle: "none",
         backgroundColor: { default: "transparent", ":hover": colors.hover },
-        color: colors.link,
+        color: colors.feedLink,
         fontSize: 14,
         textAlign: "start",
         cursor: "pointer"

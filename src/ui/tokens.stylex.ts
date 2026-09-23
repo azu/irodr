@@ -6,6 +6,11 @@ export const colors = stylex.defineVars({
     link: "#00308f",
     /** Article title and "Original" links, as irodr 1.x (Office UI Fabric) drew them. */
     itemLink: "#0078d4",
+    /**
+     * Feed names in the sidebar. irodr 1.x drew them as Office UI Fabric links (#0078d4); the list is secondary,
+     * so it stays lighter than the dark `link` color.
+     */
+    feedLink: "#0078d4",
     border: "#e5e5e5",
     background: "#ffffff",
     subtle: "#f4f4f4",

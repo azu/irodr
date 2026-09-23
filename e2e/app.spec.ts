@@ -247,3 +247,18 @@ test("the optional Inoreader app fields stay collapsed until used", async ({ pag
     await page.getByRole("button", { name: "Sources" }).click();
     await expect(dialog.getByLabel("Inoreader App Client Id")).toHaveValue("e2e-client");
 });
+
+test("the feed list stays as light as irodr 1.x", async ({ page }) => {
+    await connectInoreader(page);
+    await closeDialog(page);
+    const nav = page.getByRole("navigation", { name: "Subscriptions" });
+    // irodr 1.x drew feed names as Office UI Fabric links (#0078d4) and folder names in regular weight.
+    await expect(nav.getByRole("button", { expanded: true }).first()).toHaveCSS("font-weight", "400");
+    await expect(page.locator(".SubscriptionListContainer-item:not([aria-current])").first()).toHaveCSS(
+        "color",
+        "rgb(0, 120, 212)"
+    );
+    // The current feed still stands out.
+    await page.keyboard.press("s");
+    await expect(currentFeed(page)).toHaveCSS("font-weight", "700");
+});
