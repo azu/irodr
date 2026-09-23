@@ -3,6 +3,8 @@
  * `(Request) => Promise<Response>` handler, so any runtime (Node, Bun) can host it.
  */
 import { parseSegments, type TranslationSegment } from "../src/lib/translation-segment.ts";
+import type { TranslateStream } from "../src/lib/translation-stream.ts";
+import { translationResponse } from "./translation-response.ts";
 
 export interface Asset {
     readonly body: Uint8Array<ArrayBuffer>;
@@ -16,6 +18,7 @@ export interface Assets {
 
 export interface Translator {
     translate: (texts: readonly string[], sourceLanguage: string, targetLanguage: string) => Promise<string[]>;
+    translateStream?: TranslateStream;
     /** Paragraphs with inline markup; see src/lib/translation-segment.ts. */
     translateSegments?: (
         segments: readonly TranslationSegment[],
@@ -58,7 +61,8 @@ export function createLocalServerHandler(options: LocalServerOptions): (request:
 
     const features = [
         ...(options.translator ? ["translate"] : []),
-        ...(options.translator?.translateSegments ? ["translate-segments"] : [])
+        ...(options.translator?.translateSegments ? ["translate-segments"] : []),
+        ...(options.translator?.translateStream ? ["translate-stream"] : [])
     ];
     const info = () => json({ name: "irodr-local", version: options.version, features });
 
@@ -81,6 +85,14 @@ export function createLocalServerHandler(options: LocalServerOptions): (request:
         }
         const { sourceLanguage, targetLanguage } = body;
         try {
+            if (body.stream === true) {
+                if (segments) return json({ error: "Streaming requires texts, not segments" }, 400);
+                const stream = translator.translateStream;
+                if (!stream) return json({ error: "Streaming is not supported" }, 501);
+                return translationResponse(request.signal, (streamOptions) =>
+                    stream(body.texts as string[], sourceLanguage, targetLanguage, streamOptions)
+                );
+            }
             if (segments) {
                 if (!translator.translateSegments) return json({ error: "Segments are not supported" }, 501);
                 return json({ segments: await translator.translateSegments(segments, sourceLanguage, targetLanguage) });

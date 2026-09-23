@@ -1,206 +1,110 @@
-import { mergeRuns, type TranslationRun, type TranslationSegment } from "../lib/translation-segment.ts";
-
 /**
- * What translate mode sends from an article body: paragraphs with their inline markup (when the
- * translator keeps markup, see src/lib/translation-segment.ts), or single text nodes otherwise.
+ * Translate text in place without rebuilding links. Code stays unchanged, and translated
+ * links show their original label in a title tooltip. No second translation is needed.
  */
-export type TranslationUnit =
-    | { readonly kind: "text"; readonly node: Text }
-    | {
-          readonly kind: "block";
-          readonly element: Element;
-          readonly segment: TranslationSegment;
-          /** The inline elements the segment's tags refer to, by tag. */
-          readonly inline: readonly Element[];
-      };
+import { articleScroller } from "./dom.ts";
+import { planTranslationBatch } from "./translation-plan.ts";
 
 /** A translated text node: a span holding the original text for restoring. */
 const ORIGINAL = "data-original-text";
-/** A paragraph whose children were replaced; the original children are in `originals`. */
-const TRANSLATED_BLOCK = "data-translated-block";
-
-/** Code and the like stay as they are. */
 const SKIPPED = new Set(["PRE", "CODE", "KBD", "SAMP", "VAR"]);
-const BLOCKS = new Set([
-    "ADDRESS",
-    "ARTICLE",
-    "ASIDE",
-    "BLOCKQUOTE",
-    "CAPTION",
-    "DD",
-    "DETAILS",
-    "DIV",
-    "DL",
-    "DT",
-    "FIGCAPTION",
-    "FIGURE",
-    "FOOTER",
-    "H1",
-    "H2",
-    "H3",
-    "H4",
-    "H5",
-    "H6",
-    "HEADER",
-    "HR",
-    "LI",
-    "MAIN",
-    "NAV",
-    "OL",
-    "P",
-    "PRE",
-    "SECTION",
-    "SUMMARY",
-    "TABLE",
-    "TBODY",
-    "TD",
-    "TFOOT",
-    "TH",
-    "THEAD",
-    "TR",
-    "UL"
-]);
-/** Inline elements a paragraph may contain and still be rebuilt from its translation. Images and line breaks are not. */
-const INLINE = new Set([
-    "A",
-    "ABBR",
-    "B",
-    "BDI",
-    "BDO",
-    "CITE",
-    "CODE",
-    "DATA",
-    "DEL",
-    "DFN",
-    "EM",
-    "I",
-    "INS",
-    "KBD",
-    "MARK",
-    "Q",
-    "S",
-    "SAMP",
-    "SMALL",
-    "SPAN",
-    "STRONG",
-    "SUB",
-    "SUP",
-    "TIME",
-    "U",
-    "VAR"
-]);
+const BLOCKS = "p, li, blockquote, h1, h2, h3, h4, h5, h6, td, th, figcaption, dd, dt";
+/** Remember absent and empty titles separately, without retaining detached article elements. */
+const originalLinkTitles = new WeakMap<Element, string | null>();
 
-const hasText = (node: Node) => Boolean(node.textContent?.trim());
+const blockOf = (node: Text): Element | null => node.parentElement?.closest(BLOCKS) ?? node.parentElement;
 
-/** A block with only text and known inline elements, not translated yet. */
-function isParagraph(element: Element): boolean {
-    return (
-        BLOCKS.has(element.tagName) &&
-        !SKIPPED.has(element.tagName) &&
-        !element.hasAttribute(TRANSLATED_BLOCK) &&
-        hasText(element) &&
-        [...element.querySelectorAll("*")].every((child) => INLINE.has(child.tagName) && !child.hasAttribute(ORIGINAL))
-    );
-}
-
-function textNodesOf(element: Element): Text[] {
-    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
-    const nodes: Text[] = [];
-    while (walker.nextNode()) {
-        if (walker.currentNode instanceof Text) nodes.push(walker.currentNode);
-    }
-    return nodes;
-}
-
-/** Whether `node` is inside a skipped element (code, ...) below `root`. */
-function insideSkipped(node: Node, root: Element): boolean {
-    const parent = node.parentElement;
-    if (!parent || parent === root) return false;
-    return SKIPPED.has(parent.tagName) || insideSkipped(parent, root);
-}
-
-function paragraphUnit(element: Element): TranslationUnit {
-    const inline = [...element.querySelectorAll("*")];
-    const runs = textNodesOf(element).map((node): TranslationRun => {
-        const tag = node.parentElement === element || !node.parentElement ? -1 : inline.indexOf(node.parentElement);
-        return {
-            text: node.data,
-            ...(tag === -1 ? {} : { tag }),
-            ...(insideSkipped(node, element) ? { skip: true } : {})
-        };
-    });
-    return { kind: "block", element, segment: { runs: mergeRuns(runs) }, inline };
-}
-
-/** Text nodes outside paragraphs (or everywhere, without `paragraphs`), skipping code and translated text. */
-function collect(element: Element, root: Element, paragraphs: boolean): TranslationUnit[] {
-    if (paragraphs && isParagraph(element)) return [paragraphUnit(element)];
-    return [...element.childNodes].flatMap((child): TranslationUnit[] => {
-        if (child instanceof Text) {
-            return hasText(child) && !insideSkipped(child, root) ? [{ kind: "text", node: child }] : [];
-        }
-        if (!(child instanceof Element)) return [];
-        if (SKIPPED.has(child.tagName) || child.hasAttribute(ORIGINAL) || child.hasAttribute(TRANSLATED_BLOCK)) {
-            return [];
-        }
-        return collect(child, root, paragraphs);
+/** Text not translated yet, including link labels; code and translated spans are skipped. */
+export function translationNodes(element: Element): Text[] {
+    if (SKIPPED.has(element.tagName) || element.hasAttribute(ORIGINAL)) return [];
+    return [...element.childNodes].flatMap((child): Text[] => {
+        if (child instanceof Text) return child.data.trim() ? [child] : [];
+        return child instanceof Element ? translationNodes(child) : [];
     });
 }
-
-/** The units of an article body that are not translated yet, in document order. */
-export function translationUnits(body: Element, options: { paragraphs: boolean }): TranslationUnit[] {
-    return collect(body, body, options.paragraphs);
-}
-
-export const unitText = (unit: TranslationUnit): string =>
-    unit.kind === "text" ? unit.node.data : unit.segment.runs.map((run) => run.text).join("");
 
 export function applyText(node: Text, translated: string): void {
+    const link = node.parentElement?.closest("a");
+    if (link && !originalLinkTitles.has(link)) {
+        originalLinkTitles.set(link, link.getAttribute("title"));
+        // Capture the whole label before changing its first text, including nested emphasis.
+        link.setAttribute("title", link.textContent ?? node.data);
+    }
     const span = document.createElement("span");
     span.setAttribute(ORIGINAL, node.data);
     span.textContent = translated;
     node.replaceWith(span);
 }
 
-/** The inline elements from the paragraph down to `element`, outermost first. */
-function inlineChain(element: Element, paragraph: Element): Element[] {
-    const parent = element.parentElement;
-    return !parent || parent === paragraph ? [element] : [...inlineChain(parent, paragraph), element];
-}
-
-function runNode(run: TranslationRun, unit: Extract<TranslationUnit, { kind: "block" }>): Node {
-    const element = run.tag === undefined ? undefined : unit.inline[run.tag];
-    if (!element) return document.createTextNode(run.text);
-    // Shallow copies keep attributes such as href; the article HTML was sanitized when rendered.
-    return inlineChain(element, unit.element).reduceRight<Node>((child, wrapper) => {
-        const copy = wrapper.cloneNode(false);
-        copy.appendChild(child);
-        return copy;
-    }, document.createTextNode(run.text));
-}
-
-/**
- * Replaces a paragraph's children with its translation, rebuilding each inline element around the
- * translated words that carry its tag. The original children are kept in `originals` for restoring.
- */
-export function applySegment(
-    unit: Extract<TranslationUnit, { kind: "block" }>,
-    translated: TranslationSegment,
-    originals: WeakMap<Element, readonly Node[]>
-): void {
-    originals.set(unit.element, [...unit.element.childNodes]);
-    unit.element.setAttribute(TRANSLATED_BLOCK, "");
-    unit.element.replaceChildren(...mergeRuns(translated.runs).map((run) => runNode(run, unit)));
-}
-
-/** Puts every translated text and paragraph under `root` back to the original. */
-export function restoreOriginals(root: ParentNode, originals: WeakMap<Element, readonly Node[]>): void {
+/** Restore the original text without replacing surrounding elements. */
+export function restoreOriginals(root: ParentNode): void {
     for (const span of root.querySelectorAll(`[${ORIGINAL}]`)) {
         span.replaceWith(document.createTextNode(span.getAttribute(ORIGINAL) ?? ""));
     }
-    for (const element of root.querySelectorAll(`[${TRANSLATED_BLOCK}]`)) {
-        const children = originals.get(element);
-        if (children) element.replaceChildren(...children);
-        element.removeAttribute(TRANSLATED_BLOCK);
+    for (const link of root.querySelectorAll("a")) {
+        if (!originalLinkTitles.has(link)) continue;
+        const title = originalLinkTitles.get(link);
+        if (title === null) link.removeAttribute("title");
+        else if (title !== undefined) link.setAttribute("title", title);
+        originalLinkTitles.delete(link);
+    }
+}
+
+/** Re-measured between batches: scrolling and translated paragraph heights both change priorities. */
+export function nextTranslationBatch(body: Element, limit: number): Text[][] {
+    if (!body.isConnected) return [];
+    const scroller = articleScroller();
+    const scrollerRect = scroller?.getBoundingClientRect();
+    const view = {
+        top: Math.max(0, scrollerRect?.top ?? 0),
+        bottom: Math.min(window.innerHeight, scrollerRect?.bottom ?? window.innerHeight)
+    };
+    if (view.bottom <= view.top) return [];
+    const range = document.createRange();
+    // Keep inline pieces in one paragraph together, including the labels and surrounding text of links.
+    const allNodes = translationNodes(body);
+    const blocks = allNodes.map(blockOf);
+    const starts = allNodes.flatMap((_node, index) =>
+        index === 0 || blocks[index] !== blocks[index - 1] ? [index] : []
+    );
+    const groups = starts.map((start, index) => allNodes.slice(start, starts[index + 1] ?? allNodes.length));
+    const positioned = groups.flatMap((nodes) => {
+        const bounds = nodes
+            .map((node) => {
+                range.selectNodeContents(node);
+                return range.getBoundingClientRect();
+            })
+            .filter((rect) => rect.width > 0 && rect.height > 0);
+        return bounds.length > 0
+            ? [
+                  {
+                      value: nodes,
+                      top: Math.min(...bounds.map((rect) => rect.top)),
+                      bottom: Math.max(...bounds.map((rect) => rect.bottom)),
+                      size: nodes.reduce((sum, node) => sum + node.data.length, 0)
+                  }
+              ]
+            : [];
+    });
+    return planTranslationBatch(positioned, view, limit);
+}
+
+/** Keep a visible paragraph anchored when a completed paragraph above it shrinks or expands. */
+export function applyVisibleTexts(body: Element, changes: readonly { node: Text; text: string }[]): void {
+    const scroller = articleScroller();
+    const view = scroller?.getBoundingClientRect();
+    const anchor = view
+        ? [...body.querySelectorAll(BLOCKS)].find((element) => {
+              const rect = element.getBoundingClientRect();
+              return rect.bottom > view.top && rect.top < view.bottom;
+          })
+        : undefined;
+    const top = anchor?.getBoundingClientRect().top;
+    for (const { node, text } of changes) {
+        if (node.isConnected) applyText(node, text);
+    }
+    if (scroller && anchor && top !== undefined) {
+        const shift = anchor.getBoundingClientRect().top - top;
+        if (Math.abs(shift) > 1) scroller.scrollTop += shift;
     }
 }

@@ -1,5 +1,6 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import type { AddressInfo } from "node:net";
+import { setTimeout as delay } from "node:timers/promises";
 import { createFakeGitHub, type FakeGitHub, type GitHubNotificationSeed, type GitHubScenario } from "./github.ts";
 import { type FakeRequest, type FakeResponse, json, text } from "./http.ts";
 import {
@@ -142,6 +143,8 @@ export async function startFakeApi(options: { port?: number; host?: string } = {
     };
 
     const handle = async (incoming: IncomingMessage, outgoing: ServerResponse): Promise<void> => {
+        const abort = new AbortController();
+        outgoing.on("close", () => abort.abort());
         try {
             if (incoming.method === "OPTIONS") {
                 outgoing.writeHead(204, {
@@ -162,8 +165,17 @@ export async function startFakeApi(options: { port?: number; host?: string } = {
             };
             const response = route(request);
             outgoing.writeHead(response.status, { ...CORS, Date: new Date().toUTCString(), ...response.headers });
+            if (response.chunks) {
+                outgoing.flushHeaders();
+                for (const chunk of response.chunks) {
+                    if (chunk.delayMs) await delay(chunk.delayMs, undefined, { signal: abort.signal });
+                    if (abort.signal.aborted) return;
+                    outgoing.write(chunk.body);
+                }
+            }
             outgoing.end(response.body);
         } catch (error) {
+            if (abort.signal.aborted) return;
             outgoing.writeHead(500, CORS);
             outgoing.end(String(error));
         }

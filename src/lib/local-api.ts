@@ -4,6 +4,7 @@
  * On any other host these endpoints are missing and every feature reports unavailable.
  */
 import { parseSegments, type TranslationSegment } from "./translation-segment.ts";
+import { readTranslationStream, type TranslateStream } from "./translation-stream.ts";
 
 export interface LocalApiInfo {
     readonly name: string;
@@ -15,6 +16,8 @@ export interface LocalApi {
     /** The server's info, or undefined when there is no local server. Detected once and cached. */
     info: () => Promise<LocalApiInfo | undefined>;
     translate: (texts: readonly string[], sourceLanguage: string, targetLanguage: string) => Promise<string[]>;
+    /** Needs the "translate-stream" feature. Results arrive in completion order. */
+    translateStream: TranslateStream;
     /** Needs the "translate-segments" feature. */
     translateSegments: (
         segments: readonly TranslationSegment[],
@@ -106,5 +109,16 @@ export function createLocalApi({ baseUrl, fetch }: LocalApiOptions): LocalApi {
         return translated;
     };
 
-    return { info, translate, translateSegments };
+    const translateStream: TranslateStream = async (texts, sourceLanguage, targetLanguage, options) => {
+        const response = await fetch(`${baseUrl}/api/translate`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Accept: "application/x-ndjson" },
+            body: JSON.stringify({ texts, sourceLanguage, targetLanguage, stream: true }),
+            signal: options.signal
+        });
+        if (!response.ok) throw new Error(await errorMessage(response));
+        await readTranslationStream(response, texts.length, options);
+    };
+
+    return { info, translate, translateSegments, translateStream };
 }

@@ -9,10 +9,21 @@ interface Request {
     texts?: string[];
     segments?: TranslationSegment[];
     targetLanguage: string;
+    stream?: boolean;
+    cancel?: boolean;
 }
 
 createInterface({ input: process.stdin }).on("line", (line) => {
-    const { id, texts, segments, targetLanguage } = JSON.parse(line) as Request;
+    const { id, texts, segments, targetLanguage, stream, cancel } = JSON.parse(line) as Request;
+    if (cancel) return;
+    if (stream && !texts?.includes("fail")) {
+        // Return out of order: consumers must match by index, never arrival order.
+        for (const [index, text] of [...(texts ?? []).entries()].toReversed()) {
+            process.stdout.write(`${JSON.stringify({ id, index, text: fakeTranslation(text, targetLanguage) })}\n`);
+        }
+        process.stdout.write(`${JSON.stringify({ id, done: true })}\n`);
+        return;
+    }
     const response = texts?.includes("fail")
         ? { id, error: "language package is not installed" }
         : segments

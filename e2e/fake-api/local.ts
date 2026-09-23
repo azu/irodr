@@ -12,6 +12,12 @@ export interface LocalScenario {
     translateError?: string;
     /** false: translate texts only, like a helper without formatted translation. Default true. */
     segments?: boolean;
+    /** false: older server with batch responses only. Default true. */
+    stream?: boolean;
+    /** Delay between completed texts (not before the first text). */
+    streamDelayMs?: number;
+    /** Model an engine returning results in a different order. */
+    reverseStream?: boolean;
 }
 
 export interface FakeLocalServer {
@@ -31,14 +37,24 @@ export const fakeSegmentTranslation = (segment: TranslationSegment, targetLangua
 
 export function createFakeLocalServer(): FakeLocalServer {
     const state: { scenario: Required<LocalScenario> } = {
-        scenario: { enabled: true, translateError: "", segments: true }
+        scenario: {
+            enabled: true,
+            translateError: "",
+            segments: true,
+            stream: true,
+            streamDelayMs: 0,
+            reverseStream: false
+        }
     };
 
     const reset = (scenario: LocalScenario = {}) => {
         state.scenario = {
             enabled: scenario.enabled ?? true,
             translateError: scenario.translateError ?? "",
-            segments: scenario.segments ?? true
+            segments: scenario.segments ?? true,
+            stream: scenario.stream ?? true,
+            streamDelayMs: scenario.streamDelayMs ?? 0,
+            reverseStream: scenario.reverseStream ?? false
         };
     };
 
@@ -47,7 +63,7 @@ export function createFakeLocalServer(): FakeLocalServer {
             return json({ error: "Content-Type must be application/json" }, 415);
         }
         const body: unknown = JSON.parse(request.body || "null");
-        const { texts, segments, sourceLanguage, targetLanguage } = (body ?? {}) as Record<string, unknown>;
+        const { texts, segments, sourceLanguage, targetLanguage, stream } = (body ?? {}) as Record<string, unknown>;
         const parsedSegments = segments === undefined ? undefined : parseSegments(segments);
         const validTexts = Array.isArray(texts) && texts.every((text) => typeof text === "string");
         if (
@@ -58,6 +74,23 @@ export function createFakeLocalServer(): FakeLocalServer {
             return json({ error: "Expected { texts or segments, sourceLanguage, targetLanguage }" }, 400);
         }
         if (state.scenario.translateError) return json({ error: state.scenario.translateError }, 422);
+        if (stream === true) {
+            if (!state.scenario.stream) return json({ error: "Streaming is not supported" }, 501);
+            if (parsedSegments) return json({ error: "Streaming requires texts, not segments" }, 400);
+            const results = (texts as string[]).map((text, index) => ({
+                index,
+                text: fakeTranslation(text, targetLanguage)
+            }));
+            const ordered = state.scenario.reverseStream ? results.toReversed() : results;
+            return {
+                status: 200,
+                headers: { "Content-Type": "application/x-ndjson; charset=utf-8" },
+                chunks: [...ordered, { done: true }].map((result, index) => ({
+                    body: `${JSON.stringify(result)}\n`,
+                    delayMs: index === 0 ? 0 : state.scenario.streamDelayMs
+                }))
+            };
+        }
         return parsedSegments
             ? json({ segments: parsedSegments.map((segment) => fakeSegmentTranslation(segment, targetLanguage)) })
             : json({ texts: (texts as string[]).map((text) => fakeTranslation(text, targetLanguage)) });
@@ -70,7 +103,11 @@ export function createFakeLocalServer(): FakeLocalServer {
                 return json({
                     name: "irodr-local",
                     version: "0.0.0-fake",
-                    features: ["translate", ...(state.scenario.segments ? ["translate-segments"] : [])]
+                    features: [
+                        "translate",
+                        ...(state.scenario.segments ? ["translate-segments"] : []),
+                        ...(state.scenario.stream ? ["translate-stream"] : [])
+                    ]
                 });
             case "POST /api/translate":
                 return translate(request);

@@ -1,6 +1,8 @@
 import { afterAll, describe, expect, it } from "vite-plus/test";
 import { createLocalServerHandler, type LocalServerOptions } from "./handler.ts";
 import { createTranslatorProcess } from "./translator-process.ts";
+import { createLocalApi } from "../src/lib/local-api.ts";
+import type { TranslationResult } from "../src/lib/translation-stream.ts";
 
 const ORIGIN = "http://127.0.0.1:18888";
 const encode = (text: string) => new TextEncoder().encode(text);
@@ -45,7 +47,7 @@ describe("local server handler", () => {
         expect(await response.json()).toEqual({
             name: "irodr-local",
             version: "1.2.3",
-            features: ["translate", "translate-segments"]
+            features: ["translate", "translate-segments", "translate-stream"]
         });
         const withoutTranslator = await handler({ translator: undefined })(new Request(`${ORIGIN}/api/local`));
         expect(await withoutTranslator.json()).toMatchObject({ features: [] });
@@ -74,6 +76,44 @@ describe("local server handler", () => {
         const response = await handler()(translateRequest(["fail"]));
         expect(response.status).toBe(422);
         expect(await response.json()).toEqual({ error: "language package is not installed" });
+    });
+
+    it("streams helper results through the HTTP API, preserving their indices", async () => {
+        const serve = handler();
+        const api = createLocalApi({ baseUrl: ORIGIN, fetch: (input, init) => serve(new Request(input, init)) });
+        const results: TranslationResult[] = [];
+        await api.translateStream(["Hello", "World"], "en", "ja", {
+            onResult: (result) => {
+                results.push(result);
+            }
+        });
+        expect(results).toEqual([
+            { index: 1, text: "[ja] World" },
+            { index: 0, text: "[ja] Hello" }
+        ]);
+    });
+
+    it("returns streaming errors instead of silently finishing", async () => {
+        const serve = handler();
+        const api = createLocalApi({ baseUrl: ORIGIN, fetch: (input, init) => serve(new Request(input, init)) });
+        await expect(api.translateStream(["fail"], "en", "ja", { onResult: () => undefined })).rejects.toThrow(
+            "language package is not installed"
+        );
+    });
+
+    it("does not advertise streaming for older translators", async () => {
+        const serve = handler({ translator: { translate: translator.translate } });
+        expect(await (await serve(new Request(`${ORIGIN}/api/local`))).json()).toMatchObject({
+            features: ["translate"]
+        });
+        const response = await serve(
+            new Request(`${ORIGIN}/api/translate`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ texts: ["Hello"], sourceLanguage: "en", targetLanguage: "ja", stream: true })
+            })
+        );
+        expect(response.status).toBe(501);
     });
 
     it("validates translation requests", async () => {
@@ -119,6 +159,63 @@ describe("local server handler", () => {
 });
 
 describe("translator process", () => {
+    it("cancels one helper request and ignores late results without affecting the next request", async () => {
+        const helper = createTranslatorProcess(process.execPath, [
+            "-e",
+            `
+            const cancelled = new Set();
+            const write = value => process.stdout.write(JSON.stringify(value) + '\\n');
+            require('node:readline').createInterface({ input: process.stdin }).on('line', line => {
+                const request = JSON.parse(line);
+                if (request.cancel) {
+                    cancelled.add(request.id);
+                    write({ id: request.id, index: 1, text: 'late' });
+                    write({ id: request.id, done: true });
+                } else if (request.stream) {
+                    write({ id: request.id, index: 0, text: 'first' });
+                } else {
+                    write({ id: request.id, texts: [String(cancelled.size)] });
+                }
+            });
+        `
+        ]);
+        try {
+            const abort = new AbortController();
+            const results: TranslationResult[] = [];
+            await expect(
+                helper.translateStream(["one", "two"], "en", "ja", {
+                    signal: abort.signal,
+                    onResult: (result) => {
+                        results.push(result);
+                        abort.abort();
+                    }
+                })
+            ).rejects.toMatchObject({ name: "AbortError" });
+            expect(await helper.translate(["inspect"], "en", "ja")).toEqual(["1"]);
+            expect(results).toEqual([{ index: 0, text: "first" }]);
+        } finally {
+            helper.close();
+        }
+    });
+
+    it("rejects incomplete streams from the helper", async () => {
+        const helper = createTranslatorProcess(process.execPath, [
+            "-e",
+            `
+            require('node:readline').createInterface({ input: process.stdin }).on('line', line => {
+                const request = JSON.parse(line);
+                if (!request.cancel) process.stdout.write(JSON.stringify({id: request.id, done: true}) + '\\n');
+            });
+        `
+        ]);
+        try {
+            await expect(helper.translateStream(["one"], "en", "ja", { onResult: () => undefined })).rejects.toThrow(
+                "incomplete stream"
+            );
+        } finally {
+            helper.close();
+        }
+    });
     it("fails a request the helper never answers", async () => {
         const silent = createTranslatorProcess(process.execPath, ["-e", "process.stdin.resume()"], { timeout: 50 });
         await expect(silent.translate(["Hello"], "en", "ja")).rejects.toThrow("Translation helper did not respond");

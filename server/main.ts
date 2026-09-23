@@ -3,12 +3,14 @@
 // Usage: irodr-local [--port 18888] [--dist dist] [--translator path/to/irodr-translate]
 // As a single executable (`vp pack`), the app and the macOS translation helper are embedded.
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { once } from "node:events";
 import { getAsset, getAssetKeys, isSea } from "node:sea";
 import { Readable } from "node:stream";
 import { parseArgs } from "node:util";
 import { directoryAssets, EMBEDDED_TRANSLATOR, embeddedAssets, extractExecutable } from "./assets.ts";
 import { createLocalServerHandler } from "./handler.ts";
 import { createTranslatorProcess } from "./translator-process.ts";
+import { createCachedTranslator } from "./cached-translator.ts";
 
 const VERSION = "0.1.0";
 const HOST = "127.0.0.1";
@@ -45,11 +47,11 @@ const handler = createLocalServerHandler({
     origins: [`http://${HOST}:${port}`, `http://localhost:${port}`],
     version: VERSION,
     assets,
-    translator,
+    translator: translator ? createCachedTranslator(translator) : undefined,
     fetch
 });
 
-function toRequest(incoming: IncomingMessage): Request {
+function toRequest(incoming: IncomingMessage, signal: AbortSignal): Request {
     const headers = new Headers(
         Object.entries(incoming.headers).flatMap(([name, value]) =>
             value === undefined ? [] : [[name, Array.isArray(value) ? value.join(", ") : value] as [string, string]]
@@ -59,35 +61,48 @@ function toRequest(incoming: IncomingMessage): Request {
     return new Request(`http://${incoming.headers.host ?? ""}${incoming.url ?? "/"}`, {
         method: incoming.method,
         headers,
+        signal,
         body: hasBody ? (Readable.toWeb(incoming) as ReadableStream<Uint8Array>) : undefined,
         // Required by Node's fetch for a streamed body.
         ...(hasBody ? { duplex: "half" } : {})
     });
 }
 
-async function writeResponse(outgoing: ServerResponse, response: Response): Promise<void> {
+async function writeResponse(outgoing: ServerResponse, response: Response, signal: AbortSignal): Promise<void> {
+    signal.throwIfAborted();
     outgoing.writeHead(response.status, Object.fromEntries(response.headers));
+    outgoing.flushHeaders();
     if (!response.body) {
         outgoing.end();
         return;
     }
-    for await (const chunk of response.body) outgoing.write(chunk);
+    for await (const chunk of response.body) {
+        signal.throwIfAborted();
+        if (!outgoing.write(chunk)) await once(outgoing, "drain", { signal });
+    }
     outgoing.end();
 }
 
 const server = createServer((incoming, outgoing) => {
+    const abort = new AbortController();
+    outgoing.on("close", () => abort.abort());
     const respond = async () => {
         // A missing or malformed Host header cannot be ours.
         const request = (() => {
             try {
-                return toRequest(incoming);
+                return toRequest(incoming, abort.signal);
             } catch {
                 return undefined;
             }
         })();
-        await writeResponse(outgoing, request ? await handler(request) : new Response("Bad Request", { status: 400 }));
+        await writeResponse(
+            outgoing,
+            request ? await handler(request) : new Response("Bad Request", { status: 400 }),
+            abort.signal
+        );
     };
     respond().catch((error: unknown) => {
+        if (abort.signal.aborted) return;
         console.error(error);
         if (!outgoing.headersSent) outgoing.writeHead(500);
         outgoing.end();

@@ -1,28 +1,41 @@
-import { chunkBySize, forEachConcurrently } from "../lib/batch.ts";
 import type { LocalApi } from "../lib/local-api.ts";
-import type { TranslationSegment } from "../lib/translation-segment.ts";
-import { CLASS, itemElement } from "./dom.ts";
-import { applySegment, applyText, restoreOriginals, translationUnits, unitText } from "./translate-dom.ts";
-
-type TranslateBatch = (texts: string[]) => Promise<string[]>;
+import type { TranslationStreamOptions } from "../lib/translation-stream.ts";
+import { articleScroller, CLASS, itemElement } from "./dom.ts";
+import { applyVisibleTexts, nextTranslationBatch, restoreOriginals } from "./translate-dom.ts";
 
 interface TranslatorHandle {
-    translateBatch: TranslateBatch;
-    /** Paragraphs with their inline markup, so word order can change around links and emphasis. */
-    translateSegments?: (segments: TranslationSegment[]) => Promise<TranslationSegment[]>;
+    translate: (texts: string[], options: TranslationStreamOptions) => Promise<void>;
+    batchCharacters: number;
     destroy: () => void;
 }
 
-/** A long article is sent in parts of about this many characters, and each part is shown when translated. */
-const CHUNK_CHARACTERS = 1000;
-const CONCURRENT_CHUNKS = 4;
+/** Streaming removes the all-results barrier. Legacy backends need smaller batches for an early first result. */
+const STREAM_CHARACTERS = 1000;
+const LEGACY_CHARACTERS = 300;
+
+function fromBatch(translate: (texts: string[]) => Promise<string[]>): TranslatorHandle {
+    return {
+        batchCharacters: LEGACY_CHARACTERS,
+        translate: async (texts, { onResult, signal }) => {
+            signal?.throwIfAborted();
+            const translated = await translate(texts);
+            signal?.throwIfAborted();
+            texts.forEach((source, index) => onResult({ index, text: translated[index] ?? source }));
+        },
+        destroy: () => undefined
+    };
+}
 
 function fromInstance(instance: { translate(text: string): Promise<string>; destroy(): void }): TranslatorHandle {
     return {
-        translateBatch: async (texts: string[]) => {
-            const results: string[] = [];
-            for (const text of texts) results.push(await instance.translate(text));
-            return results;
+        batchCharacters: STREAM_CHARACTERS,
+        translate: async (texts, { onResult, signal }) => {
+            for (const [index, source] of texts.entries()) {
+                signal?.throwIfAborted();
+                const text = await instance.translate(source);
+                signal?.throwIfAborted();
+                onResult({ index, text });
+            }
         },
         destroy: () => instance.destroy()
     };
@@ -46,14 +59,11 @@ async function createTranslator(
     const languages = { sourceLanguage, targetLanguage };
     const localFeatures = (await local.info())?.features;
     if (localFeatures?.has("translate")) {
+        if (!localFeatures.has("translate-stream"))
+            return fromBatch((texts) => local.translate(texts, sourceLanguage, targetLanguage));
         return {
-            translateBatch: (texts) => local.translate(texts, sourceLanguage, targetLanguage),
-            ...(localFeatures.has("translate-segments")
-                ? {
-                      translateSegments: (segments: TranslationSegment[]) =>
-                          local.translateSegments(segments, sourceLanguage, targetLanguage)
-                  }
-                : {}),
+            batchCharacters: STREAM_CHARACTERS,
+            translate: (texts, options) => local.translateStream(texts, sourceLanguage, targetLanguage, options),
             destroy: () => undefined
         };
     }
@@ -68,10 +78,7 @@ async function createTranslator(
     }
     const userScript = window.irodrTranslator;
     if (userScript) {
-        return {
-            translateBatch: (texts) => userScript.translateBatch(texts, sourceLanguage, targetLanguage),
-            destroy: () => undefined
-        };
+        return fromBatch((texts) => userScript.translateBatch(texts, sourceLanguage, targetLanguage));
     }
     throw new Error(
         "No translator available. Run irodr-local, install the irodr-translate userscript or use a browser with Translation API support."
@@ -100,8 +107,6 @@ export function createTranslateMode(
         /** Shared while being created, so turning the mode off can destroy it once it exists. */
         translator: Promise<TranslatorHandle> | undefined;
     } = { enabled: false, abort: undefined, translator: undefined };
-    /** The children of paragraphs replaced by their translation. */
-    const originals = new WeakMap<Element, readonly Node[]>();
 
     const off = (): void => {
         if (!mode.enabled) return;
@@ -125,53 +130,77 @@ export function createTranslateMode(
     };
 
     const translate = async (itemId: string): Promise<void> => {
-        const body = bodyOf(itemId);
-        if (!body) return;
         mode.abort?.abort();
         const abort = new AbortController();
         mode.abort = abort;
         try {
+            // Reader state can change just before React mounts a newly loaded article.
+            const body =
+                bodyOf(itemId) ??
+                (await new Promise<Element | null>((resolve) => {
+                    requestAnimationFrame(() => resolve(bodyOf(itemId)));
+                }));
+            if (!body || abort.signal.aborted) return;
             const translator = await getTranslator();
-            const { translateSegments } = translator;
-            // Units not translated yet: an article left midway resumes where it stopped.
-            const units = translationUnits(body, { paragraphs: translateSegments !== undefined });
-            if (units.length === 0 || abort.signal.aborted) return;
-            // Parts start from the top of the article, so the text read first appears first.
-            const chunks = chunkBySize(units, (unit) => unitText(unit).length, CHUNK_CHARACTERS);
-            await forEachConcurrently(chunks, CONCURRENT_CHUNKS, async (chunk) => {
-                if (abort.signal.aborted) return;
-                if (translateSegments) {
-                    const segments = chunk.map((unit) =>
-                        unit.kind === "block" ? unit.segment : { runs: [{ text: unit.node.data }] }
-                    );
-                    const translated = await translateSegments(segments);
-                    if (abort.signal.aborted) return;
-                    chunk.forEach((unit, index) => {
-                        const segment = translated[index];
-                        if (!segment) return;
-                        if (unit.kind === "block") applySegment(unit, segment, originals);
-                        else applyText(unit.node, segment.runs.map((run) => run.text).join(""));
-                    });
-                    return;
+            if (abort.signal.aborted) return;
+            const work = { running: false, frame: 0 };
+            const pump = async () => {
+                if (work.running || abort.signal.aborted) return;
+                work.running = true;
+                try {
+                    // Only one bounded batch is in flight. Do not fill the engine with invisible work.
+                    while (!abort.signal.aborted) {
+                        const groups = nextTranslationBatch(body, translator.batchCharacters);
+                        const nodes = groups.flat();
+                        if (nodes.length === 0) return;
+                        const groupOf = new Map(groups.flatMap((group) => group.map((node) => [node, group] as const)));
+                        const completed = new Map<Text, string>();
+                        await translator.translate(
+                            nodes.map((node) => node.data),
+                            {
+                                signal: abort.signal,
+                                onResult: ({ index, text }) => {
+                                    const node = nodes[index];
+                                    if (!node || abort.signal.aborted) return;
+                                    completed.set(node, text);
+                                    const group = groupOf.get(node) ?? [];
+                                    // A paragraph appears together; other paragraphs do not wait for it.
+                                    if (group.every((part) => completed.has(part))) {
+                                        applyVisibleTexts(
+                                            body,
+                                            group.map((part) => ({ node: part, text: completed.get(part)! }))
+                                        );
+                                    }
+                                }
+                            }
+                        );
+                    }
+                } catch (error) {
+                    if (!abort.signal.aborted)
+                        notify(error instanceof Error ? error.message : "Translation failed", { error: true });
+                    abort.abort();
+                } finally {
+                    work.running = false;
                 }
-                const translated = await translator.translateBatch(chunk.map(unitText));
-                if (abort.signal.aborted) return;
-                chunk.forEach((unit, index) => {
-                    if (unit.kind === "text") applyText(unit.node, translated[index] ?? "");
-                });
-            });
+            };
+            const schedule = () => {
+                cancelAnimationFrame(work.frame);
+                work.frame = requestAnimationFrame(() => void pump());
+            };
+            articleScroller()?.addEventListener("scroll", schedule, { passive: true, signal: abort.signal });
+            window.addEventListener("resize", schedule, { passive: true, signal: abort.signal });
+            abort.signal.addEventListener("abort", () => cancelAnimationFrame(work.frame), { once: true });
+            await pump();
         } catch (error) {
             if (!abort.signal.aborted)
                 notify(error instanceof Error ? error.message : "Translation failed", { error: true });
-        } finally {
-            if (mode.abort === abort) mode.abort = undefined;
         }
     };
 
     const toggle = async (focusedItemId: string | undefined): Promise<void> => {
         if (mode.enabled) {
             off();
-            restoreOriginals(document, originals);
+            restoreOriginals(document);
             notify("Translate mode: OFF");
             return;
         }

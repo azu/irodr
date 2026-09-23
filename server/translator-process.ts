@@ -1,6 +1,7 @@
 import { type ChildProcessWithoutNullStreams, spawn } from "node:child_process";
 import { createInterface } from "node:readline";
 import { parseSegments, type TranslationSegment } from "../src/lib/translation-segment.ts";
+import { parseTranslationResult, type TranslateStream } from "../src/lib/translation-stream.ts";
 import type { Translator } from "./handler.ts";
 
 /**
@@ -21,6 +22,7 @@ export interface TranslatorProcess extends Required<Translator> {
 interface Pending {
     resolve: (message: Record<string, unknown>) => void;
     reject: (error: Error) => void;
+    progress: (message: Record<string, unknown>) => void;
 }
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null;
@@ -28,9 +30,9 @@ const isRecord = (value: unknown): value is Record<string, unknown> => typeof va
 export function createTranslatorProcess(
     command: string,
     args: readonly string[] = [],
-    options: { timeout?: number } = {}
+    processOptions: { timeout?: number } = {}
 ): TranslatorProcess {
-    const timeout = options.timeout ?? 60_000;
+    const timeout = processOptions.timeout ?? 60_000;
     const pending = new Map<number, Pending>();
     const current: { child: ChildProcessWithoutNullStreams | undefined; nextId: number } = {
         child: undefined,
@@ -47,9 +49,14 @@ export function createTranslatorProcess(
         if (!isRecord(message) || typeof message.id !== "number") return;
         const entry = pending.get(message.id);
         if (!entry) return;
-        pending.delete(message.id);
         if (typeof message.error === "string") entry.reject(new Error(message.error));
-        else entry.resolve(message);
+        else if ("index" in message) {
+            try {
+                entry.progress(message);
+            } catch (error) {
+                entry.reject(error instanceof Error ? error : new Error("Invalid translation result"));
+            }
+        } else entry.resolve(message);
     };
 
     const start = (): ChildProcessWithoutNullStreams => {
@@ -63,35 +70,81 @@ export function createTranslatorProcess(
             }
         });
         const exited = (reason: string) => {
-            if (current.child === child) current.child = undefined;
+            if (current.child !== child) return;
+            current.child = undefined;
             failAll(new Error(`Translation helper ${reason}`));
         };
         child.on("error", (error) => exited(`failed to start: ${error.message}`));
+        child.stdin.on("error", (error) => exited(`input failed: ${error.message}`));
         child.on("exit", (code, signal) => exited(`exited (${signal ?? code})`));
         return child;
     };
 
-    const send = (request: Record<string, unknown>) =>
+    const send = (
+        request: Record<string, unknown>,
+        options: { signal?: AbortSignal; progress?: Pending["progress"] } = {}
+    ) =>
         new Promise<Record<string, unknown>>((resolve, reject) => {
+            options.signal?.throwIfAborted();
             const child = (current.child ??= start());
             const id = current.nextId;
             current.nextId = id + 1;
-            const timer = setTimeout(() => {
+            const cleanup = () => {
+                clearTimeout(timer);
+                options.signal?.removeEventListener("abort", cancel);
                 pending.delete(id);
+            };
+            const stop = () => {
+                if (!child.stdin.destroyed) child.stdin.write(`${JSON.stringify({ id, cancel: true })}\n`);
+            };
+            const cancel = () => {
+                cleanup();
+                stop();
+                reject(options.signal?.reason ?? new Error("Translation cancelled"));
+            };
+            const timer = setTimeout(() => {
+                cleanup();
+                stop();
                 reject(new Error("Translation helper did not respond"));
             }, timeout);
             pending.set(id, {
                 resolve: (message) => {
-                    clearTimeout(timer);
+                    cleanup();
                     resolve(message);
                 },
                 reject: (error) => {
-                    clearTimeout(timer);
+                    cleanup();
+                    stop();
                     reject(error);
-                }
+                },
+                progress:
+                    options.progress ??
+                    (() => {
+                        throw new Error("Unexpected translation progress");
+                    })
             });
+            options.signal?.addEventListener("abort", cancel, { once: true });
             child.stdin.write(`${JSON.stringify({ id, ...request })}\n`);
         });
+
+    const translateStream: TranslateStream = async (texts, sourceLanguage, targetLanguage, options) => {
+        const received = new Set<number>();
+        const response = await send(
+            { texts, sourceLanguage, targetLanguage, stream: true },
+            {
+                signal: options.signal,
+                progress: (message) => {
+                    const result = parseTranslationResult(message, texts.length);
+                    if (!result || received.has(result.index)) throw new Error("Invalid translation result");
+                    received.add(result.index);
+                    options.onResult(result);
+                }
+            }
+        );
+        if (response.done !== true || received.size !== texts.length) {
+            throw new Error("Translation helper returned an incomplete stream");
+        }
+    };
 
     const translate = async (texts: readonly string[], sourceLanguage: string, targetLanguage: string) => {
         const { texts: translated } = await send({ texts, sourceLanguage, targetLanguage });
@@ -119,5 +172,5 @@ export function createTranslatorProcess(
         failAll(new Error("Translation helper closed"));
     };
 
-    return { translate, translateSegments, close };
+    return { translate, translateSegments, translateStream, close };
 }

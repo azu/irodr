@@ -10,6 +10,8 @@ export interface FakeResponse {
     status: number;
     headers?: Record<string, string>;
     body?: string;
+    /** Incremental HTTP response, used to model the local translation stream. */
+    chunks?: readonly { readonly body: string; readonly delayMs: number }[];
 }
 
 export function json(value: unknown, status = 200, headers: Record<string, string> = {}): FakeResponse {
