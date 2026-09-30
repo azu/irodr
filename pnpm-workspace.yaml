@@ -20,9 +20,9 @@ catalog:
   oxc-transform-react: 0.151.0
   react: 19.3.0
   react-dom: 19.3.0
-  vite-plus: 1.0.0-rc.1
+  vite-plus: 1.0.0
   # Vite+ bundles Vite and Vitest; the overrides below keep plugins on those copies.
-  vite: "npm:@voidzero-dev/vite-plus-core@1.0.0-rc.1"
+  vite: "npm:@voidzero-dev/vite-plus-core@1.0.0"
   vitest: 5.0.2
 # Only catalog versions are allowed: adding a dependency outside the catalog's range is an error.
 catalogMode: strict
