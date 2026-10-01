@@ -41,5 +41,5 @@
     "oxc-transform-react": "catalog:",
     "vite-plus": "catalog:"
   },
-  "packageManager": "pnpm@10.34.5"
+  "packageManager": "pnpm@10.34.6"
 }
