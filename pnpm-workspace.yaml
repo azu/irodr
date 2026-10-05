@@ -10,7 +10,7 @@ catalog:
   "@stylexjs/stylex": 0.19.1
   "@stylexjs/unplugin": 0.19.1
   "@types/markdown-it": 14.2.0
-  "@types/node": 24.19.0
+  "@types/node": 24.19.1
   "@types/react": 19.3.0
   "@types/react-dom": 19.3.0
   "@vitejs/plugin-react": 6.1.1
