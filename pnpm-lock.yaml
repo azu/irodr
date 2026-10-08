@@ -34,8 +34,8 @@ catalogs:
       specifier: 6.1.2
       version: 6.1.2
     eslint-plugin-baseline-js:
-      specifier: 0.7.2
-      version: 0.7.2
+      specifier: 0.7.4
+      version: 0.7.4
     markdown-it:
       specifier: 15.0.2
       version: 15.0.2
@@ -102,7 +102,7 @@ importers:
         version: 6.1.2(@rolldown/plugin-babel@0.2.4(@babel/core@7.29.7)(@babel/runtime@7.29.7)(rolldown@1.2.9)(vite@8.3.0(@types/node@24.19.1)))(babel-plugin-react-compiler@1.0.0)(oxc-transform-react@0.152.0)(vite@8.3.0(@types/node@24.19.1))
       eslint-plugin-baseline-js:
         specifier: 'catalog:'
-        version: 0.7.2(eslint@10.11.0)
+        version: 0.7.4(eslint@10.11.0)
       oxc-transform-react:
         specifier: 'catalog:'
         version: 0.152.0
@@ -1353,8 +1353,8 @@ packages:
     resolution: {integrity: sha512-TtpcNJ3XAzx3Gq8sWRzJaVajRs0uVxA2YAkdb1jm2YkPz4G6egUFAyA3n5vtEIZefPk5Wa4UXbKuS5fKkJWdgA==}
     engines: {node: '>=10'}
 
-  eslint-plugin-baseline-js@0.7.2:
-    resolution: {integrity: sha512-GygnWscRmkyjB6c+EQkOfpwK5y3VUAcoz8hsi19Y8Xpn7KNSYoBANcip3FCIdD6hVbLAF0iGvp0Z8NGkpqcpyg==}
+  eslint-plugin-baseline-js@0.7.4:
+    resolution: {integrity: sha512-WUl7oMZoGGMjeVXRzid8kNyehc2+YrgFnAbIPWhk3B6Kr39JGjCEMdUlkbQzxQ/eyD19SdXY1YyabRKs5YbQGw==}
     engines: {node: ^20.19.0 || >=22.12.0}
     peerDependencies:
       eslint: '>=9.29.0 <11'
@@ -2889,7 +2889,7 @@ snapshots:
 
   escape-string-regexp@4.0.0: {}
 
-  eslint-plugin-baseline-js@0.7.2(eslint@10.11.0):
+  eslint-plugin-baseline-js@0.7.4(eslint@10.11.0):
     dependencies:
       eslint: 10.11.0
       eslint-plugin-es-x: 9.7.0(eslint@10.11.0)
