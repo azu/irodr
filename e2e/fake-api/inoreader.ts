@@ -34,6 +34,10 @@ export interface InoreaderSubscriptionSeed {
 
 /** Behavior tests can change at any time with `configure`. */
 export interface InoreaderConfig {
+    /** Exhausted API zones, which respond with HTTP 429. */
+    readonly rateLimitedZones: readonly (1 | 2)[];
+    /** X-Reader-Limits-Reset-After, in seconds; omitted when a proxy hides the header. */
+    readonly limitsResetAfter?: number;
     /** Seconds until an access token expires. */
     readonly tokenLifetime: number;
     /** Streams whose contents requests fail with HTTP 500. */
@@ -128,6 +132,8 @@ function scenarioState(scenario: InoreaderScenario, sequence: number): State {
         clientId: scenario.clientId ?? "e2e-client",
         clientSecret: scenario.clientSecret ?? "e2e-secret",
         config: {
+            rateLimitedZones: [...new Set(scenario.rateLimitedZones ?? [])],
+            limitsResetAfter: scenario.limitsResetAfter,
             tokenLifetime: scenario.tokenLifetime ?? 3600,
             // Copied through a Set: `POST /__control/reset` passes its JSON through unchecked, and a
             // non-iterable value must fail the reset rather than every later request.
@@ -329,6 +335,16 @@ export function createFakeInoreader(): FakeInoreader {
         const expires = token ? current.state.accessTokens.get(token) : undefined;
         if (expires === undefined || expires <= Date.now()) return text("Unauthorized", 401);
         const api = path.slice("/reader/api/0".length);
+        // https://www.inoreader.com/developers/rate-limiting
+        const zone = api === "/mark-all-as-read" ? 2 : 1;
+        if (current.state.config.rateLimitedZones.includes(zone)) {
+            const seconds = current.state.config.limitsResetAfter;
+            return text(
+                "Rate limit exceeded",
+                429,
+                seconds === undefined ? {} : { "X-Reader-Limits-Reset-After": String(seconds) }
+            );
+        }
         if (api === "/subscription/list") return subscriptionList(current.state);
         if (api === "/unread-count") return unreadCounts(current.state);
         if (api.startsWith("/stream/contents/")) {

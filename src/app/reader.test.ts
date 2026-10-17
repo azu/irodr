@@ -470,22 +470,62 @@ describe("Reader", () => {
             }
         });
         await reader.start(new URL("https://irodr.test/"));
-        expect(timers).toEqual(["start 120000"]);
+        expect(timers).toEqual(["start 300000"]);
         reader.updatePreferences({ autoRefreshSubscriptionSec: 60 });
-        expect(timers).toEqual(["start 120000", "stop 120000", "start 60000"]);
+        expect(timers).toEqual(["start 300000", "stop 300000", "start 60000"]);
         reader.updatePreferences({ enableAutoRefreshSubscription: false });
-        expect(timers).toEqual(["start 120000", "stop 120000", "start 60000", "stop 60000"]);
+        expect(timers).toEqual(["start 300000", "stop 300000", "start 60000", "stop 60000"]);
         // Re-enabling keeps the interval set earlier.
         reader.updatePreferences({ enableAutoRefreshSubscription: true });
         reader.stop();
         expect(timers).toEqual([
-            "start 120000",
-            "stop 120000",
+            "start 300000",
+            "stop 300000",
             "start 60000",
             "stop 60000",
             "start 60000",
             "stop 60000"
         ]);
+    });
+
+    it("only auto refreshes while active, rechecking activity after idle scheduling", async () => {
+        const active = { value: false };
+        const ticks: (() => void)[] = [];
+        const idle: (() => void)[] = [];
+        const syncs: number[] = [];
+        const reader = createReader({
+            sources: [{ ...createMemorySource("memory"), sync: async () => void syncs.push(1) }],
+            canAutoRefresh: () => active.value,
+            scheduleIdle: (task) => void idle.push(task),
+            setInterval: (task) => {
+                ticks.push(task);
+                return () => undefined;
+            }
+        });
+        await reader.start(new URL("https://irodr.test/"));
+        await settle();
+        expect(syncs).toHaveLength(1);
+        ticks[0]?.();
+        expect(idle).toHaveLength(0);
+        await reader.refresh(); // Manual refresh is available while inactive.
+        expect(syncs).toHaveLength(2);
+        active.value = true;
+        ticks[0]?.();
+        active.value = false;
+        idle[0]?.();
+        await settle();
+        expect(syncs).toHaveLength(2);
+        active.value = true;
+        ticks[0]?.();
+        idle[1]?.();
+        await settle();
+        expect(syncs).toHaveLength(3);
+        ticks[0]?.();
+        reader.updatePreferences({ enableAutoRefreshSubscription: false });
+        idle[2]?.();
+        await settle();
+        expect(syncs).toHaveLength(3);
+        reader.stop();
     });
 
     it("keeps an error message visible over routine messages", async () => {

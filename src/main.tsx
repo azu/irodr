@@ -4,6 +4,7 @@ import { hasSavedPreferences, legacyPreferences, loadPreferences, savePreference
 import { createReader, type Reader } from "./app/reader.ts";
 import { type AppConfig, loadConfig } from "./config.ts";
 import "./global.css";
+import { createActivityMonitor } from "./lib/activity.ts";
 import { createEmitter } from "./lib/emitter.ts";
 import { browserWriteLock, createIndexedDBStore, readAllValues } from "./lib/kv-store.ts";
 import { safeUrl } from "./lib/sanitize.ts";
@@ -49,6 +50,13 @@ const sources = [
     })
 ];
 
+const activity = createActivityMonitor({
+    target: window,
+    isVisible: () => document.visibilityState === "visible",
+    hasFocus: () => document.hasFocus(),
+    now
+});
+
 const reader = createReader({
     sources,
     preferences: loadPreferences(localStorage),
@@ -56,8 +64,17 @@ const reader = createReader({
     openUrl: (url) => {
         if (safeUrl(url)) window.open(url, "_blank", "noopener");
     },
+    // Like irodr 1.x, skip an update forced by the idle callback timeout.
     scheduleIdle: (task) =>
-        "requestIdleCallback" in window ? requestIdleCallback(task, { timeout: 1000 }) : setTimeout(task, 0),
+        "requestIdleCallback" in window
+            ? requestIdleCallback(
+                  (deadline) => {
+                      if (deadline.timeRemaining() > 0) task();
+                  },
+                  { timeout: 1000 }
+              )
+            : setTimeout(task, 0),
+    canAutoRefresh: activity.isActive,
     setInterval: (task, ms) => {
         const id = setInterval(task, ms);
         return () => clearInterval(id);

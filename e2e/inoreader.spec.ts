@@ -225,6 +225,80 @@ test("refreshes an expired access token", async ({ page, api }) => {
     await expect(feedRow(page, "Alpha Blog")).toBeVisible();
 });
 
+test("only auto refreshes a focused, visible, recently used reader when the browser is idle", async ({ page, api }) => {
+    // Install before changing preferences so the replacement interval uses the test clock.
+    await page.clock.install();
+    await page.getByRole("button", { name: "Preferences" }).click();
+    await expect(page.getByLabel("Auto Refresh Subscription Seconds")).toHaveValue("300");
+    await page.getByLabel("Auto Refresh Subscription Seconds").fill("60");
+    await page.getByRole("button", { name: "Save" }).click();
+    await page.evaluate(() => {
+        // Emulate browser activity/idle states explicitly: headless tabs do not reliably lose focus.
+        Object.defineProperty(document, "hasFocus", { configurable: true, value: () => true });
+        Object.defineProperty(document, "visibilityState", { configurable: true, value: "visible" });
+        window.requestIdleCallback = (callback) =>
+            window.setTimeout(() => callback({ didTimeout: false, timeRemaining: () => 50 }), 0);
+    });
+    const syncs = async () => requests(await api.log(), "inoreader", "/reader/api/0/unread-count").length;
+    const initial = await syncs();
+    await page.clock.runFor(60_010);
+    await expect.poll(syncs).toBe(initial + 1);
+
+    await page.evaluate(() => Object.defineProperty(document, "hasFocus", { configurable: true, value: () => false }));
+    await page.clock.runFor(60_000);
+    expect(await syncs()).toBe(initial + 1);
+    await page.evaluate(() => {
+        Object.defineProperty(document, "hasFocus", { configurable: true, value: () => true });
+        Object.defineProperty(document, "visibilityState", { configurable: true, value: "hidden" });
+    });
+    await page.clock.runFor(60_000);
+    expect(await syncs()).toBe(initial + 1);
+    await page.evaluate(() =>
+        Object.defineProperty(document, "visibilityState", { configurable: true, value: "visible" })
+    );
+    // At most four active one-minute updates; then no updates after five minutes without input.
+    await page.clock.runFor(120_000);
+    const beforeIdle = await syncs();
+    await page.clock.runFor(180_000);
+    expect(await syncs()).toBe(beforeIdle);
+
+    await page.keyboard.press("ArrowUp");
+    await page.clock.runFor(60_000);
+    await expect.poll(syncs).toBe(beforeIdle + 1);
+    await page.evaluate(() => {
+        window.requestIdleCallback = (callback) =>
+            window.setTimeout(() => callback({ didTimeout: true, timeRemaining: () => 0 }), 0);
+    });
+    await page.clock.runFor(60_000);
+    expect(await syncs()).toBe(beforeIdle + 1);
+    await page.getByRole("button", { name: "Refresh", exact: true }).click();
+    await expect.poll(syncs).toBe(beforeIdle + 2);
+});
+
+test("stops reads and prefetch requests after a daily API limit, and resumes after reset", async ({ page, api }) => {
+    await page.clock.install();
+    await api.control("POST", "/inoreader/config", { rateLimitedZones: [1], limitsResetAfter: 600 });
+    await page.getByRole("button", { name: "Refresh", exact: true }).click();
+    await expect(headerMessage(page)).toContainText("Zone 1 API limit reached. Retry after");
+    // Both parallel sync requests must have completed before comparing the log.
+    await expect.poll(async () => requests(await api.log(), "inoreader", "/reader/api/0/unread-count").length).toBe(2);
+    const blocked = (await api.log()).length;
+    await page.getByRole("button", { name: "Refresh", exact: true }).click();
+    await page.keyboard.press("s");
+    expect((await api.log()).length).toBe(blocked);
+    // The server recovers, but the client still waits for the documented reset time.
+    await api.control("POST", "/inoreader/config", { rateLimitedZones: [] });
+    await page.clock.runFor(599_000);
+    await page.getByRole("button", { name: "Refresh", exact: true }).click();
+    expect((await api.log()).length).toBe(blocked);
+    await page.clock.runFor(2000);
+    await page.getByRole("button", { name: "Refresh", exact: true }).click();
+    // The header deliberately retains recent errors for five seconds; inspect actual network recovery.
+    await expect.poll(async () => requests(await api.log(), "inoreader", "/reader/api/0/unread-count").length).toBe(3);
+    await page.keyboard.press("s");
+    await expect(articles(page)).toHaveCount(3);
+});
+
 test("sanitizes article HTML", async ({ page, api }) => {
     await api.control("POST", "/inoreader/items", {
         streamId: "feed/https://delta.example.com/rss",

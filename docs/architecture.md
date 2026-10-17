@@ -101,6 +101,10 @@ Its behavior:
 - The next feeds are prefetched, so `s` usually switches instantly. Pressing `s` again while a feed is
   loading continues from that feed, and only the latest navigation takes effect.
 - A failed mark-read keeps the feed unread and shows the error in the header.
+- Auto refresh defaults to 5 minutes and runs only in a visible, focused window with input or scrolling
+  in the last 5 minutes. Saved intervals are preserved; manual refresh remains available while inactive.
+- Inoreader HTTP 429 responses pause requests for the affected API zone until `X-Reader-Limits-Reset-After`
+  elapses (5 minutes if the header is missing or invalid). The other zone remains usable.
 
 The reader is framework independent. React reads it with `useSyncExternalStore`
 (`src/ui/context.tsx`), selecting slices so that, for example, scrolling does not re-render the feed list. The

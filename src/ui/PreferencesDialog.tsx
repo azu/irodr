@@ -9,6 +9,7 @@ const styles = stylex.create({
     form: { display: "grid", gap: 12 },
     field: { display: "grid", gap: 4, fontSize: 14 },
     checkbox: { display: "flex", alignItems: "center", gap: 6, fontSize: 14 },
+    description: { marginBlock: 0, fontSize: 13, color: colors.muted },
     input: {
         padding: 6,
         fontSize: 14,
@@ -85,6 +86,10 @@ function PreferencesForm({ preferences }: { preferences: Preferences }) {
                 />
                 Enable Auto Refresh Subscription
             </label>
+            <p {...stylex.props(styles.description)}>
+                Auto refresh pauses when this window is unfocused, the tab is hidden, or there is no activity for 5
+                minutes.
+            </p>
             {NUMBER_FIELDS.map(({ name, label }) => (
                 <label key={name} {...stylex.props(styles.field)}>
                     {label}

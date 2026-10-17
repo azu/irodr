@@ -67,6 +67,8 @@ export interface ReaderOptions {
     readonly openUrl?: (url: string) => void;
     /** Run background work when the browser is idle. */
     readonly scheduleIdle?: (task: () => void) => void;
+    /** Automatic refreshes only run while the user is active; manual refreshes still work. */
+    readonly canAutoRefresh?: () => boolean;
     readonly setInterval?: (task: () => void, ms: number) => () => void;
     readonly now?: () => number;
 }
@@ -235,7 +237,12 @@ export function createReader(options: ReaderOptions): Reader {
         const every = options.setInterval;
         if (!enableAutoRefreshSubscription || !every) return;
         const idle = options.scheduleIdle ?? ((task: () => void) => task());
-        timers.add(every(() => idle(refreshInBackground), autoRefreshSubscriptionSec * 1000));
+        timers.add(
+            every(() => {
+                if (options.canAutoRefresh?.() === false) return;
+                idle(refreshInBackground);
+            }, autoRefreshSubscriptionSec * 1000)
+        );
     };
 
     const syncSources = async (): Promise<void> => {
@@ -270,6 +277,8 @@ export function createReader(options: ReaderOptions): Reader {
     };
 
     const refreshInBackground = (): void => {
+        // Activity or preferences may have changed while waiting for an idle callback.
+        if (!model.get().preferences.enableAutoRefreshSubscription || options.canAutoRefresh?.() === false) return;
         refresh().catch(() => undefined);
     };
 

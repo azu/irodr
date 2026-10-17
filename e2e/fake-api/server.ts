@@ -32,11 +32,11 @@ export interface FakeApiServer {
     close: () => Promise<void>;
 }
 
-// Mirrors the headers GitHub exposes to browsers.
+// Mirrors the headers used by the sources, including Inoreader through the same-origin proxy.
 const CORS = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Expose-Headers":
-        "Date, Link, Retry-After, X-Poll-Interval, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset"
+        "Date, Link, Retry-After, X-Poll-Interval, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, X-Reader-Limits-Reset-After"
 };
 
 async function readBody(request: IncomingMessage): Promise<string> {
@@ -80,8 +80,16 @@ export async function startFakeApi(options: { port?: number; host?: string } = {
                 inoreader.expireTokens();
                 return json({ ok: true });
             case "POST /inoreader/config":
-                // Only array values replace the failing streams; other keys and values are ignored.
+                // Validate the configuration values used by browser tests.
                 inoreader.configure({
+                    ...(Array.isArray(body.rateLimitedZones)
+                        ? {
+                              rateLimitedZones: body.rateLimitedZones.filter(
+                                  (zone): zone is 1 | 2 => zone === 1 || zone === 2
+                              )
+                          }
+                        : {}),
+                    ...(typeof body.limitsResetAfter === "number" ? { limitsResetAfter: body.limitsResetAfter } : {}),
                     ...(Array.isArray(body.failingStreams) ? { failingStreams: body.failingStreams as string[] } : {}),
                     ...(Array.isArray(body.failingMarkRead)
                         ? { failingMarkRead: body.failingMarkRead as string[] }

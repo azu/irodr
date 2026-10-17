@@ -201,6 +201,64 @@ describe("createInoreaderSource", () => {
         expect(source.getSnapshot().feeds).toHaveLength(5);
     });
 
+    it("pauses all Zone 1 reads until reset without blocking Zone 2 mark-read", async () => {
+        const { source, requests } = await connected();
+        await source.sync();
+        const page = await source.loadItems(`inoreader:${ALPHA}`, { count: 20 });
+        server.inoreader.configure({ rateLimitedZones: [1], limitsResetAfter: 3600 });
+        await expect(source.loadItems(`inoreader:${ALPHA}`, { count: 20 })).rejects.toMatchObject({ status: 429 });
+        expect(source.getSnapshot().status.message).toContain("Zone 1 API limit reached. Retry after");
+        expect(source.getSnapshot().connected).toBe(true);
+        const blockedCount = requests.length;
+        await expect(source.sync()).rejects.toMatchObject({ status: 429 });
+        await expect(source.loadItems(`inoreader:${ALPHA}`, { count: 20, continuation: "20" })).rejects.toMatchObject({
+            status: 429
+        });
+        expect(requests).toHaveLength(blockedCount);
+        await source.markRead(`inoreader:${ALPHA}`, page.items);
+        expect(server.inoreader.unreadCount(ALPHA)).toBe(0);
+        server.inoreader.configure({ rateLimitedZones: [] });
+        clock.offset = 3_599_000;
+        await expect(source.sync()).rejects.toMatchObject({ status: 429 });
+        clock.offset = 3_600_100;
+        await source.sync();
+        expect(source.getSnapshot().status.phase).toBe("idle");
+        const resumed = await source.loadItems(`inoreader:${ALPHA}`, { count: 20 });
+        expect(resumed.items.map((item) => item.id)).toEqual(page.items.map((item) => item.id));
+        expect(resumed.items.every((item) => !item.unread)).toBe(true);
+    });
+
+    it.each([undefined, 0, -1, Infinity])("waits five minutes when the reset header is %s", async (seconds) => {
+        const { source, requests } = await connected();
+        server.inoreader.configure({ rateLimitedZones: [1], limitsResetAfter: seconds });
+        await expect(source.loadItems(`inoreader:${ALPHA}`, { count: 20 })).rejects.toMatchObject({ status: 429 });
+        const blockedCount = requests.length;
+        server.inoreader.configure({ rateLimitedZones: [] });
+        clock.offset = 299_000;
+        await expect(source.sync()).rejects.toMatchObject({ status: 429 });
+        expect(requests).toHaveLength(blockedCount);
+        clock.offset = 300_100;
+        await source.sync();
+        expect(source.getSnapshot().status.phase).toBe("idle");
+    });
+
+    it("pauses Zone 2 writes without blocking Zone 1 reads", async () => {
+        const { source, requests } = await connected();
+        const page = await source.loadItems(`inoreader:${ALPHA}`, { count: 20 });
+        server.inoreader.configure({ rateLimitedZones: [2], limitsResetAfter: 600 });
+        await expect(source.markRead(`inoreader:${ALPHA}`, page.items)).rejects.toMatchObject({ status: 429 });
+        const blockedCount = requests.length;
+        await expect(source.markRead(`inoreader:${ALPHA}`, page.items)).rejects.toMatchObject({ status: 429 });
+        expect(requests).toHaveLength(blockedCount);
+        expect(server.inoreader.unreadCount(ALPHA)).toBe(3);
+        await source.sync();
+        await expect(source.loadItems(`inoreader:${ALPHA}`, { count: 20 })).resolves.toHaveProperty("items");
+        server.inoreader.configure({ rateLimitedZones: [] });
+        clock.offset = 600_100;
+        await source.markRead(`inoreader:${ALPHA}`, page.items);
+        expect(server.inoreader.unreadCount(ALPHA)).toBe(0);
+    });
+
     it("keeps the session when the token endpoint is temporarily unavailable", async () => {
         const { source, storage } = await connected();
         server.inoreader.expireTokens();
@@ -302,6 +360,8 @@ function stateWith(changes: Partial<InoreaderState>): InoreaderState {
 
 describe("projectFeeds", () => {
     it("turns subscriptions and unread counts into feeds", () => {
+        // Synthetic credentials for testing feeds that use Basic authentication.
+        // secretlint-disable-next-line @secretlint/secretlint-rule-basicauth
         const withCredentials = "feed/https://user:secret@private.example.com/rss";
         const state = project(
             initialState(true),

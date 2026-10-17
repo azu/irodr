@@ -26,6 +26,9 @@ const FEED_PREFIX = `${INOREADER_SOURCE_ID}:`;
 const READ_CATEGORY = /^user\/[^/]+\/state\/com\.google\/read$/;
 /** How long a local mark-read overrides unread counts that do not reflect it yet. */
 const READ_THROUGH_MS = 5 * 60 * 1000;
+/** Retry conservatively when a proxy does not expose Inoreader's reset header. */
+const RATE_LIMIT_RETRY_MS = 5 * 60 * 1000;
+type ApiZone = 1 | 2;
 const CAPABILITIES = { loadMore: true, unreadFilter: true, liveItems: false } as const;
 
 export interface InoreaderSourceOptions extends InoreaderOAuthOptions {
@@ -290,6 +293,9 @@ function apiUrl(baseUrl: string, path: string, params: Readonly<Record<string, s
 export function createInoreaderSource(options: InoreaderSourceOptions): Source {
     const oauth = createInoreaderOAuth(options);
     const state = createStore(initialState(oauth.token() !== undefined));
+    const rateLimits = createStore<
+        ReadonlyMap<ApiZone, { readonly until: number; readonly error: InoreaderRequestError }>
+    >(new Map());
     // Runtime handle: item → its Inoreader timestampUsec, for mark-all-as-read.
     const itemTimestamps = new WeakMap<Item, number>();
 
@@ -310,10 +316,18 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
 
     const request = async (
         path: string,
-        params: Readonly<Record<string, string | number | undefined>> = {}
+        params: Readonly<Record<string, string | number | undefined>> = {},
+        zone: ApiZone = 1
     ): Promise<Response> => {
+        const checkRateLimit = (): void => {
+            const limit = rateLimits.get().get(zone);
+            if (limit && options.now() < limit.until) throw limit.error;
+        };
+        // Also check before OAuth so a blocked request does not renew an expired token.
+        checkRateLimit();
         const url = apiUrl(options.baseUrl, path, params);
         const send = async (accessToken: string): Promise<Response> => {
+            checkRateLimit();
             try {
                 return await options.fetch(`${options.corsProxy}${url}`, {
                     headers: { Authorization: `Bearer ${accessToken}` }
@@ -327,6 +341,17 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
         // The token may have been revoked or expired early: refresh once.
         const response =
             firstResponse.status === 401 ? await send((await oauth.refresh(accessToken)).accessToken) : firstResponse;
+        if (response.status === 429) {
+            const seconds = Number(response.headers.get("X-Reader-Limits-Reset-After"));
+            const delay = Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : RATE_LIMIT_RETRY_MS;
+            const until = options.now() + delay;
+            const error = new InoreaderRequestError(
+                `Inoreader Zone ${zone} API limit reached. Retry after ${new Date(until).toLocaleTimeString()}.`,
+                429
+            );
+            rateLimits.update((current) => new Map([...current, [zone, { until, error }]]));
+            throw error;
+        }
         if (!response.ok) {
             throw new InoreaderRequestError(`Inoreader request failed (HTTP ${response.status}).`, response.status);
         }
@@ -390,7 +415,9 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
             }
             return { items: loaded.map(({ item }) => item), continuation: json.continuation || undefined };
         } catch (error) {
-            if (isAuthFailure(error)) handleFailure(error);
+            if (isAuthFailure(error) || (error instanceof InoreaderRequestError && error.status === 429)) {
+                handleFailure(error);
+            }
             throw error;
         }
     };
@@ -402,7 +429,7 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
         // Nothing was shown, so nothing is marked read.
         if (through === undefined) return;
         try {
-            await request("/mark-all-as-read", { s: streamId, ts: through });
+            await request("/mark-all-as-read", { s: streamId, ts: through }, 2);
         } catch (error) {
             if (isAuthFailure(error)) handleFailure(error);
             throw error;

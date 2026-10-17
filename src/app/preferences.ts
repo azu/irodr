@@ -12,7 +12,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
     prefetchSubscriptionCount: 5,
     fetchContentsCount: 20,
     enableAutoRefreshSubscription: true,
-    autoRefreshSubscriptionSec: 120
+    autoRefreshSubscriptionSec: 300
 };
 
 const KEY = "irodr:preferences";
