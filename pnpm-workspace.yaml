@@ -15,7 +15,7 @@ catalog:
   "@types/react-dom": 19.3.0
   "@vitejs/plugin-react": 6.1.2
   eslint-plugin-baseline-js: 0.7.4
-  markdown-it: 15.0.2
+  markdown-it: 15.0.3
   # The React Compiler for @vitejs/plugin-react (react({ compiler: true })), Oxc's port of it.
   oxc-transform-react: 0.154.0
   react: 19.3.1
