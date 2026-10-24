@@ -31,12 +31,15 @@ export const sizes = stylex.defineVars({
     /** The sticky category header in the feed list. */
     categoryHeader: "24px",
     /** The control area at the bottom left on touch screens when the tap controls are on the left. */
-    leftControlArea: "104px"
+    leftControlArea: "104px",
+    /** The sidebar when the screen is split side by side (media.sideBySide). */
+    thinSidebar: "160px"
 });
 
 /**
  * Layout breakpoints. The layout follows the viewport width: on iPhone Duo about 466px folded and 626px unfolded in
- * portrait. `sideBySide` adds the fold where the browser exposes it (Viewport Segments API).
+ * portrait. `sideBySide` and `stacked` add the fold where the browser exposes it (Viewport Segments API; Safari 27.1
+ * has it behind the "Viewport Segments API" feature flag).
  */
 export const media = stylex.defineConsts({
     /** Phones and iPhone Duo folded: the sidebar becomes a drawer over the articles. */
@@ -49,10 +52,15 @@ export const media = stylex.defineConsts({
     /** Touch screens: larger targets and the tap controls. */
     touch: "@media (pointer: coarse)",
     /**
-     * Two screen segments side by side, e.g. iPhone Duo partly folded like a book: the sidebar takes the left
-     * segment and the articles the right one. Not below 600px, where the sidebar is a drawer. Safari 27.1 has it
-     * behind the "Viewport Segments API" feature flag.
+     * Two screen segments side by side, e.g. iPhone Duo partly folded like a book: a thin sidebar, so the articles
+     * keep most of the width. Not below 600px, where the sidebar is a drawer.
      * https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@media/horizontal-viewport-segments
      */
-    sideBySide: "@media (horizontal-viewport-segments: 2) and (min-width: 600px)"
+    sideBySide: "@media (horizontal-viewport-segments: 2) and (min-width: 600px)",
+    /**
+     * Two screen segments one above the other, e.g. iPhone Duo in landscape partly folded like a laptop: the app
+     * takes the top segment and the tap controls the bottom one (ArticleView).
+     * https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@media/vertical-viewport-segments
+     */
+    stacked: "@media (vertical-viewport-segments: 2)"
 });

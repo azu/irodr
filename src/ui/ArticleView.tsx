@@ -9,9 +9,13 @@ import { withClass } from "./classes.ts";
 import { useReader, useReaderState, useKeyBindings } from "./context.tsx";
 import { activeItemId, CLASS, itemElement } from "./dom.ts";
 import { ArrowIcon, BookmarkIcon, NextFeedIcon, SettingsIcon } from "./icons.tsx";
+import { useMediaQuery } from "./media-query.ts";
 import { usePress } from "./press.ts";
 import { ProgressBar } from "./ProgressBar.tsx";
 import { colors, media, sizes } from "./tokens.stylex.ts";
+
+/** The same query as `media.stacked`, for choosing the tap controls' layout. */
+const STACKED_QUERY = "(vertical-viewport-segments: 2)";
 
 const styles = stylex.create({
     main: { position: "relative", minWidth: 0, minHeight: 0, display: "flex", flexDirection: "column" },
@@ -101,6 +105,22 @@ const styles = stylex.create({
         borderStartEndRadius: 12,
         backgroundColor: colors.subtle
     },
+    // Folded like a laptop: the bottom segment, below the fold, holds larger buttons in a row.
+    tapControlsStacked: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 24,
+        insetBlockStart: "env(viewport-segment-top 0 1)",
+        insetBlockEnd: 0,
+        insetInlineStart: 0,
+        insetInlineEnd: 0,
+        paddingBlockEnd: "env(safe-area-inset-bottom)",
+        borderBlockStartWidth: 1,
+        borderBlockStartStyle: "solid",
+        borderBlockStartColor: colors.border,
+        backgroundColor: colors.subtle
+    },
     lastInRow: { order: 1 },
     // A line between the item buttons (k, j) and the next feed button (s), which leaves the feed.
     separator: {
@@ -121,6 +141,7 @@ const styles = stylex.create({
         marginInlineStart: 4,
         marginInlineEnd: 4
     },
+    separatorStacked: { alignSelf: "center", height: 40, marginBlockStart: 0 },
     // Feedback while a finger is on a button (usePress).
     tapButtonPressed: { backgroundColor: colors.hover, transform: "scale(0.92)" },
     // The focused item is saved for later: a filled, colored button, visible at a glance.
@@ -144,7 +165,8 @@ const styles = stylex.create({
         touchAction: "manipulation",
         transitionProperty: "transform, background-color",
         transitionDuration: "80ms"
-    }
+    },
+    tapButtonLarge: { width: 64, height: 64, borderRadius: 32 }
 });
 
 /**
@@ -154,6 +176,8 @@ const styles = stylex.create({
 function TapControls({ savedForLater }: { savedForLater?: boolean }) {
     const bindings = useKeyBindings();
     const side = useReaderState((state) => state.preferences.tapControlsSide);
+    const stacked = useMediaQuery(STACKED_QUERY);
+    const inRow = stacked || side === "left";
     const { pressed: pressedKey, handlers } = usePress();
     const buttons = [
         // Read later sits away from the corner: first in the column on the right, last in the row on the left, so
@@ -170,14 +194,21 @@ function TapControls({ savedForLater }: { savedForLater?: boolean }) {
             role="toolbar"
             aria-label="Reading controls"
             data-side={side}
-            {...stylex.props(styles.tapControls, side === "left" ? styles.tapControlsLeft : styles.tapControlsRight)}
+            {...stylex.props(
+                styles.tapControls,
+                stacked ? styles.tapControlsStacked : side === "left" ? styles.tapControlsLeft : styles.tapControlsRight
+            )}
         >
             {buttons.map((button) => (
                 <Fragment key={button.key}>
                     {button.key === "s" ? (
                         <span
                             aria-hidden="true"
-                            {...stylex.props(styles.separator, side === "left" && styles.separatorInRow)}
+                            {...stylex.props(
+                                styles.separator,
+                                inRow && styles.separatorInRow,
+                                stacked && styles.separatorStacked
+                            )}
                         />
                     ) : null}
                     <button
@@ -187,7 +218,8 @@ function TapControls({ savedForLater }: { savedForLater?: boolean }) {
                         aria-pressed={button.key === "p" ? savedForLater : undefined}
                         {...stylex.props(
                             styles.tapButton,
-                            button.key === "p" && side === "left" && styles.lastInRow,
+                            stacked && styles.tapButtonLarge,
+                            button.key === "p" && inRow && styles.lastInRow,
                             button.key === "p" && savedForLater === true && styles.tapButtonSaved,
                             pressedKey === button.key && styles.tapButtonPressed
                         )}

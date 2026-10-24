@@ -12,7 +12,8 @@ const NARROW_QUERY = "(max-width: 599px)";
 
 const styles = stylex.create({
     app: {
-        height: "100dvh",
+        // Folded like a laptop, the app ends at the fold; the tap controls take the bottom segment.
+        height: { default: "100dvh", [media.stacked]: "env(viewport-segment-bottom 0 0)" },
         display: "grid",
         gridTemplateRows: "auto minmax(0, 1fr)",
         // viewport-fit=cover: Safari blurs the page under the status bar most at the top edge. Let the header's
@@ -31,17 +32,11 @@ const styles = stylex.create({
         gridTemplateColumns: {
             default: `clamp(200px, 30vw, ${sizes.sidebar}) minmax(0, 1fr)`,
             [media.narrow]: "minmax(0, 1fr)",
-            // Split at the fold: the sidebar ends where the left segment ends (the body starts after the left
-            // safe area), and the articles start where the right segment starts.
-            [media.sideBySide]: "calc(env(viewport-segment-right 0 0) - env(safe-area-inset-left)) minmax(0, 1fr)"
-        },
-        columnGap: {
-            default: null,
-            [media.sideBySide]: "calc(env(viewport-segment-left 1 0) - env(viewport-segment-right 0 0))"
+            [media.sideBySide]: `${sizes.thinSidebar} minmax(0, 1fr)`
         },
         minHeight: 0
     },
-    collapsed: { gridTemplateColumns: "minmax(0, 1fr)", columnGap: 0 },
+    collapsed: { gridTemplateColumns: "minmax(0, 1fr)" },
     backdrop: {
         display: { default: "none", [media.narrow]: "block" },
         position: "absolute",
