@@ -83,7 +83,7 @@ export function createShortcuts(reader: Reader, translate: TranslateMode): Short
         },
         "open-current-content-url": () => reader.openFocusedItem(),
         "save-content-for-later": () => {
-            void reader.saveForLater();
+            void reader.toggleSaveForLater();
         },
         "toggle-subscription-feed-list": () => reader.toggleAllCategories(),
         "scroll-down-content": (event) => {

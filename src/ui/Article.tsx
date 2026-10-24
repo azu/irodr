@@ -141,8 +141,8 @@ export function Article({ item, focused, savedForLater }: { item: Item; focused:
                             <button
                                 type="button"
                                 aria-pressed={savedForLater}
-                                title="Save for later (p)"
-                                onClick={() => void reader.saveForLater(item.id)}
+                                title={savedForLater ? "Remove from later (p)" : "Save for later (p)"}
+                                onClick={() => void reader.toggleSaveForLater(item.id)}
                                 {...stylex.props(styles.readLater)}
                             >
                                 <BookmarkIcon filled={savedForLater} size={14} />

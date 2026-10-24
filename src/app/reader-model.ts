@@ -87,6 +87,8 @@ export interface ReaderModel {
     readonly lastErrors: ReadonlyMap<string, string>;
     /** IDs of the items saved for later in this session, including saves in flight. */
     readonly savedForLater: ReadonlySet<string>;
+    /** IDs of the items removed from later in this session, including removals in flight. */
+    readonly unsavedForLater: ReadonlySet<string>;
 }
 
 export function initialModel(preferences: Preferences): ReaderModel {
@@ -105,7 +107,8 @@ export function initialModel(preferences: Preferences): ReaderModel {
         readHistory: [],
         readItems: new Map(),
         lastErrors: new Map(),
-        savedForLater: new Set()
+        savedForLater: new Set(),
+        unsavedForLater: new Set()
     };
 }
 
@@ -286,19 +289,23 @@ export function withReadHistory(model: ReaderModel, items: readonly Item[]): Rea
 
 // ---------------------------------------------------------------- save for later
 
-/** Whether `item` is saved for later: by its source, or in this session. */
-export function isSavedForLater(model: Pick<ReaderModel, "savedForLater">, item: Item): boolean {
+/** Whether `item` is saved for later: by its source or in this session, and not removed in this session. */
+export function isSavedForLater(model: Pick<ReaderModel, "savedForLater" | "unsavedForLater">, item: Item): boolean {
+    if (model.unsavedForLater.has(item.id)) return false;
     return item.savedForLater === true || model.savedForLater.has(item.id);
 }
 
+function withMember(set: ReadonlySet<string>, id: string, member: boolean): ReadonlySet<string> {
+    if (set.has(id) === member) return set;
+    return member ? new Set([...set, id]) : new Set([...set].filter((other) => other !== id));
+}
+
+/** Show the item saved for later, or removed from later, in this session. */
 export function withSavedForLater(model: ReaderModel, itemId: string, saved: boolean): ReaderModel {
-    if (model.savedForLater.has(itemId) === saved) return model;
-    return {
-        ...model,
-        savedForLater: saved
-            ? new Set([...model.savedForLater, itemId])
-            : new Set([...model.savedForLater].filter((id) => id !== itemId))
-    };
+    const savedForLater = withMember(model.savedForLater, itemId, saved);
+    const unsavedForLater = withMember(model.unsavedForLater, itemId, !saved);
+    if (savedForLater === model.savedForLater && unsavedForLater === model.unsavedForLater) return model;
+    return { ...model, savedForLater, unsavedForLater };
 }
 
 // ---------------------------------------------------------------- UI state

@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from "vite-plus/test";
 import { inoreaderSubscriptions } from "../../../e2e/fake-api/fixtures.ts";
 import { startFakeApi } from "../../../e2e/fake-api/server.ts";
-import type { Feed } from "../source.ts";
+import type { Feed, Item } from "../source.ts";
 import type { StreamItemResponse, SubscriptionResponse, UnreadCountResponse } from "./api-types.ts";
 import {
     createInoreaderSource,
@@ -25,6 +25,21 @@ const ALPHA = "feed/https://alpha.example.com/rss";
 const REDIRECT = "https://irodr.test/";
 
 const server = await startFakeApi();
+
+/** A GitHub notification to save in Inoreader. */
+function github(url: string): Item {
+    return {
+        id: `github:${url}`,
+        feedId: "github:azu/irodr",
+        title: url,
+        url,
+        author: "",
+        contentHtml: "",
+        publishedAt: 0,
+        updatedAt: 0,
+        unread: true
+    };
+}
 afterAll(() => server.close());
 beforeEach(() => server.reset({ inoreader: { subscriptions: inoreaderSubscriptions() } }));
 
@@ -199,6 +214,33 @@ describe("createInoreaderSource", () => {
         expect(server.inoreader.unreadCount(READ_LATER)).toBe(0);
         await source.sync();
         expect(source.getSnapshot().feeds.find((feed) => feed.title === "Read later")?.unreadCount).toBe(0);
+    });
+
+    it("removes from Read later an item saved in this session, or an item of Read later", async () => {
+        const { source } = await connected();
+        await source.sync();
+        const unstarred = () => {
+            const entry = server.log().at(-1);
+            expect(entry).toMatchObject({ method: "POST", path: "/reader/api/0/edit-tag" });
+            const body = new URLSearchParams(entry?.body);
+            return { r: body.get("r"), i: body.getAll("i") };
+        };
+        // Right after saving: the article that save-web-page answered.
+        await source.saveForLater?.(github("https://github.com/azu/irodr/pull/1"));
+        await source.removeFromLater?.(github("https://github.com/azu/irodr/pull/1"));
+        expect(unstarred()).toMatchObject({ r: READ_LATER, i: [expect.stringMatching(/\/item\/[0-9a-f]{16}$/)] });
+        expect(server.inoreader.savedUrls()).toEqual([]);
+        // An item listed in Read later, by its article ID.
+        await source.saveForLater?.(github("https://github.com/azu/irodr/pull/2"));
+        const page = await source.loadItems(`inoreader:${READ_LATER}`, { count: 20 });
+        expect(page.items).toHaveLength(1);
+        await source.removeFromLater?.(page.items[0]!);
+        expect(unstarred().i).toEqual([page.items[0]?.id.split("--")[1]]);
+        expect(server.inoreader.savedUrls()).toEqual([]);
+        // Not matched by URL.
+        await expect(source.removeFromLater?.(github("https://github.com/azu/irodr/pull/3"))).rejects.toThrow(
+            "Remove it from Read later in Inoreader."
+        );
     });
 
     it("keeps the Read later items that were not loaded unread", async () => {

@@ -35,6 +35,9 @@ This document describes the behavior of each source.
   The extension sends `star=1` when its save target is Read later and `star=0` for Web pages.
   Inoreader fetches the page itself, so pages that need a login (e.g. private GitHub repositories) may be saved without
   their contents. Treated as a Zone 2 (write) request.
+  `p` (or the button) on a saved item removes it from Read later with `POST edit-tag`
+  (`r=user/-/state/com.google/starred`, `i` = the article). The article is known for pages saved in this session
+  (`save-web-page` answers `/article/<hex>`) and for Inoreader's own items; other items are not matched by URL.
 - **CORS**: requests go through `VITE_CORS_PROXY` (`/cors-proxy/`), unless `localStorage["REACT_APP_CORS_PROXY"]`
   overrides it (see `resources/userScript/irodr-cors.js`).
 

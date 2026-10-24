@@ -149,6 +149,11 @@ export interface Source {
      * The reader asks the first connected source that implements it.
      */
     saveForLater?(item: Item): Promise<void>;
+    /**
+     * Remove an item from later: one this source saved in this session, or one it reports `savedForLater`. Rejects
+     * when it cannot tell which saved item it is.
+     */
+    removeFromLater?(item: Item): Promise<void>;
     /** Run a settings action. Resolves to a message for the user. */
     runAction(actionId: string, values: SettingValues): Promise<string>;
 }
