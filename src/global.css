@@ -17,6 +17,19 @@ html {
     background-color: #ffffff;
 }
 
+/*
+ * A home screen web app on iOS (display-mode: standalone) with viewport-fit=cover lets the page itself rubber-band,
+ * and the article scroller can then stop responding (https://bugs.webkit.org/show_bug.cgi?id=237961).
+ * Only the scrollers inside the app scroll.
+ */
+@media (display-mode: standalone) {
+    html,
+    body {
+        overflow: hidden;
+        overscroll-behavior: none;
+    }
+}
+
 body {
     font-family: system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
     font-size: 15px;

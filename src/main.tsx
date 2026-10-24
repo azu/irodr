@@ -85,7 +85,9 @@ const reader = createReader({
 });
 
 const viewportMeta = document.querySelector<HTMLMetaElement>('meta[name="viewport"]');
-if (viewportMeta && window.visualViewport) {
+// A home screen web app has no Safari toolbar to shrink; changing the viewport there only moves the page.
+const standalone = window.matchMedia("(display-mode: standalone)").matches;
+if (viewportMeta && window.visualViewport && !standalone) {
     createSafeAreaRefresher({
         viewport: window.visualViewport,
         meta: viewportMeta,
