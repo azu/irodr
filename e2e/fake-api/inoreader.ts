@@ -3,7 +3,8 @@ import { bearer, escapeHtml, type FakeRequest, type FakeResponse, formBody, html
 /**
  * A fake Inoreader implementing the parts of https://www.inoreader.com/developers/ irodr uses:
  * OAuth 2.0 (authorization code + refresh token), subscription list, unread counts,
- * stream contents with continuation, and mark-all-as-read.
+ * stream contents with continuation, item IDs, mark-all-as-read, and saving web pages
+ * (`save-web-page`, the request of Inoreader's browser extension; not in the public documentation).
  */
 
 export interface InoreaderItemSeed {
@@ -67,6 +68,8 @@ export interface FakeInoreader {
     expireTokens: () => void;
     streamIds: () => string[];
     unreadCount: (streamId: string) => number;
+    /** URLs of the saved web pages, newest first. */
+    savedUrls: () => string[];
     handle: (request: FakeRequest, path: string) => FakeResponse;
 }
 
@@ -97,6 +100,17 @@ interface State {
 
 const USER = "user/1005921515";
 const READ = `${USER}/state/com.google/read`;
+/** Saved web pages, a state stream: not a subscription, and not in unread-count. */
+const SAVED_WEB_PAGES = "user/-/state/com.google/saved-web-pages";
+
+/** Stream IDs name the current user as "user/-". */
+function normalizeStreamId(streamId: string): string {
+    return streamId.replace(`${USER}/`, "user/-/");
+}
+
+function isSubscription(streamId: string): boolean {
+    return !streamId.startsWith("user/");
+}
 
 /** Replace the items of a known stream. */
 function withStreamItems(state: State, streamId: string, change: (items: readonly Item[]) => readonly Item[]): State {
@@ -147,7 +161,12 @@ function scenarioState(scenario: InoreaderScenario, sequence: number): State {
         refreshTokens: new Set(),
         sequence
     };
-    return (scenario.subscriptions ?? []).reduce(withSubscription, empty);
+    return (scenario.subscriptions ?? []).reduce(withSubscription, {
+        ...empty,
+        streams: new Map([
+            [SAVED_WEB_PAGES, { seed: { id: SAVED_WEB_PAGES, title: "Saved web pages", items: [] }, items: [] }]
+        ])
+    });
 }
 
 function configured(state: State, patch: Partial<InoreaderConfig>): State {
@@ -188,27 +207,31 @@ function withAllUnread(state: State, streamId: string): State {
 
 function subscriptionList(state: State): FakeResponse {
     return json({
-        subscriptions: [...state.streams.values()].map(({ seed, items }, index) => ({
-            id: seed.id,
-            title: seed.title,
-            categories: (seed.categories ?? []).map((label) => ({ id: `${USER}/label/${label}`, label })),
-            sortid: String(index).padStart(8, "0"),
-            firstitemmsec: (items.at(-1)?.timestampUsec ?? 0) - 1,
-            url: seed.url ?? seed.id.replace(/^feed\//, ""),
-            htmlUrl: seed.htmlUrl ?? "https://example.com/",
-            iconUrl: seed.iconUrl ?? ""
-        }))
+        subscriptions: [...state.streams.values()]
+            .filter(({ seed }) => isSubscription(seed.id))
+            .map(({ seed, items }, index) => ({
+                id: seed.id,
+                title: seed.title,
+                categories: (seed.categories ?? []).map((label) => ({ id: `${USER}/label/${label}`, label })),
+                sortid: String(index).padStart(8, "0"),
+                firstitemmsec: (items.at(-1)?.timestampUsec ?? 0) - 1,
+                url: seed.url ?? seed.id.replace(/^feed\//, ""),
+                htmlUrl: seed.htmlUrl ?? "https://example.com/",
+                iconUrl: seed.iconUrl ?? ""
+            }))
     });
 }
 
 function unreadCounts(state: State): FakeResponse {
     return json({
         max: "1000",
-        unreadcounts: [...state.streams.values()].map(({ seed, items }) => ({
-            id: seed.id,
-            count: items.filter((item) => !item.read).length,
-            newestItemTimestampUsec: String(items[0]?.timestampUsec ?? 0)
-        }))
+        unreadcounts: [...state.streams.values()]
+            .filter(({ seed }) => isSubscription(seed.id))
+            .map(({ seed, items }) => ({
+                id: seed.id,
+                count: items.filter((item) => !item.read).length,
+                newestItemTimestampUsec: String(items[0]?.timestampUsec ?? 0)
+            }))
     });
 }
 
@@ -244,6 +267,21 @@ function streamContents(state: State, streamId: string, url: URL): FakeResponse 
             origin: { streamId, title: stream.seed.title, htmlUrl: stream.seed.htmlUrl ?? "https://example.com/" }
         })),
         ...(next ? { continuation: next } : {})
+    });
+}
+
+/** https://www.inoreader.com/developers/item-ids, with `xt` limited to the read state. */
+function itemIds(state: State, url: URL): FakeResponse {
+    const streamId = normalizeStreamId(url.searchParams.get("s") ?? "");
+    const stream = state.streams.get(streamId);
+    if (!stream) return json({ error: "not found" }, 404);
+    if (state.config.failingStreams.includes(streamId)) return text("Internal Server Error", 500);
+    const unreadOnly = normalizeStreamId(url.searchParams.get("xt") ?? "") === "user/-/state/com.google/read";
+    const count = Math.min(Number(url.searchParams.get("n") ?? 20) || 20, 1000);
+    const items = stream.items.filter((item) => !unreadOnly || !item.read).slice(0, count);
+    return json({
+        items: [],
+        itemRefs: items.map((item) => ({ id: item.id, directStreamIds: [], timestampUsec: String(item.timestampUsec) }))
     });
 }
 
@@ -317,7 +355,7 @@ export function createFakeInoreader(): FakeInoreader {
 
     const markAllAsRead = (request: FakeRequest): FakeResponse => {
         const params = request.method === "POST" && request.body ? formBody(request) : request.url.searchParams;
-        const streamId = params.get("s") ?? "";
+        const streamId = normalizeStreamId(params.get("s") ?? "");
         if (!current.state.streams.has(streamId)) return text("Unknown stream", 400);
         if (current.state.config.failingMarkRead.includes(streamId)) return text("Internal Server Error", 500);
         const raw = Number(params.get("ts"));
@@ -325,6 +363,24 @@ export function createFakeInoreader(): FakeInoreader {
         const ts = raw < 1e12 ? raw * 1_000_000 : raw;
         current.state = withReadBefore(current.state, streamId, ts);
         return text("OK");
+    };
+
+    /** Save a web page by its URL, as Inoreader's browser extension does. Answers the saved article's path. */
+    const saveWebPage = (request: FakeRequest): FakeResponse => {
+        if (request.method !== "POST") return text("Method Not Allowed", 405);
+        const pageUrl = request.url.searchParams.get("url") ?? "";
+        if (!URL.canParse(pageUrl)) return text("Invalid URL", 400);
+        const id = (current.state.sequence + 1).toString(16).padStart(16, "0");
+        current.state = withItems(current.state, SAVED_WEB_PAGES, [
+            {
+                id: `tag:google.com,2005:reader/item/${id}`,
+                title: `Saved page ${pageUrl}`,
+                url: pageUrl,
+                content: `<p>Saved from ${escapeHtml(pageUrl)}.</p>`,
+                published: Math.floor(Date.now() / 1000)
+            }
+        ]);
+        return text(`/article/${id}`);
     };
 
     const handle = (request: FakeRequest, path: string): FakeResponse => {
@@ -336,7 +392,7 @@ export function createFakeInoreader(): FakeInoreader {
         if (expires === undefined || expires <= Date.now()) return text("Unauthorized", 401);
         const api = path.slice("/reader/api/0".length);
         // https://www.inoreader.com/developers/rate-limiting
-        const zone = api === "/mark-all-as-read" ? 2 : 1;
+        const zone = api === "/mark-all-as-read" || api === "/save-web-page" ? 2 : 1;
         if (current.state.config.rateLimitedZones.includes(zone)) {
             const seconds = current.state.config.limitsResetAfter;
             return text(
@@ -348,10 +404,12 @@ export function createFakeInoreader(): FakeInoreader {
         if (api === "/subscription/list") return subscriptionList(current.state);
         if (api === "/unread-count") return unreadCounts(current.state);
         if (api.startsWith("/stream/contents/")) {
-            const streamId = decodeURIComponent(api.slice("/stream/contents/".length));
+            const streamId = normalizeStreamId(decodeURIComponent(api.slice("/stream/contents/".length)));
             return streamContents(current.state, streamId, request.url);
         }
+        if (api === "/stream/items/ids") return itemIds(current.state, request.url);
         if (api === "/mark-all-as-read") return markAllAsRead(request);
+        if (api === "/save-web-page") return saveWebPage(request);
         return json({ error: "not found" }, 404);
     };
 
@@ -371,7 +429,8 @@ export function createFakeInoreader(): FakeInoreader {
         expireTokens: () => {
             current.state = withExpiredTokens(current.state);
         },
-        streamIds: () => [...current.state.streams.keys()],
+        streamIds: () => [...current.state.streams.keys()].filter(isSubscription),
+        savedUrls: () => current.state.streams.get(SAVED_WEB_PAGES)?.items.map((item) => item.url ?? "") ?? [],
         unreadCount: (streamId) => current.state.streams.get(streamId)?.items.filter((item) => !item.read).length ?? 0,
         handle
     };

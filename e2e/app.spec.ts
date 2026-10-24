@@ -31,7 +31,8 @@ test("Inoreader and GitHub feeds are read in one sequence", async ({ page, api }
         "Tech"
     ]);
     await expect(page.getByTestId("total-unread")).toHaveText("Unread: 14");
-    await expect(page.getByTestId("total-feeds")).toHaveText("Subscriptions: 8");
+    // Including the saved web pages of Inoreader.
+    await expect(page.getByTestId("total-feeds")).toHaveText("Subscriptions: 9");
 
     const visited: string[] = [];
     for (const _ of Array.from({ length: 7 })) {
@@ -247,4 +248,20 @@ test("the optional Inoreader app fields stay collapsed until used", async ({ pag
     // A saved app is shown expanded.
     await page.getByRole("button", { name: "Sources" }).click();
     await expect(dialog.getByLabel("Inoreader App Client Id")).toHaveValue("e2e-client");
+});
+
+test("p saves a GitHub notification as an Inoreader web page, listed as a feed", async ({ page, api }) => {
+    await connectInoreader(page);
+    await connectGitHub(page);
+    await closeDialog(page);
+    await feedRow(page, "octo/docs").click();
+    await page.keyboard.press("j");
+    const url = await focusedArticle(page).getByRole("heading").getByRole("link").getAttribute("href");
+    await page.keyboard.press("p");
+    await expect(focusedArticle(page).getByRole("button", { name: "Saved" })).toHaveAttribute("aria-pressed", "true");
+    await expect.poll(() => api.control<string[]>("GET", "/inoreader/saved")).toEqual([url]);
+    const saves = requests(await api.log(), "inoreader", "/reader/api/0/save-web-page");
+    expect(saves.map((entry) => entry.method)).toEqual(["POST"]);
+    await page.getByRole("button", { name: "Refresh" }).click();
+    await expect(feedRow(page, "Saved web pages")).toHaveText("Saved web pages (1)");
 });

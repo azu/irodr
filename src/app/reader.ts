@@ -6,6 +6,7 @@ import {
     cacheEntry,
     freshEntry,
     initialModel,
+    isSavedForLater,
     type MessageOptions,
     navigationStarted,
     opened,
@@ -29,6 +30,7 @@ import {
     withReadHistory,
     withReadItems,
     withReadPending,
+    withSavedForLater,
     withRetainedItems,
     withSourceErrors
 } from "./reader-model.ts";
@@ -108,6 +110,8 @@ export interface Reader {
     focusedItem: () => Item | undefined;
     /** `v`: open the focused item on its website. */
     openFocusedItem: () => void;
+    /** `p`: save the item (the focused one by default) for later on the first connected source that can. */
+    saveForLater: (itemId?: string) => Promise<void>;
     /** Items marked read in this session, oldest first. */
     readHistory: () => readonly Item[];
     setMessage: (text: string, options?: MessageOptions) => void;
@@ -494,6 +498,32 @@ export function createReader(options: ReaderOptions): Reader {
         return state.get().view?.items.find((item) => item.id === focusItemId);
     };
 
+    const saveForLater = async (itemId = model.get().focusItemId): Promise<void> => {
+        const item = state.get().view?.items.find((candidate) => candidate.id === itemId);
+        if (!item) return;
+        if (isSavedForLater(model.get(), item)) {
+            setMessage(`Already saved for later: ${item.title}`);
+            return;
+        }
+        const target = sources.find((source) => source.saveForLater && source.getSnapshot().connected);
+        if (!target?.saveForLater) {
+            setMessage("No connected source can save items for later.");
+            return;
+        }
+        // Show it saved at once; undo that when the source rejects it.
+        apply((current) => withSavedForLater(current, item.id, true), { view: true });
+        try {
+            await target.saveForLater(item);
+            setMessage(`Saved for later: ${item.title}`);
+        } catch (error) {
+            apply((current) => withSavedForLater(current, item.id, false), { view: true });
+            setMessage(
+                `Could not save ${item.title} for later. ${error instanceof Error ? error.message : ""}`.trim(),
+                { error: true }
+            );
+        }
+    };
+
     // ---------------------------------------------------------------- UI state
 
     const updatePreferences = (preferences: Partial<Preferences>): void => {
@@ -533,6 +563,7 @@ export function createReader(options: ReaderOptions): Reader {
             const item = focusedItem();
             if (item?.url) options.openUrl?.(item.url);
         },
+        saveForLater,
         readHistory: () => model.get().readHistory,
         setMessage,
         toggleCategory: (name) => apply((current) => withCategoryToggled(current, name), { list: true }),

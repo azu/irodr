@@ -20,6 +20,16 @@ This document describes the behavior of each source.
 - **Mark read**: leaving a feed (or `m`) calls `mark-all-as-read` with `ts` just after the newest loaded item,
   so items that arrived afterwards stay unread. Nothing is marked when no item was loaded. Until Inoreader's unread
   count reflects it, the feed shows 0, for at most 5 minutes.
+- **Saved web pages**: listed as the feed **Saved web pages** (category Inoreader), the stream
+  `user/-/state/com.google/saved-web-pages` ([Stream IDs](https://www.inoreader.com/developers/stream-ids)), with the
+  pages saved in Inoreader's apps and extension. `unread-count` does not report it, so each sync also requests
+  `stream/items/ids` with `xt=user/-/state/com.google/read` (up to 1000). Without it (saved web pages are an Inoreader
+  Pro feature), the other feeds are still listed.
+- **Save for later**: `p` or an item's **Read later** button saves the item's URL as a web page, for items of every
+  source: `POST save-web-page?url=…&return_url=1&star=0` with the body `{}`. This endpoint is not in the public API
+  documentation; it is the request of Inoreader's browser extension, which also authenticates with irodr's OAuth token.
+  Inoreader fetches the page itself, so pages that need a login (e.g. private GitHub repositories) may be saved without
+  their contents. Treated as a Zone 2 (write) request.
 - **CORS**: requests go through `VITE_CORS_PROXY` (`/cors-proxy/`), unless `localStorage["REACT_APP_CORS_PROXY"]`
   overrides it (see `resources/userScript/irodr-cors.js`).
 
@@ -72,6 +82,9 @@ Another account is rejected to avoid mixing private inboxes; use a separate brow
   cannot bring read items back.
 - A failed sync keeps the cache and backs off before retrying (at least 5 minutes, honoring `Retry-After` and
   rate-limit reset headers).
+
+Notifications can be saved for later with Inoreader (see above) when it is connected; the Notifications REST API has
+no endpoint for the "Saved" notifications of the GitHub website.
 
 The public GraphQL schema has no notification-read mutation, so marking read takes one REST request per
 notification.

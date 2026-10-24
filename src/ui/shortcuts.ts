@@ -16,6 +16,7 @@ export const KEY_MAP = {
     s: "move-next-subscription-feed",
     m: "make-subscription-read",
     v: "open-current-content-url",
+    p: "save-content-for-later",
     z: "toggle-subscription-feed-list",
     space: "scroll-down-content",
     "shift+space": "scroll-up-content",
@@ -81,6 +82,9 @@ export function createShortcuts(reader: Reader, translate: TranslateMode): Short
             reader.markCurrentFeedRead().catch(() => undefined);
         },
         "open-current-content-url": () => reader.openFocusedItem(),
+        "save-content-for-later": () => {
+            void reader.saveForLater();
+        },
         "toggle-subscription-feed-list": () => reader.toggleAllCategories(),
         "scroll-down-content": (event) => {
             event?.preventDefault();

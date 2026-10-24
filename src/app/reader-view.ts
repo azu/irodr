@@ -2,7 +2,14 @@ import { shallowEqual } from "../lib/equal.ts";
 import { uniqueBy } from "../lib/unique.ts";
 import type { Feed, Item, Source, SourceCapabilities, SourceSnapshot } from "../sources/source.ts";
 import type { Preferences } from "./preferences.ts";
-import { type Message, type Panel, type ReaderModel, recentFeeds, type ScrollRequest } from "./reader-model.ts";
+import {
+    isSavedForLater,
+    type Message,
+    type Panel,
+    type ReaderModel,
+    recentFeeds,
+    type ScrollRequest
+} from "./reader-model.ts";
 
 /**
  * The public reader state, projected from the model and the sources' snapshots.
@@ -44,6 +51,10 @@ export interface ArticleView {
     readonly filterEnabled: boolean;
     readonly canLoadMore: boolean;
     readonly loaded: boolean;
+    /** A connected source can save items for later (`p`). */
+    readonly canSaveForLater: boolean;
+    /** IDs of the displayed items saved for later, by their source or in this session. */
+    readonly savedForLater: ReadonlySet<string>;
 }
 
 export interface ReaderState {
@@ -68,7 +79,7 @@ export interface StateParts {
 
 /** A source with its snapshot, read once per projection. */
 export interface SourceInput {
-    readonly source: Pick<Source, "id" | "title" | "homeUrl" | "capabilities">;
+    readonly source: Pick<Source, "id" | "title" | "homeUrl" | "capabilities" | "saveForLater">;
     readonly snapshot: SourceSnapshot;
 }
 
@@ -220,14 +231,20 @@ function articleView(
     const entry = model.cache.get(id);
     const all = entry?.items ?? [];
     const filterEnabled = model.filterEnabled && capabilities.unreadFilter;
+    const items = filterEnabled && entry ? entry.unreadItems : all;
+    const saved = new Set(items.filter((item) => isSavedForLater(model, item)).map((item) => item.id));
     const view: ArticleView = {
         feed,
         capabilities,
-        items: filterEnabled && entry ? entry.unreadItems : all,
+        items,
         loadedCount: all.length,
         filterEnabled,
         canLoadMore: capabilities.loadMore && entry?.continuation !== undefined,
-        loaded: entry !== undefined
+        loaded: entry !== undefined,
+        canSaveForLater: inputs.sources.some(
+            ({ source, snapshot }) => source.saveForLater !== undefined && snapshot.connected
+        ),
+        savedForLater: previous && sameSet(previous.savedForLater, saved) ? previous.savedForLater : saved
     };
     return previous && shallowEqual(previous, view) ? previous : view;
 }

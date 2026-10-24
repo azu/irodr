@@ -34,7 +34,8 @@ test("connects with OAuth and lists unread feeds by category", async ({ page }) 
     // Fully read feeds are hidden, like LDR.
     await expect(feedRow(page, "Already Read")).toHaveCount(0);
     await expect(page.getByTestId("total-unread")).toHaveText("Unread: 10");
-    await expect(page.getByTestId("total-feeds")).toHaveText("Subscriptions: 5");
+    // The subscriptions and the saved web pages.
+    await expect(page.getByTestId("total-feeds")).toHaveText("Subscriptions: 6");
     await expect(headerMessage(page)).toHaveText("Updated feeds");
 });
 

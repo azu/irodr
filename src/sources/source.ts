@@ -42,6 +42,8 @@ export interface Item {
     readonly updatedAt: number;
     /** Unread state when the item was loaded. */
     readonly unread: boolean;
+    /** Already saved for later on a provider, e.g. an item of its saved pages. */
+    readonly savedForLater?: boolean;
 }
 
 export interface ItemPage {
@@ -142,6 +144,11 @@ export interface Source {
      * Items that arrived after they were loaded stay unread.
      */
     markRead(feedId: string, loadedItems: readonly Item[]): Promise<void>;
+    /**
+     * Save an item of any source for later on this provider, e.g. as a web page that the provider lists as a feed.
+     * The reader asks the first connected source that implements it.
+     */
+    saveForLater?(item: Item): Promise<void>;
     /** Run a settings action. Resolves to a message for the user. */
     runAction(actionId: string, values: SettingValues): Promise<string>;
 }
