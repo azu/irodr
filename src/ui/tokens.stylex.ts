@@ -42,6 +42,8 @@ export const media = stylex.defineConsts({
     wide: "@media (min-width: 600px)",
     /** Too narrow for the header's button labels and the subscription count. */
     compact: "@media (max-width: 719px)",
+    /** Phones 320px wide: the header drops the GitHub link to fit. */
+    tiny: "@media (max-width: 359px)",
     /** Touch screens: larger targets and the tap controls. */
     touch: "@media (pointer: coarse)"
 });

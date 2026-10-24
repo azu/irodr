@@ -6,7 +6,7 @@ import { formatDateTime, isoDateTime } from "../lib/time.ts";
 import { formatUnreadCount } from "../sources/source.ts";
 import { Article } from "./Article.tsx";
 import { withClass } from "./classes.ts";
-import { useReader, useReaderState, useShortcutActions } from "./context.tsx";
+import { useReader, useReaderState, useKeyBindings } from "./context.tsx";
 import { activeItemId, CLASS, itemElement } from "./dom.ts";
 import { ArrowIcon, NextFeedIcon, SettingsIcon } from "./icons.tsx";
 import { ProgressBar } from "./ProgressBar.tsx";
@@ -95,26 +95,26 @@ const styles = stylex.create({
     }
 });
 
-/** Buttons that do what the j, k and s keys do. */
+/** Buttons that press the k, j and s keys: they follow keys rebound by user scripts (`registerKey`). */
 function TapControls() {
-    const actions = useShortcutActions();
+    const bindings = useKeyBindings();
     const buttons = [
-        { label: "Previous item (k)", action: "move-prev-content-item", icon: <ArrowIcon direction="up" size={22} /> },
-        { label: "Next item (j)", action: "move-next-content-item", icon: <ArrowIcon direction="down" size={22} /> },
-        { label: "Next feed (s)", action: "move-next-subscription-feed", icon: <NextFeedIcon size={20} /> }
+        { label: "Previous item (k)", key: "k", icon: <ArrowIcon direction="up" size={22} /> },
+        { label: "Next item (j)", key: "j", icon: <ArrowIcon direction="down" size={22} /> },
+        { label: "Next feed (s)", key: "s", icon: <NextFeedIcon size={20} /> }
     ] as const;
     return (
         <div role="toolbar" aria-label="Reading controls" {...stylex.props(styles.tapControls)}>
             {buttons.map((button) => (
                 <button
-                    key={button.action}
+                    key={button.key}
                     type="button"
                     title={button.label}
                     aria-label={button.label}
                     {...stylex.props(styles.tapButton)}
                     // Keep keyboard focus on the page, as the feed list does.
                     onMouseDown={(event) => event.preventDefault()}
-                    onClick={() => actions[button.action]()}
+                    onClick={() => bindings.trigger(button.key)}
                 >
                     {button.icon}
                 </button>

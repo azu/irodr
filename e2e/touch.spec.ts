@@ -75,3 +75,23 @@ test("the sidebar is a drawer when folded and a column when unfolded", async ({ 
     await page.setViewportSize(UNFOLDED);
     await expect(nav).toBeVisible();
 });
+
+test("tap controls follow keys rebound by a user script", async ({ page }) => {
+    await page.setViewportSize(UNFOLDED);
+    await expect.poll(() => page.evaluate(() => window.userScript !== undefined)).toBe(true);
+    await page.evaluate(() => {
+        const target = window as unknown as { rebound: number };
+        target.rebound = 0;
+        window.userScript?.registerKey("j", () => {
+            target.rebound++;
+        });
+    });
+    const controls = page.getByRole("toolbar", { name: "Reading controls" });
+    await controls.getByRole("button", { name: "Next feed (s)" }).tap();
+    await expect(articles(page)).toHaveCount(3);
+    await controls.getByRole("button", { name: "Next item (j)" }).tap();
+    await controls.getByRole("button", { name: "Next item (j)" }).tap();
+    await expect.poll(() => page.evaluate(() => (window as unknown as { rebound: number }).rebound)).toBe(2);
+    // The default j would have moved to the second article.
+    await expect(focusedArticle(page)).toContainText("alpha article 1");
+});

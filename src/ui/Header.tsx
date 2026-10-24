@@ -48,7 +48,7 @@ const styles = stylex.create({
     stat: { fontSize: 14 },
     // On iPhone Duo folded and other phones, the header keeps the icons and the unread count.
     wideOnly: { display: { default: null, [media.compact]: "none" } },
-    link: { display: "inline-flex", color: colors.text }
+    link: { display: { default: "inline-flex", [media.tiny]: "none" }, color: colors.text }
 });
 
 export function Header({ onToggleSidebar }: { onToggleSidebar: () => void }) {

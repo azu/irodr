@@ -6,8 +6,8 @@ import type { Shortcuts } from "./shortcuts.ts";
 export const ReaderContext = createContext<Reader | null>(null);
 /** User script hooks: `window.userScript.event`. */
 export const UserScriptEventsContext = createContext<Emitter | null>(null);
-/** Keyboard shortcut actions, for controls that do the same as a key. */
-export const ShortcutsContext = createContext<Shortcuts["actions"] | null>(null);
+/** Key bindings, for controls that do the same as a key, including keys rebound by user scripts. */
+export const ShortcutsContext = createContext<Shortcuts["bindings"] | null>(null);
 
 export function useReader(): Reader {
     const reader = use(ReaderContext);
@@ -25,8 +25,8 @@ export function useUserScriptEvents(): Emitter | null {
     return use(UserScriptEventsContext);
 }
 
-export function useShortcutActions(): Shortcuts["actions"] {
-    const actions = use(ShortcutsContext);
-    if (!actions) throw new Error("ShortcutsContext is missing");
-    return actions;
+export function useKeyBindings(): Shortcuts["bindings"] {
+    const bindings = use(ShortcutsContext);
+    if (!bindings) throw new Error("ShortcutsContext is missing");
+    return bindings;
 }

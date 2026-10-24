@@ -103,7 +103,7 @@ if (!root) throw new Error("#root is missing");
 createRoot(root).render(
     <StrictMode>
         <ReaderContext value={reader}>
-            <ShortcutsContext value={shortcuts.actions}>
+            <ShortcutsContext value={shortcuts.bindings}>
                 <UserScriptEventsContext value={events}>
                     <App />
                 </UserScriptEventsContext>
