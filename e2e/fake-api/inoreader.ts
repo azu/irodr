@@ -361,7 +361,8 @@ export function createFakeInoreader(): FakeInoreader {
 
     /** https://www.inoreader.com/developers/edit-tag: `a` adds and `r` removes a tag on the items `i`. */
     const editTag = (request: FakeRequest): FakeResponse => {
-        const params = request.method === "POST" && request.body ? formBody(request) : request.url.searchParams;
+        if (request.method !== "POST") return text("Method Not Allowed", 405);
+        const params = formBody(request);
         const ids = params.getAll("i");
         const known = [...current.state.streams.values()].flatMap((stream) => stream.items);
         if (ids.length === 0 || !ids.every((id) => known.some((item) => isItem(item, id)))) {

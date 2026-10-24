@@ -168,15 +168,17 @@ describe("createInoreaderSource", () => {
         if (!first) throw new Error("No item");
         expect(first.readLater).toBe(false);
         await source.setReadLater?.(first, true);
-        expect(server.log().at(-1)).toMatchObject({
-            path: "/reader/api/0/edit-tag",
-            query: { a: "user/-/state/com.google/starred", i: "tag:google.com,2005:reader/item/alpha-1" }
+        const edit = server.log().at(-1);
+        expect(edit).toMatchObject({ method: "POST", path: "/reader/api/0/edit-tag" });
+        expect(Object.fromEntries(new URLSearchParams(edit?.body))).toEqual({
+            a: "user/-/state/com.google/starred",
+            i: "tag:google.com,2005:reader/item/alpha-1"
         });
         expect(server.inoreader.starredIds(ALPHA)).toEqual(["tag:google.com,2005:reader/item/alpha-1"]);
         const [reloaded] = (await source.loadItems(`inoreader:${ALPHA}`, { count: 20 })).items;
         expect(reloaded?.readLater).toBe(true);
         await source.setReadLater?.(first, false);
-        expect(server.log().at(-1)?.query).toMatchObject({ r: "user/-/state/com.google/starred" });
+        expect(new URLSearchParams(server.log().at(-1)?.body).get("r")).toBe("user/-/state/com.google/starred");
         expect(server.inoreader.starredIds(ALPHA)).toEqual([]);
     });
 

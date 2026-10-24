@@ -327,7 +327,9 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
     const request = async (
         path: string,
         params: Readonly<Record<string, string | number | undefined>> = {},
-        zone: ApiZone = 1
+        zone: ApiZone = 1,
+        /** Sent as a POST form, for endpoints documented as POST only. */
+        form?: Readonly<Record<string, string>>
     ): Promise<Response> => {
         const checkRateLimit = (): void => {
             const limit = rateLimits.get().get(zone);
@@ -340,7 +342,8 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
             checkRateLimit();
             try {
                 return await options.fetch(`${options.corsProxy}${url}`, {
-                    headers: { Authorization: `Bearer ${accessToken}` }
+                    headers: { Authorization: `Bearer ${accessToken}` },
+                    ...(form ? { method: "POST", body: new URLSearchParams(form) } : {})
                 });
             } catch {
                 throw new InoreaderRequestError("Could not reach Inoreader. Check your connection.", 0);
@@ -453,7 +456,8 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
         const articleId = articleIds.get(item.id);
         if (!articleId) throw new Error(`Unknown Inoreader item: ${item.title}`);
         try {
-            await request("/edit-tag", { i: articleId, [saved ? "a" : "r"]: READ_LATER_TAG }, 2);
+            // https://www.inoreader.com/developers/edit-tag documents a POST request.
+            await request("/edit-tag", {}, 2, { i: articleId, [saved ? "a" : "r"]: READ_LATER_TAG });
         } catch (error) {
             if (isAuthFailure(error)) handleFailure(error);
             throw error;

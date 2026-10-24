@@ -20,7 +20,7 @@ This document describes the behavior of each source.
 - **Mark read**: leaving a feed (or `m`) calls `mark-all-as-read` with `ts` just after the newest loaded item,
   so items that arrived afterwards stay unread. Nothing is marked when no item was loaded. Until Inoreader's unread
   count reflects it, the feed shows 0, for at most 5 minutes.
-- **Read later**: `p` or the **Read later** button of an item calls `edit-tag` with
+- **Read later**: `p` or the **Read later** button of an item sends `edit-tag` as a POST form with
   `a` (save) or `r` (remove) = `user/-/state/com.google/starred` and `i` = the article ID (Zone 2).
   Inoreader's "Read later" is its starred state ("Read later (previously called stars)",
   [Inoreader blog](https://www.inoreader.com/blog/2015/04/inoreader-how-to-be-more-productive.html)), so saved items

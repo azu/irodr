@@ -76,7 +76,8 @@ test("p saves the focused item for later in Inoreader, and the button removes it
         "false"
     );
     const edits = requests(await api.log(), "inoreader", "/reader/api/0/edit-tag");
-    expect(edits.map((entry) => entry.query)).toEqual([
+    expect(edits.map((entry) => entry.method)).toEqual(["POST", "POST"]);
+    expect(edits.map((entry) => Object.fromEntries(new URLSearchParams(entry.body)))).toEqual([
         { i: "tag:google.com,2005:reader/item/alpha-1", a: "user/-/state/com.google/starred" },
         { i: "tag:google.com,2005:reader/item/alpha-1", r: "user/-/state/com.google/starred" }
     ]);
