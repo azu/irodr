@@ -11,7 +11,7 @@ import { safeUrl } from "./lib/sanitize.ts";
 import { createGitHubSource } from "./sources/github/github-source.ts";
 import { createInoreaderSource } from "./sources/inoreader/inoreader-source.ts";
 import { App } from "./ui/App.tsx";
-import { ReaderContext, UserScriptEventsContext } from "./ui/context.tsx";
+import { ReaderContext, ShortcutsContext, UserScriptEventsContext } from "./ui/context.tsx";
 import { createShortcuts } from "./ui/shortcuts.ts";
 import { createTranslateMode } from "./ui/translate.ts";
 import { installUserScriptApi } from "./ui/userscript.ts";
@@ -103,9 +103,11 @@ if (!root) throw new Error("#root is missing");
 createRoot(root).render(
     <StrictMode>
         <ReaderContext value={reader}>
-            <UserScriptEventsContext value={events}>
-                <App />
-            </UserScriptEventsContext>
+            <ShortcutsContext value={shortcuts.actions}>
+                <UserScriptEventsContext value={events}>
+                    <App />
+                </UserScriptEventsContext>
+            </ShortcutsContext>
         </ReaderContext>
     </StrictMode>
 );

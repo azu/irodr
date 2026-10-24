@@ -54,6 +54,28 @@ export function ChevronIcon({ open, ...props }: IconProps & { open: boolean }) {
     return <Icon {...props}>{open ? <path d="m6 9 6 6 6-6" /> : <path d="m9 6 6 6-6 6" />}</Icon>;
 }
 
+export function SidebarIcon(props: IconProps) {
+    return (
+        <Icon {...props}>
+            <rect x="3" y="4" width="18" height="16" rx="2" />
+            <path d="M9 4v16" />
+        </Icon>
+    );
+}
+
+export function ArrowIcon({ direction, ...props }: IconProps & { direction: "up" | "down" }) {
+    return <Icon {...props}>{direction === "up" ? <path d="m6 15 6-6 6 6" /> : <path d="m6 9 6 6 6-6" />}</Icon>;
+}
+
+export function NextFeedIcon(props: IconProps) {
+    return (
+        <Icon {...props}>
+            <path d="m5 4 10 8-10 8z" />
+            <path d="M19 5v14" />
+        </Icon>
+    );
+}
+
 export function SignpostIcon(props: IconProps) {
     return (
         <Icon {...props}>

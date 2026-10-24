@@ -6,11 +6,11 @@ import { formatDateTime, isoDateTime } from "../lib/time.ts";
 import { formatUnreadCount } from "../sources/source.ts";
 import { Article } from "./Article.tsx";
 import { withClass } from "./classes.ts";
-import { useReader, useReaderState } from "./context.tsx";
+import { useReader, useReaderState, useShortcutActions } from "./context.tsx";
 import { activeItemId, CLASS, itemElement } from "./dom.ts";
-import { SettingsIcon } from "./icons.tsx";
+import { ArrowIcon, NextFeedIcon, SettingsIcon } from "./icons.tsx";
 import { ProgressBar } from "./ProgressBar.tsx";
-import { colors } from "./tokens.stylex.ts";
+import { colors, media } from "./tokens.stylex.ts";
 
 const styles = stylex.create({
     main: { position: "relative", minWidth: 0, minHeight: 0, display: "flex", flexDirection: "column" },
@@ -63,8 +63,65 @@ const styles = stylex.create({
         borderColor: colors.border
     },
     // Lets the last item scroll to the top of the view.
-    padding: { height: "100vh" }
+    padding: { height: "100vh" },
+    // Touch screens get buttons for k, j and s. Bottom right: in reach of the right thumb, and away from the
+    // fold in the middle of iPhone Duo's inner display.
+    tapControls: {
+        display: { default: "none", [media.touch]: "flex" },
+        flexDirection: "column",
+        gap: 8,
+        position: "absolute",
+        insetInlineEnd: 12,
+        insetBlockEnd: "calc(12px + env(safe-area-inset-bottom))",
+        zIndex: 1
+    },
+    tapButton: {
+        display: "grid",
+        placeItems: "center",
+        // Apple's minimum hit target: 44 × 44 pt.
+        width: 44,
+        height: 44,
+        padding: 0,
+        borderWidth: 1,
+        borderStyle: "solid",
+        borderColor: colors.border,
+        borderRadius: 22,
+        backgroundColor: "rgb(255 255 255 / 0.85)",
+        color: colors.text,
+        boxShadow: "0 1px 4px rgb(0 0 0 / 0.15)",
+        cursor: "pointer",
+        // No double-tap zoom, so repeated taps move on immediately.
+        touchAction: "manipulation"
+    }
 });
+
+/** Buttons that do what the j, k and s keys do. */
+function TapControls() {
+    const actions = useShortcutActions();
+    const buttons = [
+        { label: "Previous item (k)", action: "move-prev-content-item", icon: <ArrowIcon direction="up" size={22} /> },
+        { label: "Next item (j)", action: "move-next-content-item", icon: <ArrowIcon direction="down" size={22} /> },
+        { label: "Next feed (s)", action: "move-next-subscription-feed", icon: <NextFeedIcon size={20} /> }
+    ] as const;
+    return (
+        <div role="toolbar" aria-label="Reading controls" {...stylex.props(styles.tapControls)}>
+            {buttons.map((button) => (
+                <button
+                    key={button.action}
+                    type="button"
+                    title={button.label}
+                    aria-label={button.label}
+                    {...stylex.props(styles.tapButton)}
+                    // Keep keyboard focus on the page, as the feed list does.
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => actions[button.action]()}
+                >
+                    {button.icon}
+                </button>
+            ))}
+        </div>
+    );
+}
 
 function FeedHeader({ view }: { view: View }) {
     const reader = useReader();
@@ -161,6 +218,7 @@ export function ArticleView() {
     return (
         <main {...stylex.props(styles.main)}>
             <ProgressBar loading={loading} />
+            <TapControls />
             <div
                 ref={scroller}
                 {...withClass(CLASS.scroller, styles.scroller)}
