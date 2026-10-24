@@ -57,16 +57,3 @@ body {
 .ng-content::after {
     content: "NG Item";
 }
-
-/*
- * Touch screens: let the page itself scroll. Safari (iPhone Duo, iPad) minimizes its toolbar only when the page
- * scrolls about 100px, not when the article view inside it does. The app is fixed to the screen on touch screens
- * (App.tsx), so this scroll moves nothing visible; the tap controls scroll it (see hideBrowserToolbar).
- */
-@media (pointer: coarse) {
-    body::after {
-        content: "";
-        display: block;
-        height: 160px;
-    }
-}

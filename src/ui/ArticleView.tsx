@@ -7,7 +7,7 @@ import { formatUnreadCount } from "../sources/source.ts";
 import { Article } from "./Article.tsx";
 import { withClass } from "./classes.ts";
 import { useReader, useReaderState, useKeyBindings } from "./context.tsx";
-import { activeItemId, CLASS, hideBrowserToolbar, itemElement } from "./dom.ts";
+import { activeItemId, CLASS, itemElement } from "./dom.ts";
 import { ArrowIcon, NextFeedIcon, SettingsIcon } from "./icons.tsx";
 import { ProgressBar } from "./ProgressBar.tsx";
 import { colors, media } from "./tokens.stylex.ts";
@@ -70,11 +70,11 @@ const styles = stylex.create({
         display: { default: "none", [media.touch]: "flex" },
         flexDirection: "column",
         gap: 8,
-        // Fixed to the bottom of the screen: the buttons stay put when the page scrolls and Safari's toolbar (at the
-        // top on iPhone Duo and iPad) is minimized.
-        position: "fixed",
-        insetInlineEnd: 12,
-        insetBlockEnd: "calc(12px + env(safe-area-inset-bottom))",
+        position: "absolute",
+        // Clear of the rounded screen corners of iPad and iPhone Duo. The safe area insets are 0 unless the page
+        // uses `viewport-fit=cover`, so the minimums keep the buttons away from the corner without it.
+        insetInlineEnd: "max(20px, calc(env(safe-area-inset-right) + 12px))",
+        insetBlockEnd: "max(40px, calc(env(safe-area-inset-bottom) + 16px))",
         zIndex: 1
     },
     tapButton: {
@@ -114,11 +114,17 @@ function TapControls() {
                     title={button.label}
                     aria-label={button.label}
                     {...stylex.props(styles.tapButton)}
-                    // Keep keyboard focus on the page, as the feed list does.
-                    onMouseDown={(event) => event.preventDefault()}
-                    onClick={() => {
+                    // Act on touch down, not on click: iOS does not fire `click` for a tap that stops a momentum
+                    // scroll, so the first tap after a manual scroll did nothing. Preventing the default also keeps
+                    // keyboard focus on the page, as the feed list does.
+                    onPointerDown={(event) => {
+                        if (event.button !== 0) return;
+                        event.preventDefault();
                         bindings.trigger(button.key);
-                        hideBrowserToolbar();
+                    }}
+                    // Enter or Space on a focused button (`detail` is 0); pointer clicks were handled on pointerdown.
+                    onClick={(event) => {
+                        if (event.detail === 0) bindings.trigger(button.key);
                     }}
                 >
                     {button.icon}

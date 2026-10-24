@@ -54,12 +54,3 @@ export function activeItemId(scroller: HTMLElement): string | undefined {
 export function scrollByPage(scroller: HTMLElement, direction: 1 | -1, ratio = 0.3): void {
     scroller.scrollBy(0, (window.innerHeight / 2) * direction * ratio);
 }
-
-/**
- * Scroll the page itself to its end, so Safari can minimize its toolbar. The article view is a scroll container
- * inside the app, and Safari minimizes the toolbar only when the page scrolls. On touch screens the app is fixed
- * to the screen and the page has room to scroll under it (global.css).
- */
-export function hideBrowserToolbar(): void {
-    window.scrollTo(0, document.documentElement.scrollHeight);
-}

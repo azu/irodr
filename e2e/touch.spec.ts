@@ -33,16 +33,6 @@ test("tap controls do what s, j and k do", async ({ page }) => {
 
     await controls.getByRole("button", { name: "Next item (j)" }).tap();
     await expect(focusedArticle(page)).toContainText("alpha article 1");
-    // The page itself scrolls too, so Safari can minimize its toolbar.
-    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(100);
-    // The app does not move with it.
-    await expect
-        .poll(() =>
-            page
-                .getByRole("button", { name: "Toggle subscriptions" })
-                .evaluate((button) => button.getBoundingClientRect().top)
-        )
-        .toBeGreaterThan(0);
     await controls.getByRole("button", { name: "Next item (j)" }).tap();
     await expect(focusedArticle(page)).toContainText("alpha article 2");
     await controls.getByRole("button", { name: "Previous item (k)" }).tap();
@@ -104,4 +94,16 @@ test("tap controls follow keys rebound by a user script", async ({ page }) => {
     await expect.poll(() => page.evaluate(() => (window as unknown as { rebound: number }).rebound)).toBe(2);
     // The default j would have moved to the second article.
     await expect(focusedArticle(page)).toContainText("alpha article 1");
+});
+
+test("tap controls work from the keyboard too", async ({ page }) => {
+    await page.setViewportSize(UNFOLDED);
+    await page.keyboard.press("s");
+    await expect(articles(page)).toHaveCount(3);
+    const next = page.getByRole("toolbar", { name: "Reading controls" }).getByRole("button", { name: "Next item (j)" });
+    await next.focus();
+    await page.keyboard.press("Enter");
+    await expect(focusedArticle(page)).toContainText("alpha article 1");
+    await page.keyboard.press("Enter");
+    await expect(focusedArticle(page)).toContainText("alpha article 2");
 });
