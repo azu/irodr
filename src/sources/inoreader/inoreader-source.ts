@@ -355,6 +355,9 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
     >(new Map());
     // Runtime handle: item → its Inoreader timestampUsec, for mark-all-as-read.
     const itemTimestamps = new WeakMap<Item, number>();
+    // Runtime handle: item ID → its Inoreader article ID, for edit-tag. Keyed by ID because the reader copies
+    // items it marked read.
+    const articleIds = new Map<string, string>();
 
     // The connection and the custom client are read from the OAuth storage whenever the state changes.
     const snapshotOf = (current: InoreaderState): SourceSnapshot => {
@@ -376,7 +379,7 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
         params: Readonly<Record<string, string | number | undefined>> = {},
         zone: ApiZone = 1,
         /** Sends a POST request with this body. */
-        body?: string
+        body?: string | URLSearchParams
     ): Promise<Response> => {
         const checkRateLimit = (): void => {
             const limit = rateLimits.get().get(zone);
@@ -477,10 +480,12 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
             const json = (await response.json()) as StreamContentsResponse;
             const loaded = json.items.map((item) => ({
                 item: toItem(feedId, json.id || streamId, item),
-                timestamp: Number(item.timestampUsec)
+                timestamp: Number(item.timestampUsec),
+                articleId: item.id
             }));
-            for (const { item, timestamp } of loaded) {
+            for (const { item, timestamp, articleId } of loaded) {
                 if (Number.isFinite(timestamp)) itemTimestamps.set(item, timestamp);
+                articleIds.set(item.id, articleId);
             }
             return { items: loaded.map(({ item }) => item), continuation: json.continuation || undefined };
         } catch (error) {
@@ -498,7 +503,23 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
         // Nothing was shown, so nothing is marked read.
         if (through === undefined) return;
         try {
-            await request("/mark-all-as-read", { s: streamId, ts: through }, 2);
+            if (streamId === SAVED_WEB_PAGES) {
+                // mark-all-as-read answers OK for the saved web pages but leaves them unread, so mark the loaded
+                // unread pages read one by one. https://www.inoreader.com/developers/edit-tag
+                const ids = loadedItems.flatMap((item) => {
+                    const articleId = item.unread ? articleIds.get(item.id) : undefined;
+                    return articleId ? [articleId] : [];
+                });
+                if (ids.length === 0) return;
+                await request(
+                    "/edit-tag",
+                    {},
+                    2,
+                    new URLSearchParams([["a", READ_TAG], ...ids.map((id): [string, string] => ["i", id])])
+                );
+            } else {
+                await request("/mark-all-as-read", { s: streamId, ts: through }, 2);
+            }
         } catch (error) {
             if (isAuthFailure(error)) handleFailure(error);
             throw error;

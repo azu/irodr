@@ -25,6 +25,8 @@ This document describes the behavior of each source.
   pages saved in Inoreader's apps and extension. `unread-count` does not report it, so each sync also requests
   `stream/items/ids` with `xt=user/-/state/com.google/read` (up to 1000). Without it (saved web pages are an Inoreader
   Pro feature), the other feeds are still listed.
+  `mark-all-as-read` answers OK for this stream but leaves the pages unread, so leaving it (or `m`) marks the loaded
+  unread pages read with `POST edit-tag` (`a=user/-/state/com.google/read`, one `i` per page).
 - **Save for later**: `p` or an item's **Read later** button saves the item's URL as a web page, for items of every
   source: `POST save-web-page?url=…&return_url=1&star=0` with the body `{}`. This endpoint is not in the public API
   documentation; it is the request of Inoreader's browser extension, which also authenticates with irodr's OAuth token.

@@ -190,6 +190,11 @@ describe("createInoreaderSource", () => {
         expect(page.items.map((item) => item.url)).toEqual(["https://github.com/azu/irodr/pull/137"]);
         expect(page.items[0]?.savedForLater).toBe(true);
         await source.markRead(saved?.id ?? "", page.items);
+        // mark-all-as-read leaves saved web pages unread; edit-tag marks the loaded pages read.
+        const marked = server.log().at(-1);
+        expect(marked).toMatchObject({ method: "POST", path: "/reader/api/0/edit-tag" });
+        expect(new URLSearchParams(marked?.body).getAll("i")).toEqual([page.items[0]?.id.split("--")[1]]);
+        expect(server.inoreader.unreadCount(SAVED_WEB_PAGES)).toBe(0);
         await source.sync();
         expect(source.getSnapshot().feeds.find((feed) => feed.title === "Saved web pages")?.unreadCount).toBe(0);
     });
