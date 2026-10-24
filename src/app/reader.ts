@@ -30,6 +30,7 @@ import {
     withReadHistory,
     withReadItems,
     withReadLater,
+    withoutReadLater,
     withReadPending,
     withRetainedItems,
     withSourceErrors
@@ -162,6 +163,10 @@ export function createReader(options: ReaderOptions): Reader {
     /** Cancels the auto refresh timer. */
     const timers = new Set<() => void>();
     const unsubscribes = new Set<() => void>();
+    /** Read later writes in flight by item ID, chained so each item's writes reach the source in order. */
+    const readLaterWrites = new Map<string, Promise<void>>();
+    /** When the last read later write of an item settled, in epoch milliseconds. */
+    const readLaterSettled = new Map<string, number>();
 
     // ---------------------------------------------------------------- state
 
@@ -309,14 +314,27 @@ export function createReader(options: ReaderOptions): Reader {
 
     // ---------------------------------------------------------------- loading
 
+    /**
+     * Items loaded by a request started at `startedAt` show the source's read later state again, unless a write
+     * of theirs is in flight or settled after the request started.
+     */
+    const reconcileReadLater = (items: readonly Item[], startedAt: number): void => {
+        const fresh = items
+            .map((item) => item.id)
+            .filter((id) => !readLaterWrites.has(id) && (readLaterSettled.get(id) ?? -Infinity) < startedAt);
+        model.update((current) => withoutReadLater(current, fresh));
+    };
+
     /** Load the first page of a feed, sharing in-flight requests. */
     const load = (feed: Feed): Promise<CacheEntry> => {
         const inflight = loads.get(feed.id);
         if (inflight?.revision === feed.revision) return inflight.promise;
         const token = {};
+        const startedAt = now();
         const promise = sourceOf(feed)
             .loadItems(feed.id, { count: model.get().preferences.fetchContentsCount })
             .then((page) => {
+                reconcileReadLater(page.items, startedAt);
                 // Items marked read stay readable even when the source no longer returns them.
                 const items = withRetainedItems(model.get(), feed.id, page.items);
                 const entry = cacheEntry(feed.revision, items, page.continuation);
@@ -471,11 +489,13 @@ export function createReader(options: ReaderOptions): Reader {
         }
         setMessage("Load more past contents");
         setLoading(1);
+        const startedAt = now();
         try {
             const page = await source.loadItems(feed.id, {
                 count: model.get().preferences.fetchContentsCount,
                 continuation: entry.continuation
             });
+            reconcileReadLater(page.items, startedAt);
             const current = model.get();
             const next = withOlderItems(current, feed.id, page);
             if (next === current) return;
@@ -507,11 +527,21 @@ export function createReader(options: ReaderOptions): Reader {
             setMessage(`${source.title} cannot save items for later.`);
             return;
         }
+        const setReadLater = source.setReadLater.bind(source);
         const saved = !isReadLater(model.get(), item);
         // Show the change at once; undo it when the source rejects it, unless it was toggled again meanwhile.
         apply((current) => withReadLater(current, item.id, saved), { view: true });
+        // Wait for the item's previous write, so a quick second toggle cannot overtake the first one.
+        const write = (readLaterWrites.get(item.id) ?? Promise.resolve()).then(() => setReadLater(item, saved));
+        const settled = write
+            .catch(() => undefined)
+            .finally(() => {
+                readLaterSettled.set(item.id, now());
+                if (readLaterWrites.get(item.id) === settled) readLaterWrites.delete(item.id);
+            });
+        readLaterWrites.set(item.id, settled);
         try {
-            await source.setReadLater(item, saved);
+            await write;
             setMessage(saved ? `Saved for later: ${item.title}` : `Removed from Read later: ${item.title}`);
         } catch (error) {
             if (model.get().readLater.get(item.id) === saved) {

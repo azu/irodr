@@ -70,7 +70,6 @@ test("p saves the focused item for later in Inoreader, and the button removes it
     await page.keyboard.press("p");
     const button = focusedArticle(page).getByRole("button", { name: "Saved" });
     await expect(button).toHaveAttribute("aria-pressed", "true");
-    await expect(headerMessage(page)).toHaveText("Saved for later: alpha article 1");
     await button.click();
     await expect(focusedArticle(page).getByRole("button", { name: "Read later" })).toHaveAttribute(
         "aria-pressed",

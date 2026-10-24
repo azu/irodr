@@ -15,6 +15,8 @@ interface MemorySourceConfig {
     readonly forgetRead?: boolean;
     /** Read later requests fail. */
     readonly failReadLater?: boolean;
+    /** Read later requests wait for this promise. */
+    readonly readLaterGate?: Promise<void>;
 }
 
 /** An in-memory Source that records what the reader asks for. */
@@ -156,13 +158,21 @@ function createMemorySource(id: string, capabilities: Partial<SourceCapabilities
                 ...current,
                 savedForLater: [...current.savedForLater, { title: item.title, saved }]
             }));
+            await records.get().config.readLaterGate;
             if (records.get().config.failReadLater) throw new Error("edit failed");
         },
         runAction: async () => "done"
     };
 }
 
-async function setup(options: { prefetch?: number; fetch?: number; capabilities?: Partial<SourceCapabilities> } = {}) {
+async function setup(
+    options: {
+        prefetch?: number;
+        fetch?: number;
+        capabilities?: Partial<SourceCapabilities>;
+        now?: () => number;
+    } = {}
+) {
     const source = createMemorySource("memory", options.capabilities);
     source.setFeed("A", [{ title: "a1" }, { title: "a2" }]);
     source.setFeed("B", [{ title: "b1" }, { title: "b2", unread: false }, { title: "b3", unread: false }]);
@@ -175,7 +185,8 @@ async function setup(options: { prefetch?: number; fetch?: number; capabilities?
             ...DEFAULT_PREFERENCES,
             prefetchSubscriptionCount: options.prefetch ?? 0,
             fetchContentsCount: options.fetch ?? 20
-        }
+        },
+        now: options.now
     });
     await reader.start(new URL("https://irodr.test/"));
     const current = () => reader.getState().list.currentFeedId?.split(":")[1];
@@ -577,6 +588,38 @@ describe("Reader", () => {
             text: "Could not save a1 for later. edit failed",
             error: true
         });
+    });
+
+    it("sends a quick second toggle after the first one finished", async () => {
+        const { reader, source } = await setup({ capabilities: { readLater: true } });
+        const gate = Promise.withResolvers<void>();
+        source.configure({ readLaterGate: gate.promise });
+        await reader.openFeed("memory:A");
+        const first = reader.toggleReadLater("memory:A/a1");
+        const second = reader.toggleReadLater("memory:A/a1");
+        await settle();
+        expect(source.savedForLater()).toEqual([{ title: "a1", saved: true }]);
+        gate.resolve();
+        await Promise.all([first, second]);
+        expect(source.savedForLater()).toEqual([
+            { title: "a1", saved: true },
+            { title: "a1", saved: false }
+        ]);
+        expect(reader.getState().view?.readLater.has("memory:A/a1")).toBe(false);
+    });
+
+    it("shows the source's read later state again once items are reloaded after a change", async () => {
+        const clock = { now: 0 };
+        const { reader, source } = await setup({ capabilities: { readLater: true }, now: () => clock.now });
+        await reader.openFeed("memory:A");
+        await reader.toggleReadLater("memory:A/a1");
+        expect(reader.getState().view?.readLater.has("memory:A/a1")).toBe(true);
+        // Removed in another client; the feed changes, so it is loaded again.
+        clock.now = 1000;
+        await reader.openFeed("memory:B", { skipCurrent: true });
+        source.setFeed("A", [{ title: "a0" }, { title: "a1", readLater: false }]);
+        await reader.openFeed("memory:A", { skipCurrent: true });
+        expect(reader.getState().view?.readLater.has("memory:A/a1")).toBe(false);
     });
 
     it("does not save items for later when the source cannot", async () => {

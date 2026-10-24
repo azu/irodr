@@ -297,6 +297,14 @@ export function withReadLater(model: ReaderModel, itemId: string, saved: boolean
         : { ...model, readLater: new Map([...model.readLater, [itemId, saved]]) };
 }
 
+/** Forget the changes of `itemIds`, whose state the source returned again after the changes were saved. */
+export function withoutReadLater(model: ReaderModel, itemIds: readonly string[]): ReaderModel {
+    const forgotten = new Set(itemIds.filter((id) => model.readLater.has(id)));
+    return forgotten.size === 0
+        ? model
+        : { ...model, readLater: new Map([...model.readLater].filter(([id]) => !forgotten.has(id))) };
+}
+
 // ---------------------------------------------------------------- UI state
 
 /**

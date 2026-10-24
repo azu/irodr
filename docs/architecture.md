@@ -103,7 +103,8 @@ Its behavior:
   loading continues from that feed, and only the latest navigation takes effect.
 - A failed mark-read keeps the feed unread and shows the error in the header.
 - `p` saves the focused item for later on its source (`capabilities.readLater`), or removes it. The change shows
-  at once and is undone when the source rejects it. Sources without the capability show a message instead.
+  at once and is undone when the source rejects it. Writes of one item reach the source in order, and items loaded
+  after a write settled show the source's state again. Sources without the capability show a message instead.
 - Auto refresh defaults to 5 minutes and runs only in a visible, focused window with input or scrolling
   in the last 5 minutes. Saved intervals are preserved; manual refresh remains available while inactive.
 - Inoreader HTTP 429 responses pause requests for the affected API zone until `X-Reader-Limits-Reset-After`
