@@ -15,7 +15,10 @@ const styles = stylex.create({
         height: { default: "100dvh", [media.touch]: "auto" },
         // On touch screens the page scrolls under the app to minimize Safari's toolbar (see global.css).
         position: { default: null, [media.touch]: "fixed" },
-        inset: { default: null, [media.touch]: 0 },
+        insetBlockStart: { default: null, [media.touch]: 0 },
+        insetBlockEnd: { default: null, [media.touch]: 0 },
+        insetInlineStart: { default: null, [media.touch]: 0 },
+        insetInlineEnd: { default: null, [media.touch]: 0 },
         display: "grid",
         gridTemplateRows: `${sizes.header} minmax(0, 1fr)`,
         color: colors.text,
@@ -35,7 +38,10 @@ const styles = stylex.create({
     backdrop: {
         display: { default: "none", [media.narrow]: "block" },
         position: "absolute",
-        inset: 0,
+        insetBlockStart: 0,
+        insetBlockEnd: 0,
+        insetInlineStart: 0,
+        insetInlineEnd: 0,
         zIndex: 2,
         padding: 0,
         borderStyle: "none",

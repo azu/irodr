@@ -24,7 +24,8 @@ const styles = stylex.create({
         backgroundColor: colors.background,
         // A drawer over the articles on narrow screens.
         position: { default: null, [media.narrow]: "absolute" },
-        insetBlock: { default: null, [media.narrow]: 0 },
+        insetBlockStart: { default: null, [media.narrow]: 0 },
+        insetBlockEnd: { default: null, [media.narrow]: 0 },
         insetInlineStart: { default: null, [media.narrow]: 0 },
         zIndex: { default: null, [media.narrow]: 3 },
         width: { default: null, [media.narrow]: "min(85vw, 320px)" },
