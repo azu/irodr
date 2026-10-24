@@ -65,9 +65,11 @@ const reader = createReader({
         if (safeUrl(url)) window.open(url, "_blank", "noopener");
     },
     // Like irodr 1.x, skip an update forced by the idle callback timeout.
+    // requestIdleCallback is not Baseline Widely available: it is feature-detected, with setTimeout as fallback.
     scheduleIdle: (task) =>
         "requestIdleCallback" in window
-            ? requestIdleCallback(
+            ? // oxlint-disable-next-line baseline-js/use-baseline
+              requestIdleCallback(
                   (deadline) => {
                       if (deadline.timeRemaining() > 0) task();
                   },
