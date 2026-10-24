@@ -145,6 +145,24 @@ test("a swipe that starts on a tap control does nothing", async ({ page }) => {
         clientX: start.x,
         clientY: start.y
     });
+    // A press that ends on the neighbouring button presses neither.
+    const nextItem = page
+        .getByRole("toolbar", { name: "Reading controls" })
+        .getByRole("button", { name: "Next item (j)" });
+    await nextItem.dispatchEvent("pointerdown", {
+        pointerId: 3,
+        pointerType: "mouse",
+        button: 0,
+        clientX: start.x,
+        clientY: start.y - 5
+    });
+    await next.dispatchEvent("pointerup", {
+        pointerId: 3,
+        pointerType: "mouse",
+        button: 0,
+        clientX: start.x,
+        clientY: start.y
+    });
     // A tap after them moves one feed: the swipes did not.
     await next.tap();
     await expect(currentFeed(page)).toHaveText("Beta Blog (1)");
