@@ -15,7 +15,7 @@ import { ProgressBar } from "./ProgressBar.tsx";
 import { colors, media, sizes } from "./tokens.stylex.ts";
 
 /** The same query as `media.stacked`, for choosing the tap controls' layout. */
-const STACKED_QUERY = "(vertical-viewport-segments: 2)";
+const STACKED_QUERY = "(vertical-viewport-segments: 2) and (pointer: coarse)";
 
 const styles = stylex.create({
     main: { position: "relative", minWidth: 0, minHeight: 0, display: "flex", flexDirection: "column" },

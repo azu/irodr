@@ -59,8 +59,9 @@ export const media = stylex.defineConsts({
     sideBySide: "@media (horizontal-viewport-segments: 2) and (min-width: 600px)",
     /**
      * Two screen segments one above the other, e.g. iPhone Duo in landscape partly folded like a laptop: the app
-     * takes the top segment and the tap controls the bottom one (ArticleView).
+     * takes the top segment and the tap controls the bottom one (ArticleView). Touch screens only, where the tap
+     * controls are shown.
      * https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@media/vertical-viewport-segments
      */
-    stacked: "@media (vertical-viewport-segments: 2)"
+    stacked: "@media (vertical-viewport-segments: 2) and (pointer: coarse)"
 });
