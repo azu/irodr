@@ -18,13 +18,7 @@ html {
 }
 
 body {
-    font-family:
-        system-ui,
-        -apple-system,
-        "Segoe UI",
-        "Hiragino Sans",
-        "Noto Sans JP",
-        sans-serif;
+    font-family: system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
     font-size: 15px;
     -webkit-font-smoothing: antialiased;
 }
