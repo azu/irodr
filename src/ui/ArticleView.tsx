@@ -1,5 +1,5 @@
 import * as stylex from "@stylexjs/stylex";
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef } from "react";
 import type { ArticleView as View } from "../app/reader.ts";
 import { safeUrl } from "../lib/sanitize.ts";
 import { formatDateTime, isoDateTime } from "../lib/time.ts";
@@ -9,6 +9,7 @@ import { withClass } from "./classes.ts";
 import { useReader, useReaderState, useKeyBindings } from "./context.tsx";
 import { activeItemId, CLASS, itemElement } from "./dom.ts";
 import { ArrowIcon, BookmarkIcon, NextFeedIcon, SettingsIcon } from "./icons.tsx";
+import { usePress } from "./press.ts";
 import { ProgressBar } from "./ProgressBar.tsx";
 import { colors, media, sizes } from "./tokens.stylex.ts";
 
@@ -120,7 +121,7 @@ const styles = stylex.create({
         marginInlineStart: 4,
         marginInlineEnd: 4
     },
-    // Feedback while a finger is on a button: `:active` is unreliable on iOS when pointerdown is prevented.
+    // Feedback while a finger is on a button (usePress).
     tapButtonPressed: { backgroundColor: colors.hover, transform: "scale(0.92)" },
     // The focused item is saved for later: a filled, colored button, visible at a glance.
     tapButtonSaved: { backgroundColor: colors.accent, borderColor: colors.accent, color: colors.accentText },
@@ -146,9 +147,6 @@ const styles = stylex.create({
     }
 });
 
-/** How far a touch may move and still be a tap, in CSS pixels. */
-const TAP_SLOP = 10;
-
 /**
  * Buttons that press the p, k, j and s keys: they follow keys rebound by user scripts (`registerKey`).
  * `savedForLater` is whether the focused item is saved for later, or undefined when its source cannot save items.
@@ -156,10 +154,7 @@ const TAP_SLOP = 10;
 function TapControls({ savedForLater }: { savedForLater?: boolean }) {
     const bindings = useKeyBindings();
     const side = useReaderState((state) => state.preferences.tapControlsSide);
-    // The touch that started on a button. A tap ends on the same button near where it started; a swipe moves or is
-    // cancelled.
-    const press = useRef<{ key: string; pointerId: number; x: number; y: number } | null>(null);
-    const [pressedKey, setPressedKey] = useState<string | undefined>(undefined);
+    const { pressed: pressedKey, handlers } = usePress();
     const buttons = [
         // Read later sits away from the corner: first in the column on the right, last in the row on the left, so
         // k, j and s stay where they were.
@@ -196,38 +191,8 @@ function TapControls({ savedForLater }: { savedForLater?: boolean }) {
                             button.key === "p" && savedForLater === true && styles.tapButtonSaved,
                             pressedKey === button.key && styles.tapButtonPressed
                         )}
-                        // Act on pointer events, not on click: iOS does not fire `click` for a tap that stops a momentum
-                        // scroll, so the first tap after a manual scroll did nothing. Act on pointerup, so a swipe that
-                        // starts on a button does not open the next feed and mark this one read. Preventing the default
-                        // also keeps keyboard focus on the page, as the feed list does.
-                        onPointerDown={(event) => {
-                            if (event.button !== 0) return;
-                            event.preventDefault();
-                            setPressedKey(button.key);
-                            press.current = {
-                                key: button.key,
-                                pointerId: event.pointerId,
-                                x: event.clientX,
-                                y: event.clientY
-                            };
-                        }}
-                        onPointerUp={(event) => {
-                            const start = press.current;
-                            press.current = null;
-                            setPressedKey(undefined);
-                            if (!start || start.key !== button.key || start.pointerId !== event.pointerId) return;
-                            if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > TAP_SLOP) return;
-                            bindings.trigger(button.key);
-                        }}
-                        onPointerCancel={() => {
-                            press.current = null;
-                            setPressedKey(undefined);
-                        }}
-                        onPointerLeave={() => setPressedKey(undefined)}
-                        // Enter or Space on a focused button (`detail` is 0); pointer clicks were handled on pointerup.
-                        onClick={(event) => {
-                            if (event.detail === 0) bindings.trigger(button.key);
-                        }}
+                        // Act on pointerup, not on click; see usePress.
+                        {...handlers(button.key, () => bindings.trigger(button.key))}
                     >
                         {button.icon}
                     </button>
@@ -321,9 +286,14 @@ export function ArticleView() {
     };
 
     useEffect(() => {
-        if (!scrollRequest) return;
-        if (scrollRequest.itemId) itemElement(scrollRequest.itemId)?.scrollIntoView({ block: "start" });
-        else scroller.current?.scrollTo(0, 0);
+        const box = scroller.current;
+        if (!scrollRequest || !box) return;
+        // Scroll the articles only. scrollIntoView() also scrolls the page, which a home screen web app on iOS can
+        // then leave shifted under the status bar, with taps landing off the buttons until it is reopened.
+        const element = scrollRequest.itemId ? itemElement(scrollRequest.itemId) : null;
+        if (scrollRequest.itemId && !element) return;
+        const top = element ? box.scrollTop + element.getBoundingClientRect().top - box.getBoundingClientRect().top : 0;
+        box.scrollTo(0, top);
     }, [scrollRequest]);
 
     const items = view?.items;

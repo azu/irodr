@@ -1,5 +1,6 @@
 import * as stylex from "@stylexjs/stylex";
 import { useReader, useReaderState } from "./context.tsx";
+import { usePress } from "./press.ts";
 import { GitHubIcon, RefreshIcon, SettingsIcon, SidebarIcon, SignpostIcon, SourcesIcon } from "./icons.tsx";
 import { colors, media, sizes } from "./tokens.stylex.ts";
 
@@ -35,6 +36,8 @@ const styles = stylex.create({
         fontSize: 14,
         cursor: "pointer"
     },
+    // Feedback while a finger is on a button (usePress).
+    pressed: { backgroundColor: colors.hover },
     message: {
         flexGrow: 1,
         flexBasis: 0,
@@ -58,15 +61,16 @@ export function Header({ onToggleSidebar }: { onToggleSidebar: () => void }) {
     const reader = useReader();
     const message = useReaderState((state) => state.message);
     const totals = useReaderState((state) => state.totals);
+    // Act on pointerup, not on click: a tap that stops a momentum scroll of the articles has no click (usePress).
+    const { pressed, handlers } = usePress();
     return (
         <header {...stylex.props(styles.header)}>
             <button
                 type="button"
                 title="Toggle subscriptions"
                 aria-label="Toggle subscriptions"
-                {...stylex.props(styles.button)}
-                onMouseDown={(event) => event.preventDefault()}
-                onClick={onToggleSidebar}
+                {...stylex.props(styles.button, pressed === "sidebar" && styles.pressed)}
+                {...handlers("sidebar", onToggleSidebar)}
             >
                 <SidebarIcon />
             </button>
@@ -77,16 +81,16 @@ export function Header({ onToggleSidebar }: { onToggleSidebar: () => void }) {
             <button
                 type="button"
                 aria-label="Refresh"
-                {...stylex.props(styles.button)}
-                onClick={() => void reader.refresh()}
+                {...stylex.props(styles.button, pressed === "refresh" && styles.pressed)}
+                {...handlers("refresh", () => void reader.refresh())}
             >
                 <RefreshIcon /> <span {...stylex.props(styles.wideOnly)}>Refresh</span>
             </button>
             <button
                 type="button"
                 aria-label="Sources"
-                {...stylex.props(styles.button)}
-                onClick={() => reader.openPanel("sources")}
+                {...stylex.props(styles.button, pressed === "sources" && styles.pressed)}
+                {...handlers("sources", () => reader.openPanel("sources"))}
             >
                 <SourcesIcon /> <span {...stylex.props(styles.wideOnly)}>Sources</span>
             </button>
@@ -104,8 +108,8 @@ export function Header({ onToggleSidebar }: { onToggleSidebar: () => void }) {
                 type="button"
                 title="Preferences"
                 aria-label="Preferences"
-                {...stylex.props(styles.button)}
-                onClick={() => reader.openPanel("preferences")}
+                {...stylex.props(styles.button, pressed === "preferences" && styles.pressed)}
+                {...handlers("preferences", () => reader.openPanel("preferences"))}
             >
                 <SettingsIcon />
             </button>
