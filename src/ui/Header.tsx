@@ -10,7 +10,8 @@ const styles = stylex.create({
         display: "flex",
         alignItems: "center",
         gap: { default: 12, [media.compact]: 8 },
-        paddingInline: { default: 12, [media.compact]: 8 },
+        // Touch screens have rounded corners; when the header reaches the top edge, keep its ends off the curve.
+        paddingInline: { default: 12, [media.compact]: 8, [media.touch]: 20 },
         borderBottomWidth: 1,
         borderBottomStyle: "solid",
         borderBottomColor: colors.border,
