@@ -372,6 +372,9 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
     // Runtime handle: item ID → its Inoreader article ID, for edit-tag. Keyed by ID because the reader copies
     // items it marked read.
     const articleIds = new Map<string, string>();
+    // Runtime handle: article IDs that edit-tag marked read. The reader may mark the same items again when it
+    // leaves the feed, and the count must drop once. Inoreader listing one unread again clears it.
+    const markedRead = new Set<string>();
 
     // The connection and the custom client are read from the OAuth storage whenever the state changes.
     const snapshotOf = (current: InoreaderState): SourceSnapshot => {
@@ -500,6 +503,7 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
             for (const { item, timestamp, articleId } of loaded) {
                 if (Number.isFinite(timestamp)) itemTimestamps.set(item, timestamp);
                 articleIds.set(item.id, articleId);
+                if (item.unread) markedRead.delete(articleId);
             }
             return { items: loaded.map(({ item }) => item), continuation: json.continuation || undefined };
         } catch (error) {
@@ -522,7 +526,7 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
                 // unread pages read one by one. https://www.inoreader.com/developers/edit-tag
                 const ids = loadedItems.flatMap((item) => {
                     const articleId = item.unread ? articleIds.get(item.id) : undefined;
-                    return articleId ? [articleId] : [];
+                    return articleId && !markedRead.has(articleId) ? [articleId] : [];
                 });
                 if (ids.length === 0) return;
                 await request(
@@ -531,6 +535,7 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
                     2,
                     new URLSearchParams([["a", READ_TAG], ...ids.map((id): [string, string] => ["i", id])])
                 );
+                for (const id of ids) markedRead.add(id);
                 state.update((current) => withItemsMarkedRead(current, streamId, ids.length));
                 return;
             }

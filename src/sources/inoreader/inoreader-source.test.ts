@@ -222,6 +222,10 @@ describe("createInoreaderSource", () => {
         const page = await source.loadItems(feedId, { count: 1 });
         await source.markRead(feedId, page.items);
         expect(source.getSnapshot().feeds.find((feed) => feed.id === feedId)?.unreadCount).toBe(1);
+        // The reader marks the same items again when it leaves the feed after `m`.
+        await source.markRead(feedId, page.items);
+        expect(source.getSnapshot().feeds.find((feed) => feed.id === feedId)?.unreadCount).toBe(1);
+        expect(server.log().filter((entry) => entry.path === "/reader/api/0/edit-tag")).toHaveLength(1);
         await source.sync();
         expect(source.getSnapshot().feeds.find((feed) => feed.id === feedId)?.unreadCount).toBe(1);
     });
