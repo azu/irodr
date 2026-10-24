@@ -196,3 +196,17 @@ test("the tap controls can move to the left side", async ({ page }) => {
     await page.reload();
     await expect(controls).toHaveAttribute("data-side", "left");
 });
+
+test("the read later button does what p does", async ({ page, api }) => {
+    await page.setViewportSize(UNFOLDED);
+    const controls = page.getByRole("toolbar", { name: "Reading controls" });
+    await controls.getByRole("button", { name: "Next feed (s)" }).tap();
+    await controls.getByRole("button", { name: "Next item (j)" }).tap();
+    await expect(focusedArticle(page)).toContainText("alpha article 1");
+    const readLater = controls.getByRole("button", { name: "Read later (p)" });
+    await expect(readLater).toHaveAttribute("aria-pressed", "false");
+    await readLater.tap();
+    await expect(readLater).toHaveAttribute("aria-pressed", "true");
+    await expect(focusedArticle(page).getByRole("button", { name: "Saved" })).toBeVisible();
+    await expect.poll(async () => (await api.control<string[]>("GET", "/inoreader/saved")).length).toBe(1);
+});
