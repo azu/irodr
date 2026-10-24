@@ -84,9 +84,9 @@ function eventPayload(item: Item, focused: boolean) {
 }
 
 /**
- * `readLater` is whether the item is saved for later, or undefined when its source cannot save items.
+ * `savedForLater` is whether the item was saved for later, or undefined when no source can save items.
  */
-export function Article({ item, focused, readLater }: { item: Item; focused: boolean; readLater?: boolean }) {
+export function Article({ item, focused, savedForLater }: { item: Item; focused: boolean; savedForLater?: boolean }) {
     const reader = useReader();
     const events = useUserScriptEvents();
     const now = useNow();
@@ -113,7 +113,7 @@ export function Article({ item, focused, readLater }: { item: Item; focused: boo
             data-content-id={item.id}
             data-focused={focused || undefined}
             data-unread={item.unread || undefined}
-            data-read-later={readLater || undefined}
+            data-saved-for-later={savedForLater || undefined}
         >
             <header>
                 <h2 {...withClass(CLASS.itemTitle, styles.title)}>
@@ -135,18 +135,18 @@ export function Article({ item, focused, readLater }: { item: Item; focused: boo
                             <span {...stylex.props(styles.author)}>{item.author}</span>
                         </>
                     ) : null}
-                    {readLater === undefined ? null : (
+                    {savedForLater === undefined ? null : (
                         <>
                             {" | "}
                             <button
                                 type="button"
-                                aria-pressed={readLater}
-                                title={readLater ? "Remove from Read later (p)" : "Save for later (p)"}
-                                onClick={() => void reader.toggleReadLater(item.id)}
+                                aria-pressed={savedForLater}
+                                title="Save for later (p)"
+                                onClick={() => void reader.saveForLater(item.id)}
                                 {...stylex.props(styles.readLater)}
                             >
-                                <BookmarkIcon filled={readLater} size={14} />
-                                {readLater ? "Saved" : "Read later"}
+                                <BookmarkIcon filled={savedForLater} size={14} />
+                                {savedForLater ? "Saved" : "Read later"}
                             </button>
                         </>
                     )}

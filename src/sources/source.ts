@@ -42,8 +42,6 @@ export interface Item {
     readonly updatedAt: number;
     /** Unread state when the item was loaded. */
     readonly unread: boolean;
-    /** Saved for later on the provider when the item was loaded. */
-    readonly readLater?: boolean;
 }
 
 export interface ItemPage {
@@ -59,8 +57,6 @@ export interface SourceCapabilities {
     readonly unreadFilter: boolean;
     /** Items live in the source and change while syncing. The reader re-reads them on every change. */
     readonly liveItems: boolean;
-    /** Items can be saved for later on the provider (`p`, `setReadLater`). */
-    readonly readLater: boolean;
 }
 
 export type SourceStatusPhase = "disconnected" | "idle" | "syncing" | "waiting" | "error";
@@ -146,8 +142,11 @@ export interface Source {
      * Items that arrived after they were loaded stay unread.
      */
     markRead(feedId: string, loadedItems: readonly Item[]): Promise<void>;
-    /** Save an item for later, or remove it from the saved items. Required when `capabilities.readLater`. */
-    setReadLater?(item: Item, saved: boolean): Promise<void>;
+    /**
+     * Save an item of any source for later on this provider, e.g. as a web page that the provider lists as a feed.
+     * The reader asks the first connected source that implements it.
+     */
+    saveForLater?(item: Item): Promise<void>;
     /** Run a settings action. Resolves to a message for the user. */
     runAction(actionId: string, values: SettingValues): Promise<string>;
 }

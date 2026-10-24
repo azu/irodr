@@ -10,6 +10,7 @@ import {
     initialState,
     markReadTimestamp,
     projectFeeds,
+    SAVED_WEB_PAGES,
     type SubscriptionLists,
     toItem,
     withFailure,
@@ -109,7 +110,8 @@ describe("createInoreaderSource", () => {
             ["Beta Blog", "Blogs", 1],
             ["Gamma News", "News", 5],
             ["Already Read", "News", 0],
-            ["Delta Tech", "Tech", 1]
+            ["Delta Tech", "Tech", 1],
+            ["Saved web pages", "Inoreader", 0]
         ]);
         expect(feeds[0]).toMatchObject({
             id: `inoreader:${ALPHA}`,
@@ -127,12 +129,13 @@ describe("createInoreaderSource", () => {
         expect(requests.map((url) => new URL(url.slice("/cors-proxy/".length)).pathname)).toEqual([
             "/inoreader/oauth2/token",
             "/inoreader/reader/api/0/subscription/list",
-            "/inoreader/reader/api/0/unread-count"
+            "/inoreader/reader/api/0/unread-count",
+            "/inoreader/reader/api/0/stream/items/ids"
         ]);
         expect(requests.every((url) => url.startsWith(`/cors-proxy/${server.origin}/inoreader/`))).toBe(true);
         // The browser opens the authorization page itself.
         expect(navigations[0]?.startsWith(`${server.origin}/inoreader/oauth2/auth?`)).toBe(true);
-        expect(source.getSnapshot().feeds).toHaveLength(5);
+        expect(source.getSnapshot().feeds).toHaveLength(6);
     });
 
     it("loads items page by page with read state", async () => {
@@ -161,25 +164,42 @@ describe("createInoreaderSource", () => {
         expect(source.getSnapshot().feeds.find((feed) => feed.title === "Alpha Blog")?.unreadCount).toBe(1);
     });
 
-    it("saves an item for later with edit-tag on the starred state, and removes it again", async () => {
+    it("saves an item's page for later and lists the saved web pages as a feed", async () => {
         const { source } = await connected();
         await source.sync();
-        const [first] = (await source.loadItems(`inoreader:${ALPHA}`, { count: 20 })).items;
-        if (!first) throw new Error("No item");
-        expect(first.readLater).toBe(false);
-        await source.setReadLater?.(first, true);
-        const edit = server.log().at(-1);
-        expect(edit).toMatchObject({ method: "POST", path: "/reader/api/0/edit-tag" });
-        expect(Object.fromEntries(new URLSearchParams(edit?.body))).toEqual({
-            a: "user/-/state/com.google/starred",
-            i: "tag:google.com,2005:reader/item/alpha-1"
+        await source.saveForLater?.({
+            id: "github:1",
+            feedId: "github:azu/irodr",
+            title: "Add read later",
+            url: "https://github.com/azu/irodr/pull/137",
+            author: "",
+            contentHtml: "",
+            publishedAt: 0,
+            updatedAt: 0,
+            unread: true
         });
-        expect(server.inoreader.starredIds(ALPHA)).toEqual(["tag:google.com,2005:reader/item/alpha-1"]);
-        const [reloaded] = (await source.loadItems(`inoreader:${ALPHA}`, { count: 20 })).items;
-        expect(reloaded?.readLater).toBe(true);
-        await source.setReadLater?.(first, false);
-        expect(new URLSearchParams(server.log().at(-1)?.body).get("r")).toBe("user/-/state/com.google/starred");
-        expect(server.inoreader.starredIds(ALPHA)).toEqual([]);
+        expect(server.log().at(-1)).toMatchObject({
+            method: "POST",
+            path: "/reader/api/0/save-web-page",
+            query: { url: "https://github.com/azu/irodr/pull/137", return_url: "1", star: "0" }
+        });
+        await source.sync();
+        const saved = source.getSnapshot().feeds.find((feed) => feed.title === "Saved web pages");
+        expect(saved).toMatchObject({ id: `inoreader:${SAVED_WEB_PAGES}`, unreadCount: 1 });
+        const page = await source.loadItems(saved?.id ?? "", { count: 20 });
+        expect(page.items.map((item) => item.url)).toEqual(["https://github.com/azu/irodr/pull/137"]);
+        await source.markRead(saved?.id ?? "", page.items);
+        await source.sync();
+        expect(source.getSnapshot().feeds.find((feed) => feed.title === "Saved web pages")?.unreadCount).toBe(0);
+    });
+
+    it("lists the subscriptions when saved web pages cannot be listed", async () => {
+        const { source } = await connected();
+        server.inoreader.configure({ failingStreams: [SAVED_WEB_PAGES] });
+        await source.sync();
+        expect(source.getSnapshot().feeds.map((feed) => feed.title)).not.toContain("Saved web pages");
+        expect(source.getSnapshot().feeds).toHaveLength(5);
+        expect(source.getSnapshot().status.phase).toBe("idle");
     });
 
     it("shows 0 until Inoreader counts reflect a mark-read, but not forever", async () => {
@@ -219,7 +239,7 @@ describe("createInoreaderSource", () => {
             .filter((entry) => entry.path === "/oauth2/token")
             .map((entry) => new URLSearchParams(entry.body).get("grant_type"));
         expect(grants).toEqual(["authorization_code", "refresh_token"]);
-        expect(source.getSnapshot().feeds).toHaveLength(5);
+        expect(source.getSnapshot().feeds).toHaveLength(6);
     });
 
     it("pauses all Zone 1 reads until reset without blocking Zone 2 mark-read", async () => {
@@ -290,7 +310,7 @@ describe("createInoreaderSource", () => {
         expect(storage.getItem("inoreader-token")).not.toBeNull();
         server.inoreader.configure({ tokenFailure: undefined });
         await source.sync();
-        expect(source.getSnapshot().feeds).toHaveLength(5);
+        expect(source.getSnapshot().feeds).toHaveLength(6);
     });
 
     it("reuses a token another tab already refreshed", async () => {
@@ -301,7 +321,7 @@ describe("createInoreaderSource", () => {
         await source.sync();
         const grants = server.log().filter((entry) => entry.path === "/oauth2/token");
         expect(grants).toHaveLength(2);
-        expect(source.getSnapshot().feeds).toHaveLength(5);
+        expect(source.getSnapshot().feeds).toHaveLength(6);
     });
 
     it("marks nothing read when no item was loaded", async () => {
@@ -336,7 +356,7 @@ describe("createInoreaderSource", () => {
         const { source } = createSource({ storage: legacy });
         expect(source.getSnapshot().connected).toBe(true);
         await source.sync();
-        expect(source.getSnapshot().feeds).toHaveLength(5);
+        expect(source.getSnapshot().feeds).toHaveLength(6);
     });
 });
 
@@ -609,12 +629,12 @@ describe("toItem", () => {
         });
     });
 
-    it("reads the read and read later states and falls back for missing fields", () => {
+    it("reads the read state and falls back for missing fields", () => {
         const item = toItem(`inoreader:${A}`, A, {
             id: "2",
             title: "Read",
             timestampUsec: String(T),
-            categories: ["user/1/state/com.google/read", "user/1/state/com.google/starred"],
+            categories: ["user/1/state/com.google/read"],
             alternate: [{ href: "https://a.example.com/2", type: "text/html" }]
         });
         expect(item).toMatchObject({
@@ -624,8 +644,7 @@ describe("toItem", () => {
             contentHtml: "",
             publishedAt: 0,
             updatedAt: 0,
-            unread: false,
-            readLater: true
+            unread: false
         });
     });
 

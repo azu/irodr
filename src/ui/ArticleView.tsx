@@ -128,7 +128,7 @@ function Body({ view, focusItemId }: { view: View; focusItemId?: string }) {
             key={item.id}
             item={item}
             focused={item.id === focusItemId}
-            readLater={view.capabilities.readLater ? view.readLater.has(item.id) : undefined}
+            savedForLater={view.canSaveForLater ? view.savedForLater.has(item.id) : undefined}
         />
     ));
 }

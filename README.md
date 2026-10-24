@@ -47,7 +47,7 @@ See [Source adapters](./docs/source-adapters.md) for details, storage and limita
 | <kbd>Shift</kbd>+<kbd>j</kbd>                        | Show all items and load older ones                    |
 | <kbd>t</kbd>                                         | Toggle unread / all items                             |
 | <kbd>v</kbd>                                         | Open the current item in a new tab                    |
-| <kbd>p</kbd>                                         | Save the current item for later, or remove it         |
+| <kbd>p</kbd>                                         | Save the current item for later (Inoreader)           |
 | <kbd>z</kbd>                                         | Collapse / expand all categories                      |
 | <kbd>Space</kbd> / <kbd>Shift</kbd>+<kbd>Space</kbd> | Scroll down / up                                      |
 | <kbd>Shift</kbd>+<kbd>t</kbd>                        | Toggle translate mode (English → Japanese)            |

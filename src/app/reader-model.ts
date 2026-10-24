@@ -85,8 +85,8 @@ export interface ReaderModel {
     readonly readItems: ReadonlyMap<string, readonly Item[]>;
     /** The error message last seen per source ID ("" for none), so each error is reported once. */
     readonly lastErrors: ReadonlyMap<string, string>;
-    /** Read later changes of this session by item ID. They override `Item.readLater`, the state when loaded. */
-    readonly readLater: ReadonlyMap<string, boolean>;
+    /** IDs of the items saved for later in this session, including saves in flight. */
+    readonly savedForLater: ReadonlySet<string>;
 }
 
 export function initialModel(preferences: Preferences): ReaderModel {
@@ -105,7 +105,7 @@ export function initialModel(preferences: Preferences): ReaderModel {
         readHistory: [],
         readItems: new Map(),
         lastErrors: new Map(),
-        readLater: new Map()
+        savedForLater: new Set()
     };
 }
 
@@ -284,25 +284,16 @@ export function withReadHistory(model: ReaderModel, items: readonly Item[]): Rea
     return { ...model, readHistory: [...model.readHistory, ...items].slice(-READ_HISTORY_LIMIT) };
 }
 
-// ---------------------------------------------------------------- read later
+// ---------------------------------------------------------------- save for later
 
-/** Whether `item` is saved for later, with the changes of this session. */
-export function isReadLater(model: Pick<ReaderModel, "readLater">, item: Item): boolean {
-    return model.readLater.get(item.id) ?? item.readLater === true;
-}
-
-export function withReadLater(model: ReaderModel, itemId: string, saved: boolean): ReaderModel {
-    return model.readLater.get(itemId) === saved
-        ? model
-        : { ...model, readLater: new Map([...model.readLater, [itemId, saved]]) };
-}
-
-/** Forget the changes of `itemIds`, whose state the source returned again after the changes were saved. */
-export function withoutReadLater(model: ReaderModel, itemIds: readonly string[]): ReaderModel {
-    const forgotten = new Set(itemIds.filter((id) => model.readLater.has(id)));
-    return forgotten.size === 0
-        ? model
-        : { ...model, readLater: new Map([...model.readLater].filter(([id]) => !forgotten.has(id))) };
+export function withSavedForLater(model: ReaderModel, itemId: string, saved: boolean): ReaderModel {
+    if (model.savedForLater.has(itemId) === saved) return model;
+    return {
+        ...model,
+        savedForLater: saved
+            ? new Set([...model.savedForLater, itemId])
+            : new Set([...model.savedForLater].filter((id) => id !== itemId))
+    };
 }
 
 // ---------------------------------------------------------------- UI state
