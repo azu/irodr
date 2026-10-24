@@ -12,7 +12,10 @@ const NARROW_QUERY = "(max-width: 599px)";
 
 const styles = stylex.create({
     app: {
-        height: "100dvh",
+        height: { default: "100dvh", [media.touch]: "auto" },
+        // On touch screens the page scrolls under the app to minimize Safari's toolbar (see global.css).
+        position: { default: null, [media.touch]: "fixed" },
+        inset: { default: null, [media.touch]: 0 },
         display: "grid",
         gridTemplateRows: `${sizes.header} minmax(0, 1fr)`,
         color: colors.text,

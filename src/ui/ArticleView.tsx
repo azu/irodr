@@ -70,8 +70,8 @@ const styles = stylex.create({
         display: { default: "none", [media.touch]: "flex" },
         flexDirection: "column",
         gap: 8,
-        // Fixed to the screen: the buttons stay put when the page scrolls and Safari's toolbar (at the top on
-        // iPhone Duo and iPad) is minimized.
+        // Fixed to the bottom of the screen: the buttons stay put when the page scrolls and Safari's toolbar (at the
+        // top on iPhone Duo and iPad) is minimized.
         position: "fixed",
         insetInlineEnd: 12,
         insetBlockEnd: "calc(12px + env(safe-area-inset-bottom))",

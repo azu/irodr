@@ -59,13 +59,14 @@ body {
 }
 
 /*
- * Touch screens: let the page itself scroll by 1px. Safari (iPhone Duo, iPad) minimizes its toolbar only when the
- * page scrolls, not when the article view inside it does; the tap controls scroll this 1px (see hideBrowserToolbar).
+ * Touch screens: let the page itself scroll. Safari (iPhone Duo, iPad) minimizes its toolbar only when the page
+ * scrolls about 100px, not when the article view inside it does. The app is fixed to the screen on touch screens
+ * (App.tsx), so this scroll moves nothing visible; the tap controls scroll it (see hideBrowserToolbar).
  */
 @media (pointer: coarse) {
     body::after {
         content: "";
         display: block;
-        height: 1px;
+        height: 160px;
     }
 }
