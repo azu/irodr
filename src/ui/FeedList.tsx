@@ -47,6 +47,7 @@ const styles = stylex.create({
         display: "flex",
         alignItems: "center",
         gap: 4,
+        justifyContent: { default: null, [media.stacked]: "center" },
         width: "100%",
         height: sizes.categoryHeader,
         paddingInline: 6,
@@ -73,7 +74,9 @@ const styles = stylex.create({
         width: "100%",
         minHeight: { default: sizes.feedRow, [media.touch]: 40 },
         padding: 4,
-        paddingInlineStart: 8,
+        paddingInlineStart: { default: 8, [media.stacked]: 4 },
+        // Feed icons only (media.stacked).
+        justifyContent: { default: null, [media.stacked]: "center" },
         borderStyle: "none",
         backgroundColor: { default: "transparent", ":hover": colors.hover },
         color: colors.feedLink,
@@ -96,7 +99,29 @@ const styles = stylex.create({
         opacity: 1
     },
     icon: { flexShrink: 0, width: 16, height: 16 },
-    title: { overflowWrap: "anywhere" }
+    title: { overflowWrap: "anywhere" },
+    // Feed icons only (media.stacked): the names stay for screen readers and the `title` tooltip.
+    hiddenWhenIconOnly: {
+        position: { default: null, [media.stacked]: "absolute" },
+        width: { default: null, [media.stacked]: 1 },
+        height: { default: null, [media.stacked]: 1 },
+        // Also the default of categoryName, which this style follows.
+        overflow: "hidden",
+        clipPath: { default: null, [media.stacked]: "inset(50%)" },
+        whiteSpace: { default: null, [media.stacked]: "nowrap" }
+    },
+    // The first letter of a feed without an icon, shown in place of the icon. Drawn by CSS, so the feed's text
+    // (user scripts and tests read it) stays the title and the count.
+    initial: {
+        "::before": { content: "attr(data-initial)" },
+        display: { default: "none", [media.stacked]: "grid" },
+        placeItems: "center",
+        flexShrink: 0,
+        width: 16,
+        height: 16,
+        fontSize: 12,
+        lineHeight: 1
+    }
 });
 
 function FeedRow({
@@ -147,8 +172,10 @@ function FeedRow({
                         loading="lazy"
                         {...stylex.props(styles.icon)}
                     />
-                ) : null}
-                <span {...stylex.props(styles.title)}>
+                ) : (
+                    <span data-initial={Array.from(feed.title)[0]} {...stylex.props(styles.initial)} />
+                )}
+                <span {...stylex.props(styles.title, styles.hiddenWhenIconOnly)}>
                     {title} ({formatUnreadCount(feed)})
                 </span>
             </button>
@@ -182,7 +209,7 @@ function Category({
                 onClick={() => reader.toggleCategory(category.name)}
             >
                 <ChevronIcon open={!category.collapsed} size={14} />
-                <span {...stylex.props(styles.categoryName)}>{category.name}</span>
+                <span {...stylex.props(styles.categoryName, styles.hiddenWhenIconOnly)}>{category.name}</span>
             </button>
             {category.collapsed ? null : (
                 <ul {...stylex.props(styles.list)} aria-label={category.name}>

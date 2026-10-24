@@ -33,7 +33,11 @@ export const sizes = stylex.defineVars({
     /** The control area at the bottom left on touch screens when the tap controls are on the left. */
     leftControlArea: "104px",
     /** The sidebar when the screen is split side by side (media.sideBySide). */
-    thinSidebar: "160px"
+    thinSidebar: "160px",
+    /** The sidebar of feed icons only when the screen is split one above the other (media.stacked). */
+    iconSidebar: "44px",
+    /** The tap controls when the screen is split one above the other: the lower half of the bottom segment. */
+    stackedControls: "calc(env(viewport-segment-height 0 1) / 2)"
 });
 
 /**
@@ -58,10 +62,10 @@ export const media = stylex.defineConsts({
      */
     sideBySide: "@media (horizontal-viewport-segments: 2) and (min-width: 600px)",
     /**
-     * Two screen segments one above the other, e.g. iPhone Duo in landscape partly folded like a laptop: the app
-     * takes the top segment and the tap controls the bottom one (ArticleView). Touch screens only, where the tap
-     * controls are shown.
+     * Two screen segments one above the other, e.g. iPhone Duo partly folded like a laptop and put on a table: the
+     * sidebar shows feed icons only, and the tap controls take the lower half of the bottom segment (ArticleView).
+     * Touch screens only, where the tap controls are shown; not below 600px, where the sidebar is a drawer.
      * https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@media/vertical-viewport-segments
      */
-    stacked: "@media (vertical-viewport-segments: 2) and (pointer: coarse)"
+    stacked: "@media (vertical-viewport-segments: 2) and (pointer: coarse) and (min-width: 600px)"
 });

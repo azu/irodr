@@ -15,7 +15,7 @@ import { ProgressBar } from "./ProgressBar.tsx";
 import { colors, media, sizes } from "./tokens.stylex.ts";
 
 /** The same query as `media.stacked`, for choosing the tap controls' layout. */
-const STACKED_QUERY = "(vertical-viewport-segments: 2) and (pointer: coarse)";
+const STACKED_QUERY = "(vertical-viewport-segments: 2) and (pointer: coarse) and (min-width: 600px)";
 
 const styles = stylex.create({
     main: { position: "relative", minWidth: 0, minHeight: 0, display: "flex", flexDirection: "column" },
@@ -105,13 +105,13 @@ const styles = stylex.create({
         borderStartEndRadius: 12,
         backgroundColor: colors.subtle
     },
-    // Folded like a laptop: the bottom segment, below the fold, holds larger buttons in a row.
+    // Folded like a laptop: larger buttons in a row across the lower half of the bottom segment (App leaves room).
     tapControlsStacked: {
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "center",
         gap: 24,
-        insetBlockStart: "env(viewport-segment-top 0 1)",
+        height: sizes.stackedControls,
         insetBlockEnd: 0,
         insetInlineStart: 0,
         insetInlineEnd: 0,

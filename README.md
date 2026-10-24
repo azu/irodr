@@ -60,8 +60,9 @@ On touch screens (iPhone, iPhone Duo, iPad), buttons at the bottom right of the 
 The button at the left of the header shows and hides the subscriptions; on screens narrower than 600px (phones,
 iPhone Duo folded) they open as a drawer over the articles. When iPhone Duo is partly folded
 ([Viewport Segments API](https://developer.mozilla.org/en-US/docs/Web/API/Viewport_segments_API); Safari 27.1 has it
-behind the "Viewport Segments API" feature flag), the subscriptions get thin when held like a book, and the tap
-controls move to the bottom screen when held like a laptop.
+behind the "Viewport Segments API" feature flag), the subscriptions get thin when the screens are side by side.
+When they are one above the other (put on a table like a laptop), the subscriptions show feed icons only and the tap
+controls take the lower half of the bottom screen.
 Translate mode uses the browser's [Translator API](https://developer.chrome.com/docs/ai/translator-api). In other browsers,
 install [irodr-translate.user.js](./resources/userScript/irodr-translate.user.js) to translate with Google Translate
 (see [Translation](./docs/userscript.md#translation)).
