@@ -31,7 +31,7 @@ test("Inoreader and GitHub feeds are read in one sequence", async ({ page, api }
         "Tech"
     ]);
     await expect(page.getByTestId("total-unread")).toHaveText("Unread: 14");
-    // Including the saved web pages of Inoreader.
+    // Including Read later of Inoreader.
     await expect(page.getByTestId("total-feeds")).toHaveText("Subscriptions: 9");
 
     const visited: string[] = [];
@@ -250,7 +250,7 @@ test("the optional Inoreader app fields stay collapsed until used", async ({ pag
     await expect(dialog.getByLabel("Inoreader App Client Id")).toHaveValue("e2e-client");
 });
 
-test("p saves a GitHub notification as an Inoreader web page, listed as a feed", async ({ page, api }) => {
+test("p saves a GitHub notification to Inoreader's Read later, listed as a feed", async ({ page, api }) => {
     await connectInoreader(page);
     await connectGitHub(page);
     await closeDialog(page);
@@ -263,9 +263,9 @@ test("p saves a GitHub notification as an Inoreader web page, listed as a feed",
     const saves = requests(await api.log(), "inoreader", "/reader/api/0/save-web-page");
     expect(saves.map((entry) => entry.method)).toEqual(["POST"]);
     await page.getByRole("button", { name: "Refresh" }).click();
-    await expect(feedRow(page, "Saved web pages")).toHaveText("Saved web pages (1)");
+    await expect(feedRow(page, "Read later")).toHaveText("Read later (1)");
     // The saved page is marked read by its ID on Inoreader.
-    await feedRow(page, "Saved web pages").click();
+    await feedRow(page, "Read later").click();
     await expect(articles(page)).toHaveCount(1);
     await page.keyboard.press("m");
     await expect
@@ -275,7 +275,7 @@ test("p saves a GitHub notification as an Inoreader web page, listed as a feed",
             )
         )
         .toEqual([1]);
-    await expect(currentFeed(page)).toHaveText("Saved web pages (0)");
+    await expect(currentFeed(page)).toHaveText("Read later (0)");
     const unread = await api.control<Record<string, number>>("GET", "/inoreader/unread");
-    expect(unread["user/-/state/com.google/saved-web-pages"]).toBe(0);
+    expect(unread["user/-/state/com.google/starred"]).toBe(0);
 });

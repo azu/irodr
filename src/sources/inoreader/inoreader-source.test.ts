@@ -10,7 +10,7 @@ import {
     initialState,
     markReadTimestamp,
     projectFeeds,
-    SAVED_WEB_PAGES,
+    READ_LATER,
     type SubscriptionLists,
     toItem,
     withFailure,
@@ -112,7 +112,7 @@ describe("createInoreaderSource", () => {
             ["Gamma News", "News", 5],
             ["Already Read", "News", 0],
             ["Delta Tech", "Tech", 1],
-            ["Saved web pages", "Inoreader", 0]
+            ["Read later", "Inoreader", 0]
         ]);
         expect(feeds[0]).toMatchObject({
             id: `inoreader:${ALPHA}`,
@@ -165,7 +165,7 @@ describe("createInoreaderSource", () => {
         expect(source.getSnapshot().feeds.find((feed) => feed.title === "Alpha Blog")?.unreadCount).toBe(1);
     });
 
-    it("saves an item's page for later and lists the saved web pages as a feed", async () => {
+    it("saves an item's page to Read later and lists Read later as a feed", async () => {
         const { source } = await connected();
         await source.sync();
         await source.saveForLater?.({
@@ -182,25 +182,25 @@ describe("createInoreaderSource", () => {
         expect(server.log().at(-1)).toMatchObject({
             method: "POST",
             path: "/reader/api/0/save-web-page",
-            query: { url: "https://github.com/azu/irodr/pull/137", return_url: "1", star: "0" }
+            query: { url: "https://github.com/azu/irodr/pull/137", return_url: "1", star: "1" }
         });
         await source.sync();
-        const saved = source.getSnapshot().feeds.find((feed) => feed.title === "Saved web pages");
-        expect(saved).toMatchObject({ id: `inoreader:${SAVED_WEB_PAGES}`, unreadCount: 1 });
+        const saved = source.getSnapshot().feeds.find((feed) => feed.title === "Read later");
+        expect(saved).toMatchObject({ id: `inoreader:${READ_LATER}`, unreadCount: 1 });
         const page = await source.loadItems(saved?.id ?? "", { count: 20 });
         expect(page.items.map((item) => item.url)).toEqual(["https://github.com/azu/irodr/pull/137"]);
         expect(page.items[0]?.savedForLater).toBe(true);
         await source.markRead(saved?.id ?? "", page.items);
-        // mark-all-as-read leaves saved web pages unread; edit-tag marks the loaded pages read.
+        // edit-tag marks the loaded items of Read later read.
         const marked = server.log().at(-1);
         expect(marked).toMatchObject({ method: "POST", path: "/reader/api/0/edit-tag" });
         expect(new URLSearchParams(marked?.body).getAll("i")).toEqual([page.items[0]?.id.split("--")[1]]);
-        expect(server.inoreader.unreadCount(SAVED_WEB_PAGES)).toBe(0);
+        expect(server.inoreader.unreadCount(READ_LATER)).toBe(0);
         await source.sync();
-        expect(source.getSnapshot().feeds.find((feed) => feed.title === "Saved web pages")?.unreadCount).toBe(0);
+        expect(source.getSnapshot().feeds.find((feed) => feed.title === "Read later")?.unreadCount).toBe(0);
     });
 
-    it("keeps the saved web pages that were not loaded unread", async () => {
+    it("keeps the Read later items that were not loaded unread", async () => {
         const { source } = await connected();
         await source.sync();
         const save = (url: string) =>
@@ -218,7 +218,7 @@ describe("createInoreaderSource", () => {
         await save("https://github.com/azu/irodr/pull/1");
         await save("https://github.com/azu/irodr/pull/2");
         await source.sync();
-        const feedId = `inoreader:${SAVED_WEB_PAGES}`;
+        const feedId = `inoreader:${READ_LATER}`;
         const page = await source.loadItems(feedId, { count: 1 });
         await source.markRead(feedId, page.items);
         expect(source.getSnapshot().feeds.find((feed) => feed.id === feedId)?.unreadCount).toBe(1);
@@ -230,11 +230,11 @@ describe("createInoreaderSource", () => {
         expect(source.getSnapshot().feeds.find((feed) => feed.id === feedId)?.unreadCount).toBe(1);
     });
 
-    it("lists the subscriptions when saved web pages cannot be listed", async () => {
+    it("lists the subscriptions when Read later cannot be listed", async () => {
         const { source } = await connected();
-        server.inoreader.configure({ failingStreams: [SAVED_WEB_PAGES] });
+        server.inoreader.configure({ failingStreams: [READ_LATER] });
         await source.sync();
-        expect(source.getSnapshot().feeds.map((feed) => feed.title)).not.toContain("Saved web pages");
+        expect(source.getSnapshot().feeds.map((feed) => feed.title)).not.toContain("Read later");
         expect(source.getSnapshot().feeds).toHaveLength(5);
         expect(source.getSnapshot().status.phase).toBe("idle");
     });

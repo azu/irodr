@@ -20,17 +20,19 @@ This document describes the behavior of each source.
 - **Mark read**: leaving a feed (or `m`) calls `mark-all-as-read` with `ts` just after the newest loaded item,
   so items that arrived afterwards stay unread. Nothing is marked when no item was loaded. Until Inoreader's unread
   count reflects it, the feed shows 0, for at most 5 minutes.
-- **Saved web pages**: listed as the feed **Saved web pages** (category Inoreader), the stream
-  `user/-/state/com.google/saved-web-pages` ([Stream IDs](https://www.inoreader.com/developers/stream-ids)), with the
-  pages saved in Inoreader's apps and extension. `unread-count` does not report it, so each sync also requests
-  `stream/items/ids` with `xt=user/-/state/com.google/read` (up to 1000). Without it (saved web pages are an Inoreader
-  Pro feature), the other feeds are still listed.
-  `mark-all-as-read` answers OK for this stream but leaves the pages unread, so leaving it (or `m`) marks the loaded
-  unread pages read with `POST edit-tag` (`a=user/-/state/com.google/read`, one `i` per page). Older pages that were
-  not loaded stay unread, so the feed's count drops by the pages marked, not to 0.
-- **Save for later**: `p` or an item's **Read later** button saves the item's URL as a web page, for items of every
-  source: `POST save-web-page?url=…&return_url=1&star=0` with the body `{}`. This endpoint is not in the public API
+- **Read later**: listed as the feed **Read later** (category Inoreader), the stream
+  `user/-/state/com.google/starred` ([Stream IDs](https://www.inoreader.com/developers/stream-ids)): Inoreader's
+  Read later, with the items saved in Inoreader's apps and extension. (Web pages saved with the extension's save target
+  "Web pages" are in `user/-/state/com.google/saved-web-pages` and are not listed.) Each sync counts its unread items
+  with `stream/items/ids` and `xt=user/-/state/com.google/read` (up to 1000); without it, the other feeds are still
+  listed. `mark-all-as-read` answered OK for the saved web pages but left them unread, so leaving this feed (or `m`)
+  marks the loaded unread items read with `POST edit-tag` (`a=user/-/state/com.google/read`, one `i` per item). Older
+  items that were not loaded stay unread, so the feed's count drops by the items marked, not to 0. Items stay in Read
+  later; archive them in Inoreader.
+- **Save for later**: `p` or an item's **Read later** button saves the item's URL to Read later, for items of every
+  source: `POST save-web-page?url=…&return_url=1&star=1` with the body `{}`. This endpoint is not in the public API
   documentation; it is the request of Inoreader's browser extension, which also authenticates with irodr's OAuth token.
+  The extension sends `star=1` when its save target is Read later and `star=0` for Web pages.
   Inoreader fetches the page itself, so pages that need a login (e.g. private GitHub repositories) may be saved without
   their contents. Treated as a Zone 2 (write) request.
 - **CORS**: requests go through `VITE_CORS_PROXY` (`/cors-proxy/`), unless `localStorage["REACT_APP_CORS_PROXY"]`

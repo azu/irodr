@@ -68,7 +68,7 @@ export interface FakeInoreader {
     expireTokens: () => void;
     streamIds: () => string[];
     unreadCount: (streamId: string) => number;
-    /** URLs of the saved web pages, newest first. */
+    /** URLs of the Read later items, newest first. */
     savedUrls: () => string[];
     handle: (request: FakeRequest, path: string) => FakeResponse;
 }
@@ -100,8 +100,9 @@ interface State {
 
 const USER = "user/1005921515";
 const READ = `${USER}/state/com.google/read`;
-/** Saved web pages, a state stream: not a subscription, and not in unread-count. */
+/** Saved web pages and Read later (the starred items): state streams, not subscriptions, not in unread-count. */
 export const SAVED_WEB_PAGES = "user/-/state/com.google/saved-web-pages";
+export const READ_LATER = "user/-/state/com.google/starred";
 
 /** Stream IDs name the current user as "user/-". */
 function normalizeStreamId(streamId: string): string {
@@ -164,7 +165,8 @@ function scenarioState(scenario: InoreaderScenario, sequence: number): State {
     return (scenario.subscriptions ?? []).reduce(withSubscription, {
         ...empty,
         streams: new Map([
-            [SAVED_WEB_PAGES, { seed: { id: SAVED_WEB_PAGES, title: "Saved web pages", items: [] }, items: [] }]
+            [SAVED_WEB_PAGES, { seed: { id: SAVED_WEB_PAGES, title: "Saved web pages", items: [] }, items: [] }],
+            [READ_LATER, { seed: { id: READ_LATER, title: "Read later", items: [] }, items: [] }]
         ])
     });
 }
@@ -398,21 +400,33 @@ export function createFakeInoreader(): FakeInoreader {
         return text("OK");
     };
 
-    /** Save a web page by its URL, as Inoreader's browser extension does. Answers the saved article's path. */
+    /**
+     * Save a web page by its URL, as Inoreader's browser extension does: to Web pages, and with `star=1` also to
+     * Read later. Answers the saved article's path.
+     */
     const saveWebPage = (request: FakeRequest): FakeResponse => {
         if (request.method !== "POST") return text("Method Not Allowed", 405);
         const pageUrl = request.url.searchParams.get("url") ?? "";
         if (!URL.canParse(pageUrl)) return text("Invalid URL", 400);
         const id = (current.state.sequence + 1).toString(16).padStart(16, "0");
-        current.state = withItems(current.state, SAVED_WEB_PAGES, [
-            {
-                id: `tag:google.com,2005:reader/item/${id}`,
-                title: `Saved page ${pageUrl}`,
-                url: pageUrl,
-                content: `<p>Saved from ${escapeHtml(pageUrl)}.</p>`,
-                published: Math.floor(Date.now() / 1000)
-            }
-        ]);
+        const seed: InoreaderItemSeed = {
+            id: `tag:google.com,2005:reader/item/${id}`,
+            title: `Saved page ${pageUrl}`,
+            url: pageUrl,
+            content: `<p>Saved from ${escapeHtml(pageUrl)}.</p>`,
+            published: Math.floor(Date.now() / 1000)
+        };
+        const saved = withItems(current.state, SAVED_WEB_PAGES, [seed]);
+        // One article in both streams, with one crawl time.
+        current.state =
+            request.url.searchParams.get("star") === "1"
+                ? withStreamItems(saved, READ_LATER, (items) =>
+                      [
+                          ...(saved.streams.get(SAVED_WEB_PAGES)?.items.filter((item) => item.id === seed.id) ?? []),
+                          ...items
+                      ].toSorted((a, b) => b.timestampUsec - a.timestampUsec)
+                  )
+                : saved;
         return text(`/article/${id}`);
     };
 
@@ -464,7 +478,7 @@ export function createFakeInoreader(): FakeInoreader {
             current.state = withExpiredTokens(current.state);
         },
         streamIds: () => [...current.state.streams.keys()].filter(isSubscription),
-        savedUrls: () => current.state.streams.get(SAVED_WEB_PAGES)?.items.map((item) => item.url ?? "") ?? [],
+        savedUrls: () => current.state.streams.get(READ_LATER)?.items.map((item) => item.url ?? "") ?? [],
         unreadCount: (streamId) => current.state.streams.get(streamId)?.items.filter((item) => !item.read).length ?? 0,
         handle
     };

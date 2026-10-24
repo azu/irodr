@@ -7,7 +7,7 @@ import {
     type FakeInoreader,
     type InoreaderItemSeed,
     type InoreaderScenario,
-    SAVED_WEB_PAGES
+    READ_LATER
 } from "./inoreader.ts";
 
 export interface Scenario {
@@ -102,7 +102,7 @@ export async function startFakeApi(options: { port?: number; host?: string } = {
             case "GET /inoreader/unread":
                 return json(
                     Object.fromEntries(
-                        [...inoreader.streamIds(), SAVED_WEB_PAGES].map((id) => [id, inoreader.unreadCount(id)])
+                        [...inoreader.streamIds(), READ_LATER].map((id) => [id, inoreader.unreadCount(id)])
                     )
                 );
             case "POST /github/notifications":
