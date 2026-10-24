@@ -70,13 +70,15 @@ const styles = stylex.create({
         display: { default: "none", [media.touch]: "flex" },
         flexDirection: "column",
         gap: 8,
-        position: "absolute",
+        // Fixed to a screen corner, also on the left where the sidebar is (preferences: tapControlsSide).
+        position: "fixed",
         // Clear of the rounded screen corners of iPad and iPhone Duo. The safe area insets are 0 unless the page
         // uses `viewport-fit=cover`, so the minimums keep the buttons away from the corner without it.
-        insetInlineEnd: "max(20px, calc(env(safe-area-inset-right) + 12px))",
         insetBlockEnd: "max(40px, calc(env(safe-area-inset-bottom) + 16px))",
         zIndex: 1
     },
+    tapControlsRight: { insetInlineEnd: "max(20px, calc(env(safe-area-inset-right) + 12px))" },
+    tapControlsLeft: { insetInlineStart: "max(20px, calc(env(safe-area-inset-left) + 12px))" },
     tapButton: {
         display: "grid",
         placeItems: "center",
@@ -103,6 +105,7 @@ const TAP_SLOP = 10;
 /** Buttons that press the k, j and s keys: they follow keys rebound by user scripts (`registerKey`). */
 function TapControls() {
     const bindings = useKeyBindings();
+    const side = useReaderState((state) => state.preferences.tapControlsSide);
     // The touch that started on a button. A tap ends on the same button near where it started; a swipe moves or is
     // cancelled.
     const press = useRef<{ key: string; pointerId: number; x: number; y: number } | null>(null);
@@ -112,7 +115,12 @@ function TapControls() {
         { label: "Next feed (s)", key: "s", icon: <NextFeedIcon size={20} /> }
     ] as const;
     return (
-        <div role="toolbar" aria-label="Reading controls" {...stylex.props(styles.tapControls)}>
+        <div
+            role="toolbar"
+            aria-label="Reading controls"
+            data-side={side}
+            {...stylex.props(styles.tapControls, side === "left" ? styles.tapControlsLeft : styles.tapControlsRight)}
+        >
             {buttons.map((button) => (
                 <button
                     key={button.key}

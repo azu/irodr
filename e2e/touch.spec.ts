@@ -167,3 +167,25 @@ test("a swipe that starts on a tap control does nothing", async ({ page }) => {
     await next.tap();
     await expect(currentFeed(page)).toHaveText("Beta Blog (1)");
 });
+
+test("the tap controls can move to the left side", async ({ page }) => {
+    await page.setViewportSize(UNFOLDED);
+    const controls = page.getByRole("toolbar", { name: "Reading controls" });
+    const right = await controls.boundingBox();
+    expect(right && right.x > UNFOLDED.width / 2).toBe(true);
+
+    await page.getByRole("button", { name: "Preferences" }).tap();
+    const dialog = page.getByRole("dialog", { name: "App Preference" });
+    await dialog.getByLabel("Tap Controls Side").selectOption("left");
+    await dialog.getByRole("button", { name: "Save" }).tap();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(controls).toHaveAttribute("data-side", "left");
+    const left = await controls.boundingBox();
+    expect(left && left.x + left.width < UNFOLDED.width / 2).toBe(true);
+
+    // Still works there, and the choice is kept.
+    await controls.getByRole("button", { name: "Next feed (s)" }).tap();
+    await expect(currentFeed(page)).toHaveText("Alpha Blog (3)");
+    await page.reload();
+    await expect(controls).toHaveAttribute("data-side", "left");
+});
