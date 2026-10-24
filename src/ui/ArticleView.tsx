@@ -1,5 +1,5 @@
 import * as stylex from "@stylexjs/stylex";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ArticleView as View } from "../app/reader.ts";
 import { safeUrl } from "../lib/sanitize.ts";
 import { formatDateTime, isoDateTime } from "../lib/time.ts";
@@ -101,6 +101,10 @@ const styles = stylex.create({
         backgroundColor: colors.subtle
     },
     lastInRow: { order: 1 },
+    // Feedback while a finger is on a button: `:active` is unreliable on iOS when pointerdown is prevented.
+    tapButtonPressed: { backgroundColor: colors.hover, transform: "scale(0.92)" },
+    // The focused item is saved for later: a filled, colored button, visible at a glance.
+    tapButtonSaved: { backgroundColor: colors.accent, borderColor: colors.accent, color: colors.accentText },
     tapButton: {
         display: "grid",
         placeItems: "center",
@@ -117,7 +121,9 @@ const styles = stylex.create({
         boxShadow: "0 1px 4px rgb(0 0 0 / 0.15)",
         cursor: "pointer",
         // No double-tap zoom, so repeated taps move on immediately.
-        touchAction: "manipulation"
+        touchAction: "manipulation",
+        transitionProperty: "transform, background-color",
+        transitionDuration: "80ms"
     }
 });
 
@@ -134,6 +140,7 @@ function TapControls({ savedForLater }: { savedForLater?: boolean }) {
     // The touch that started on a button. A tap ends on the same button near where it started; a swipe moves or is
     // cancelled.
     const press = useRef<{ key: string; pointerId: number; x: number; y: number } | null>(null);
+    const [pressedKey, setPressedKey] = useState<string | undefined>(undefined);
     const buttons = [
         // Read later sits away from the corner: first in the column on the right, last in the row on the left, so
         // k, j and s stay where they were.
@@ -158,7 +165,12 @@ function TapControls({ savedForLater }: { savedForLater?: boolean }) {
                     title={button.label}
                     aria-label={button.label}
                     aria-pressed={button.key === "p" ? savedForLater : undefined}
-                    {...stylex.props(styles.tapButton, button.key === "p" && side === "left" && styles.lastInRow)}
+                    {...stylex.props(
+                        styles.tapButton,
+                        button.key === "p" && side === "left" && styles.lastInRow,
+                        button.key === "p" && savedForLater === true && styles.tapButtonSaved,
+                        pressedKey === button.key && styles.tapButtonPressed
+                    )}
                     // Act on pointer events, not on click: iOS does not fire `click` for a tap that stops a momentum
                     // scroll, so the first tap after a manual scroll did nothing. Act on pointerup, so a swipe that
                     // starts on a button does not open the next feed and mark this one read. Preventing the default
@@ -166,6 +178,7 @@ function TapControls({ savedForLater }: { savedForLater?: boolean }) {
                     onPointerDown={(event) => {
                         if (event.button !== 0) return;
                         event.preventDefault();
+                        setPressedKey(button.key);
                         press.current = {
                             key: button.key,
                             pointerId: event.pointerId,
@@ -176,13 +189,16 @@ function TapControls({ savedForLater }: { savedForLater?: boolean }) {
                     onPointerUp={(event) => {
                         const start = press.current;
                         press.current = null;
+                        setPressedKey(undefined);
                         if (!start || start.key !== button.key || start.pointerId !== event.pointerId) return;
                         if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > TAP_SLOP) return;
                         bindings.trigger(button.key);
                     }}
                     onPointerCancel={() => {
                         press.current = null;
+                        setPressedKey(undefined);
                     }}
+                    onPointerLeave={() => setPressedKey(undefined)}
                     // Enter or Space on a focused button (`detail` is 0); pointer clicks were handled on pointerup.
                     onClick={(event) => {
                         if (event.detail === 0) bindings.trigger(button.key);
