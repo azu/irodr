@@ -5,7 +5,8 @@ import { colors, media, sizes } from "./tokens.stylex.ts";
 
 const styles = stylex.create({
     header: {
-        height: sizes.header,
+        // Touch screens: the header is a strip of icon buttons; keep it short so the articles get the height.
+        height: { default: sizes.header, [media.touch]: 34 },
         display: "flex",
         alignItems: "center",
         gap: { default: 12, [media.compact]: 8 },
@@ -23,7 +24,7 @@ const styles = stylex.create({
         alignItems: "center",
         gap: 4,
         flexShrink: 0,
-        height: { default: 28, [media.touch]: 36 },
+        height: { default: 28, [media.touch]: 32 },
         paddingInline: 8,
         borderStyle: "none",
         borderRadius: 4,

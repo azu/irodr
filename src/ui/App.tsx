@@ -14,11 +14,11 @@ const styles = stylex.create({
     app: {
         height: "100dvh",
         display: "grid",
-        gridTemplateRows: `${sizes.header} minmax(0, 1fr)`,
+        gridTemplateRows: "auto minmax(0, 1fr)",
         // viewport-fit=cover: Safari blurs the page under the status bar most at the top edge. Let the header's
         // top 24px overlap the faint end of that band, so it stays readable without giving up the whole inset,
         // and keep the sidebar out of the notch in landscape.
-        paddingBlockStart: "max(0px, calc(env(safe-area-inset-top) - 32px))",
+        paddingBlockStart: "max(0px, calc(env(safe-area-inset-top) - 24px))",
         paddingInlineStart: "env(safe-area-inset-left)",
         paddingInlineEnd: "env(safe-area-inset-right)",
         color: colors.text,
