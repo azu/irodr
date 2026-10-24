@@ -47,6 +47,8 @@ test.beforeEach(async ({ api, page }) => {
     await page.keyboard.press("s");
     await page.keyboard.press("j");
     await expect(focusedArticle(page)).toContainText("alpha article 1");
+    // `s` starts prefetching the next feeds; wait for its message so it cannot replace the translate mode message.
+    await expect(headerMessage(page)).toHaveText("Complete prefetch 5 items");
 });
 
 function body(page: Page) {
