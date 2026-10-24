@@ -2,7 +2,14 @@ import { shallowEqual } from "../lib/equal.ts";
 import { uniqueBy } from "../lib/unique.ts";
 import type { Feed, Item, Source, SourceCapabilities, SourceSnapshot } from "../sources/source.ts";
 import type { Preferences } from "./preferences.ts";
-import { type Message, type Panel, type ReaderModel, recentFeeds, type ScrollRequest } from "./reader-model.ts";
+import {
+    isReadLater,
+    type Message,
+    type Panel,
+    type ReaderModel,
+    recentFeeds,
+    type ScrollRequest
+} from "./reader-model.ts";
 
 /**
  * The public reader state, projected from the model and the sources' snapshots.
@@ -44,6 +51,8 @@ export interface ArticleView {
     readonly filterEnabled: boolean;
     readonly canLoadMore: boolean;
     readonly loaded: boolean;
+    /** IDs of the displayed items saved for later. Empty when the source cannot save items. */
+    readonly readLater: ReadonlySet<string>;
 }
 
 export interface ReaderState {
@@ -220,14 +229,19 @@ function articleView(
     const entry = model.cache.get(id);
     const all = entry?.items ?? [];
     const filterEnabled = model.filterEnabled && capabilities.unreadFilter;
+    const items = filterEnabled && entry ? entry.unreadItems : all;
+    const readLater = new Set(
+        capabilities.readLater ? items.filter((item) => isReadLater(model, item)).map((item) => item.id) : []
+    );
     const view: ArticleView = {
         feed,
         capabilities,
-        items: filterEnabled && entry ? entry.unreadItems : all,
+        items,
         loadedCount: all.length,
         filterEnabled,
         canLoadMore: capabilities.loadMore && entry?.continuation !== undefined,
-        loaded: entry !== undefined
+        loaded: entry !== undefined,
+        readLater: previous && sameSet(previous.readLater, readLater) ? previous.readLater : readLater
     };
     return previous && shallowEqual(previous, view) ? previous : view;
 }

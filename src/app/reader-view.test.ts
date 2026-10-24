@@ -38,7 +38,7 @@ const snapshot = (feeds: readonly Feed[]): SourceSnapshot => ({
 const source = {
     id: "memory",
     title: "Memory",
-    capabilities: { loadMore: true, unreadFilter: true, liveItems: false }
+    capabilities: { loadMore: true, unreadFilter: true, liveItems: false, readLater: false }
 };
 
 const inputsOf = (feeds: readonly Feed[], asRead = createAsRead()): ViewInputs => ({

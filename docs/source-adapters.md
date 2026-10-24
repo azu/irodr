@@ -20,6 +20,12 @@ This document describes the behavior of each source.
 - **Mark read**: leaving a feed (or `m`) calls `mark-all-as-read` with `ts` just after the newest loaded item,
   so items that arrived afterwards stay unread. Nothing is marked when no item was loaded. Until Inoreader's unread
   count reflects it, the feed shows 0, for at most 5 minutes.
+- **Read later**: `p` or the **Read later** button of an item calls `edit-tag` with
+  `a` (save) or `r` (remove) = `user/-/state/com.google/starred` and `i` = the article ID (Zone 2).
+  Inoreader's "Read later" is its starred state ("Read later (previously called stars)",
+  [Inoreader blog](https://www.inoreader.com/blog/2015/04/inoreader-how-to-be-more-productive.html)), so saved items
+  appear under **Read later** in Inoreader. `saved-web-pages` is a separate stream for pages saved from outside feeds
+  and is not used. Items show as saved when their `categories` include the starred state.
 - **CORS**: requests go through `VITE_CORS_PROXY` (`/cors-proxy/`), unless `localStorage["REACT_APP_CORS_PROXY"]`
   overrides it (see `resources/userScript/irodr-cors.js`).
 
@@ -72,6 +78,9 @@ Another account is rejected to avoid mixing private inboxes; use a separate brow
   cannot bring read items back.
 - A failed sync keeps the cache and backs off before retrying (at least 5 minutes, honoring `Retry-After` and
   rate-limit reset headers).
+
+Read later is not offered: the [Notifications REST API](https://docs.github.com/en/rest/activity/notifications) has
+no endpoint for the "Saved" notifications of the GitHub website.
 
 The public GraphQL schema has no notification-read mutation, so marking read takes one REST request per
 notification.

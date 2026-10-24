@@ -44,7 +44,7 @@ const CREDENTIAL_KEY = `credential:${encodeURIComponent(GITHUB_SOURCE_ID)}`;
 const DEFAULT_ICON = "https://github.githubassets.com/favicons/favicon.svg";
 const DETAILS_CONCURRENCY = 4;
 const MARK_READ_CONCURRENCY = 4;
-const CAPABILITIES = { loadMore: false, unreadFilter: false, liveItems: true } as const;
+const CAPABILITIES = { loadMore: false, unreadFilter: false, liveItems: true, readLater: false } as const;
 
 export interface GitHubSourceOptions extends GitHubApiOptions {
     /** IndexedDB `irodr-sources`: the cached inbox. */

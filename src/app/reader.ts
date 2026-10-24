@@ -6,6 +6,7 @@ import {
     cacheEntry,
     freshEntry,
     initialModel,
+    isReadLater,
     type MessageOptions,
     navigationStarted,
     opened,
@@ -28,6 +29,7 @@ import {
     withPreferences,
     withReadHistory,
     withReadItems,
+    withReadLater,
     withReadPending,
     withRetainedItems,
     withSourceErrors
@@ -108,6 +110,8 @@ export interface Reader {
     focusedItem: () => Item | undefined;
     /** `v`: open the focused item on its website. */
     openFocusedItem: () => void;
+    /** `p`: save the item (the focused one by default) for later on its source, or remove it from there. */
+    toggleReadLater: (itemId?: string) => Promise<void>;
     /** Items marked read in this session, oldest first. */
     readHistory: () => readonly Item[];
     setMessage: (text: string, options?: MessageOptions) => void;
@@ -494,6 +498,32 @@ export function createReader(options: ReaderOptions): Reader {
         return state.get().view?.items.find((item) => item.id === focusItemId);
     };
 
+    const toggleReadLater = async (itemId = model.get().focusItemId): Promise<void> => {
+        const view = state.get().view;
+        const item = view?.items.find((candidate) => candidate.id === itemId);
+        if (!view || !item) return;
+        const source = sourceOf(view.feed);
+        if (!source.capabilities.readLater || !source.setReadLater) {
+            setMessage(`${source.title} cannot save items for later.`);
+            return;
+        }
+        const saved = !isReadLater(model.get(), item);
+        // Show the change at once; undo it when the source rejects it, unless it was toggled again meanwhile.
+        apply((current) => withReadLater(current, item.id, saved), { view: true });
+        try {
+            await source.setReadLater(item, saved);
+            setMessage(saved ? `Saved for later: ${item.title}` : `Removed from Read later: ${item.title}`);
+        } catch (error) {
+            if (model.get().readLater.get(item.id) === saved) {
+                apply((current) => withReadLater(current, item.id, !saved), { view: true });
+            }
+            const failure = saved
+                ? `Could not save ${item.title} for later.`
+                : `Could not remove ${item.title} from Read later.`;
+            setMessage(`${failure} ${error instanceof Error ? error.message : ""}`.trim(), { error: true });
+        }
+    };
+
     // ---------------------------------------------------------------- UI state
 
     const updatePreferences = (preferences: Partial<Preferences>): void => {
@@ -533,6 +563,7 @@ export function createReader(options: ReaderOptions): Reader {
             const item = focusedItem();
             if (item?.url) options.openUrl?.(item.url);
         },
+        toggleReadLater,
         readHistory: () => model.get().readHistory,
         setMessage,
         toggleCategory: (name) => apply((current) => withCategoryToggled(current, name), { list: true }),

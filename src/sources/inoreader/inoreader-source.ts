@@ -24,12 +24,18 @@ export const INOREADER_SOURCE_ID = "inoreader";
 const TITLE = "Inoreader";
 const FEED_PREFIX = `${INOREADER_SOURCE_ID}:`;
 const READ_CATEGORY = /^user\/[^/]+\/state\/com\.google\/read$/;
+/**
+ * Inoreader's "Read later" (formerly "Stars") is the starred state.
+ * https://www.inoreader.com/developers/stream-ids, https://www.inoreader.com/developers/edit-tag
+ */
+const READ_LATER_TAG = "user/-/state/com.google/starred";
+const READ_LATER_CATEGORY = /^user\/[^/]+\/state\/com\.google\/starred$/;
 /** How long a local mark-read overrides unread counts that do not reflect it yet. */
 const READ_THROUGH_MS = 5 * 60 * 1000;
 /** Retry conservatively when a proxy does not expose Inoreader's reset header. */
 const RATE_LIMIT_RETRY_MS = 5 * 60 * 1000;
 type ApiZone = 1 | 2;
-const CAPABILITIES = { loadMore: true, unreadFilter: true, liveItems: false } as const;
+const CAPABILITIES = { loadMore: true, unreadFilter: true, liveItems: false, readLater: true } as const;
 
 export interface InoreaderSourceOptions extends InoreaderOAuthOptions {
     /** Navigate the browser, used for the OAuth redirect. */
@@ -277,7 +283,8 @@ export function toItem(feedId: string, streamId: string, response: StreamItemRes
         contentHtml: toItemContent(response),
         publishedAt: published * 1000,
         updatedAt: updated * 1000,
-        unread: !(response.categories ?? []).some((category) => READ_CATEGORY.test(category))
+        unread: !(response.categories ?? []).some((category) => READ_CATEGORY.test(category)),
+        readLater: (response.categories ?? []).some((category) => READ_LATER_CATEGORY.test(category))
     };
 }
 
@@ -298,6 +305,9 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
     >(new Map());
     // Runtime handle: item → its Inoreader timestampUsec, for mark-all-as-read.
     const itemTimestamps = new WeakMap<Item, number>();
+    // Runtime handle: item ID → its Inoreader article ID, for edit-tag. Keyed by ID because the reader copies
+    // items it marked read.
+    const articleIds = new Map<string, string>();
 
     // The connection and the custom client are read from the OAuth storage whenever the state changes.
     const snapshotOf = (current: InoreaderState): SourceSnapshot => {
@@ -408,10 +418,12 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
             const json = (await response.json()) as StreamContentsResponse;
             const loaded = json.items.map((item) => ({
                 item: toItem(feedId, json.id || streamId, item),
-                timestamp: Number(item.timestampUsec)
+                timestamp: Number(item.timestampUsec),
+                articleId: item.id
             }));
-            for (const { item, timestamp } of loaded) {
+            for (const { item, timestamp, articleId } of loaded) {
                 if (Number.isFinite(timestamp)) itemTimestamps.set(item, timestamp);
+                articleIds.set(item.id, articleId);
             }
             return { items: loaded.map(({ item }) => item), continuation: json.continuation || undefined };
         } catch (error) {
@@ -435,6 +447,17 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
             throw error;
         }
         state.update((current) => withMarkedRead(current, streamId, through, options.now()));
+    };
+
+    const setReadLater = async (item: Item, saved: boolean): Promise<void> => {
+        const articleId = articleIds.get(item.id);
+        if (!articleId) throw new Error(`Unknown Inoreader item: ${item.title}`);
+        try {
+            await request("/edit-tag", { i: articleId, [saved ? "a" : "r"]: READ_LATER_TAG }, 2);
+        } catch (error) {
+            if (isAuthFailure(error)) handleFailure(error);
+            throw error;
+        }
     };
 
     const runAction = async (actionId: string, values: SettingValues): Promise<string> => {
@@ -466,6 +489,7 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
         sync,
         loadItems,
         markRead,
+        setReadLater,
         runAction
     };
 }

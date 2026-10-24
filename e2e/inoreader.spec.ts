@@ -63,6 +63,26 @@ test("s opens the next feed and j/k move between items", async ({ page }) => {
     await expect(headerMessage(page)).toHaveText("End of contents");
 });
 
+test("p saves the focused item for later in Inoreader, and the button removes it", async ({ page, api }) => {
+    await page.keyboard.press("s");
+    await page.keyboard.press("j");
+    await expect(focusedArticle(page)).toContainText("alpha article 1");
+    await page.keyboard.press("p");
+    const button = focusedArticle(page).getByRole("button", { name: "Saved" });
+    await expect(button).toHaveAttribute("aria-pressed", "true");
+    await expect(headerMessage(page)).toHaveText("Saved for later: alpha article 1");
+    await button.click();
+    await expect(focusedArticle(page).getByRole("button", { name: "Read later" })).toHaveAttribute(
+        "aria-pressed",
+        "false"
+    );
+    const edits = requests(await api.log(), "inoreader", "/reader/api/0/edit-tag");
+    expect(edits.map((entry) => entry.query)).toEqual([
+        { i: "tag:google.com,2005:reader/item/alpha-1", a: "user/-/state/com.google/starred" },
+        { i: "tag:google.com,2005:reader/item/alpha-1", r: "user/-/state/com.google/starred" }
+    ]);
+});
+
 test("leaving a feed marks it read through the newest loaded item", async ({ page, api }) => {
     await page.keyboard.press("s");
     await expect(articles(page)).toHaveCount(3);

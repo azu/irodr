@@ -3,7 +3,7 @@ import { bearer, escapeHtml, type FakeRequest, type FakeResponse, formBody, html
 /**
  * A fake Inoreader implementing the parts of https://www.inoreader.com/developers/ irodr uses:
  * OAuth 2.0 (authorization code + refresh token), subscription list, unread counts,
- * stream contents with continuation, and mark-all-as-read.
+ * stream contents with continuation, mark-all-as-read, and edit-tag for the starred ("Read later") state.
  */
 
 export interface InoreaderItemSeed {
@@ -17,6 +17,8 @@ export interface InoreaderItemSeed {
     /** Seconds */
     readonly updated?: number;
     readonly read?: boolean;
+    /** Saved for later (starred). */
+    readonly starred?: boolean;
     readonly enclosure?: readonly { readonly href: string; readonly type: string }[];
 }
 
@@ -67,12 +69,15 @@ export interface FakeInoreader {
     expireTokens: () => void;
     streamIds: () => string[];
     unreadCount: (streamId: string) => number;
+    /** IDs of the starred ("Read later") items of a stream. */
+    starredIds: (streamId: string) => string[];
     handle: (request: FakeRequest, path: string) => FakeResponse;
 }
 
 interface Item extends InoreaderItemSeed {
     readonly timestampUsec: number;
     readonly read: boolean;
+    readonly starred: boolean;
 }
 
 interface Stream {
@@ -97,6 +102,7 @@ interface State {
 
 const USER = "user/1005921515";
 const READ = `${USER}/state/com.google/read`;
+const STARRED = `${USER}/state/com.google/starred`;
 
 /** Replace the items of a known stream. */
 function withStreamItems(state: State, streamId: string, change: (items: readonly Item[]) => readonly Item[]): State {
@@ -112,7 +118,8 @@ function withItems(state: State, streamId: string, seeds: readonly InoreaderItem
             ...seed,
             // Crawl time with microsecond resolution and a unique suffix, like Inoreader.
             timestampUsec: (seed.updated ?? seed.published) * 1_000_000 + ((state.sequence + index + 1) % 1000),
-            read: seed.read ?? false
+            read: seed.read ?? false,
+            starred: seed.starred ?? false
         }));
         return [...items, ...current].toSorted((a, b) => b.timestampUsec - a.timestampUsec);
     });
@@ -182,6 +189,27 @@ function withReadBefore(state: State, streamId: string, timestampUsec: number): 
     );
 }
 
+/** Whether `id` names the item: the full form `tag:google.com,2005:reader/item/…` or the short form. */
+function isItem(item: Item, id: string): boolean {
+    return item.id === id || item.id.endsWith(`/item/${id}`);
+}
+
+/** Whether `tag` is the starred state. "user/-" stands for the current user. */
+function isStarred(tag: string | null): boolean {
+    return tag?.replace(/^user\/-\//, `${USER}/`) === STARRED;
+}
+
+/** Star or unstar the items with `ids` in every stream. */
+function withStarred(state: State, ids: readonly string[], starred: boolean): State {
+    return [...state.streams.keys()].reduce(
+        (current, streamId) =>
+            withStreamItems(current, streamId, (items) =>
+                items.map((item) => (ids.some((id) => isItem(item, id)) ? { ...item, starred } : item))
+            ),
+        state
+    );
+}
+
 function withAllUnread(state: State, streamId: string): State {
     return withStreamItems(state, streamId, (items) => items.map((item) => ({ ...item, read: false })));
 }
@@ -232,7 +260,11 @@ function streamContents(state: State, streamId: string, url: URL): FakeResponse 
             crawlTimeMsec: String(Math.floor(item.timestampUsec / 1000)),
             timestampUsec: String(item.timestampUsec),
             id: item.id,
-            categories: [`${USER}/state/com.google/reading-list`, ...(item.read ? [READ] : [])],
+            categories: [
+                `${USER}/state/com.google/reading-list`,
+                ...(item.read ? [READ] : []),
+                ...(item.starred ? [STARRED] : [])
+            ],
             title: item.title,
             published: item.published,
             updated: item.updated ?? 0,
@@ -327,6 +359,19 @@ export function createFakeInoreader(): FakeInoreader {
         return text("OK");
     };
 
+    /** https://www.inoreader.com/developers/edit-tag: `a` adds and `r` removes a tag on the items `i`. */
+    const editTag = (request: FakeRequest): FakeResponse => {
+        const params = request.method === "POST" && request.body ? formBody(request) : request.url.searchParams;
+        const ids = params.getAll("i");
+        const known = [...current.state.streams.values()].flatMap((stream) => stream.items);
+        if (ids.length === 0 || !ids.every((id) => known.some((item) => isItem(item, id)))) {
+            return text("Unknown item", 400);
+        }
+        if (isStarred(params.get("a"))) current.state = withStarred(current.state, ids, true);
+        if (isStarred(params.get("r"))) current.state = withStarred(current.state, ids, false);
+        return text("OK");
+    };
+
     const handle = (request: FakeRequest, path: string): FakeResponse => {
         if (path === "/oauth2/auth" && request.method === "GET") return authorize(request);
         if (path === "/oauth2/token" && request.method === "POST") return grantToken(request);
@@ -336,7 +381,7 @@ export function createFakeInoreader(): FakeInoreader {
         if (expires === undefined || expires <= Date.now()) return text("Unauthorized", 401);
         const api = path.slice("/reader/api/0".length);
         // https://www.inoreader.com/developers/rate-limiting
-        const zone = api === "/mark-all-as-read" ? 2 : 1;
+        const zone = api === "/mark-all-as-read" || api === "/edit-tag" ? 2 : 1;
         if (current.state.config.rateLimitedZones.includes(zone)) {
             const seconds = current.state.config.limitsResetAfter;
             return text(
@@ -352,6 +397,7 @@ export function createFakeInoreader(): FakeInoreader {
             return streamContents(current.state, streamId, request.url);
         }
         if (api === "/mark-all-as-read") return markAllAsRead(request);
+        if (api === "/edit-tag") return editTag(request);
         return json({ error: "not found" }, 404);
     };
 
@@ -372,6 +418,11 @@ export function createFakeInoreader(): FakeInoreader {
             current.state = withExpiredTokens(current.state);
         },
         streamIds: () => [...current.state.streams.keys()],
+        starredIds: (streamId) =>
+            current.state.streams
+                .get(streamId)
+                ?.items.filter((item) => item.starred)
+                .map((item) => item.id) ?? [],
         unreadCount: (streamId) => current.state.streams.get(streamId)?.items.filter((item) => !item.read).length ?? 0,
         handle
     };

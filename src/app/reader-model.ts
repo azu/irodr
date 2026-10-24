@@ -85,6 +85,8 @@ export interface ReaderModel {
     readonly readItems: ReadonlyMap<string, readonly Item[]>;
     /** The error message last seen per source ID ("" for none), so each error is reported once. */
     readonly lastErrors: ReadonlyMap<string, string>;
+    /** Read later changes of this session by item ID. They override `Item.readLater`, the state when loaded. */
+    readonly readLater: ReadonlyMap<string, boolean>;
 }
 
 export function initialModel(preferences: Preferences): ReaderModel {
@@ -102,7 +104,8 @@ export function initialModel(preferences: Preferences): ReaderModel {
         preferences,
         readHistory: [],
         readItems: new Map(),
-        lastErrors: new Map()
+        lastErrors: new Map(),
+        readLater: new Map()
     };
 }
 
@@ -279,6 +282,19 @@ export function withReadItems(model: ReaderModel, feedId: string, items: readonl
 /** Add items marked read to the history, keeping the latest READ_HISTORY_LIMIT. */
 export function withReadHistory(model: ReaderModel, items: readonly Item[]): ReaderModel {
     return { ...model, readHistory: [...model.readHistory, ...items].slice(-READ_HISTORY_LIMIT) };
+}
+
+// ---------------------------------------------------------------- read later
+
+/** Whether `item` is saved for later, with the changes of this session. */
+export function isReadLater(model: Pick<ReaderModel, "readLater">, item: Item): boolean {
+    return model.readLater.get(item.id) ?? item.readLater === true;
+}
+
+export function withReadLater(model: ReaderModel, itemId: string, saved: boolean): ReaderModel {
+    return model.readLater.get(itemId) === saved
+        ? model
+        : { ...model, readLater: new Map([...model.readLater, [itemId, saved]]) };
 }
 
 // ---------------------------------------------------------------- UI state

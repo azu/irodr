@@ -50,6 +50,14 @@ export function SettingsIcon(props: IconProps) {
     );
 }
 
+export function BookmarkIcon({ filled, ...props }: IconProps & { filled: boolean }) {
+    return (
+        <Icon fill={filled ? "currentColor" : "none"} {...props}>
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+        </Icon>
+    );
+}
+
 export function ChevronIcon({ open, ...props }: IconProps & { open: boolean }) {
     return <Icon {...props}>{open ? <path d="m6 9 6 6 6-6" /> : <path d="m9 6 6 6-6 6" />}</Icon>;
 }

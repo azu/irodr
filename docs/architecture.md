@@ -58,8 +58,9 @@ A `Source` (see `src/sources/source.ts`) adapts one provider to the reader:
 | `sync()`                      | Refresh feeds and unread counts                                                     |
 | `loadItems(feedId, options)`  | Load a page of items, with a continuation for older items                           |
 | `markRead(feedId, items)`     | Mark a feed read through the newest of the items the user has seen                  |
+| `setReadLater(item, saved)`   | Save an item for later on the provider, or remove it (with `readLater` only)        |
 | `runAction(id, values)`       | Settings actions (connect, disconnect, filters)                                     |
-| `capabilities`                | `loadMore`, `unreadFilter`, `liveItems`: what the UI offers for its feeds           |
+| `capabilities`                | `loadMore`, `unreadFilter`, `liveItems`, `readLater`: what the UI offers for feeds  |
 
 Differences between providers are absorbed inside each source:
 
@@ -101,6 +102,8 @@ Its behavior:
 - The next feeds are prefetched, so `s` usually switches instantly. Pressing `s` again while a feed is
   loading continues from that feed, and only the latest navigation takes effect.
 - A failed mark-read keeps the feed unread and shows the error in the header.
+- `p` saves the focused item for later on its source (`capabilities.readLater`), or removes it. The change shows
+  at once and is undone when the source rejects it. Sources without the capability show a message instead.
 - Auto refresh defaults to 5 minutes and runs only in a visible, focused window with input or scrolling
   in the last 5 minutes. Saved intervals are preserved; manual refresh remains available while inactive.
 - Inoreader HTTP 429 responses pause requests for the affected API zone until `X-Reader-Limits-Reset-After`

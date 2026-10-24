@@ -161,6 +161,25 @@ describe("createInoreaderSource", () => {
         expect(source.getSnapshot().feeds.find((feed) => feed.title === "Alpha Blog")?.unreadCount).toBe(1);
     });
 
+    it("saves an item for later with edit-tag on the starred state, and removes it again", async () => {
+        const { source } = await connected();
+        await source.sync();
+        const [first] = (await source.loadItems(`inoreader:${ALPHA}`, { count: 20 })).items;
+        if (!first) throw new Error("No item");
+        expect(first.readLater).toBe(false);
+        await source.setReadLater?.(first, true);
+        expect(server.log().at(-1)).toMatchObject({
+            path: "/reader/api/0/edit-tag",
+            query: { a: "user/-/state/com.google/starred", i: "tag:google.com,2005:reader/item/alpha-1" }
+        });
+        expect(server.inoreader.starredIds(ALPHA)).toEqual(["tag:google.com,2005:reader/item/alpha-1"]);
+        const [reloaded] = (await source.loadItems(`inoreader:${ALPHA}`, { count: 20 })).items;
+        expect(reloaded?.readLater).toBe(true);
+        await source.setReadLater?.(first, false);
+        expect(server.log().at(-1)?.query).toMatchObject({ r: "user/-/state/com.google/starred" });
+        expect(server.inoreader.starredIds(ALPHA)).toEqual([]);
+    });
+
     it("shows 0 until Inoreader counts reflect a mark-read, but not forever", async () => {
         const { source } = await connected();
         await source.sync();
@@ -588,12 +607,12 @@ describe("toItem", () => {
         });
     });
 
-    it("reads the read state and falls back for missing fields", () => {
+    it("reads the read and read later states and falls back for missing fields", () => {
         const item = toItem(`inoreader:${A}`, A, {
             id: "2",
             title: "Read",
             timestampUsec: String(T),
-            categories: ["user/1/state/com.google/read"],
+            categories: ["user/1/state/com.google/read", "user/1/state/com.google/starred"],
             alternate: [{ href: "https://a.example.com/2", type: "text/html" }]
         });
         expect(item).toMatchObject({
@@ -603,7 +622,8 @@ describe("toItem", () => {
             contentHtml: "",
             publishedAt: 0,
             updatedAt: 0,
-            unread: false
+            unread: false,
+            readLater: true
         });
     });
 

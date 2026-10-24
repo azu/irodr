@@ -4,9 +4,10 @@ import { safeUrl } from "../lib/sanitize.ts";
 import { formatDateTime, formatRelative, isoDateTime } from "../lib/time.ts";
 import type { Item } from "../sources/source.ts";
 import { withClass } from "./classes.ts";
-import { useUserScriptEvents } from "./context.tsx";
+import { useReader, useUserScriptEvents } from "./context.tsx";
 import { CLASS } from "./dom.ts";
 import { HtmlContent } from "./HtmlContent.tsx";
+import { BookmarkIcon } from "./icons.tsx";
 import { useNow } from "./now.ts";
 import { colors } from "./tokens.stylex.ts";
 
@@ -42,6 +43,20 @@ const styles = stylex.create({
         textDecorationLine: { default: "none", ":hover": "underline" }
     },
     author: { color: colors.text },
+    readLater: {
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 2,
+        verticalAlign: "middle",
+        padding: 0,
+        borderWidth: 0,
+        backgroundColor: "transparent",
+        color: colors.itemLink,
+        fontFamily: '"Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif',
+        fontSize: "inherit",
+        cursor: "pointer",
+        textDecorationLine: { default: "none", ":hover": "underline" }
+    },
     footer: {
         color: colors.muted,
         fontSize: 14,
@@ -68,7 +83,11 @@ function eventPayload(item: Item, focused: boolean) {
     };
 }
 
-export function Article({ item, focused }: { item: Item; focused: boolean }) {
+/**
+ * `readLater` is whether the item is saved for later, or undefined when its source cannot save items.
+ */
+export function Article({ item, focused, readLater }: { item: Item; focused: boolean; readLater?: boolean }) {
+    const reader = useReader();
     const events = useUserScriptEvents();
     const now = useNow();
     const dispatch = useEffectEvent((name: string) => {
@@ -94,6 +113,7 @@ export function Article({ item, focused }: { item: Item; focused: boolean }) {
             data-content-id={item.id}
             data-focused={focused || undefined}
             data-unread={item.unread || undefined}
+            data-read-later={readLater || undefined}
         >
             <header>
                 <h2 {...withClass(CLASS.itemTitle, styles.title)}>
@@ -115,6 +135,21 @@ export function Article({ item, focused }: { item: Item; focused: boolean }) {
                             <span {...stylex.props(styles.author)}>{item.author}</span>
                         </>
                     ) : null}
+                    {readLater === undefined ? null : (
+                        <>
+                            {" | "}
+                            <button
+                                type="button"
+                                aria-pressed={readLater}
+                                title={readLater ? "Remove from Read later (p)" : "Save for later (p)"}
+                                onClick={() => void reader.toggleReadLater(item.id)}
+                                {...stylex.props(styles.readLater)}
+                            >
+                                <BookmarkIcon filled={readLater} size={14} />
+                                {readLater ? "Saved" : "Read later"}
+                            </button>
+                        </>
+                    )}
                 </div>
             </header>
             <HtmlContent html={item.contentHtml} className={`${CLASS.itemBody} irodr-article-body`} />
