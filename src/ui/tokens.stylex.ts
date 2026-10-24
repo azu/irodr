@@ -35,8 +35,8 @@ export const sizes = stylex.defineVars({
 });
 
 /**
- * Layout breakpoints. Safari does not expose the fold of iPhone Duo (no Viewport Segments API), so the layout
- * follows the viewport width: about 466px folded and 626px unfolded in portrait.
+ * Layout breakpoints. The layout follows the viewport width: on iPhone Duo about 466px folded and 626px unfolded in
+ * portrait. `sideBySide` adds the fold where the browser exposes it (Viewport Segments API).
  */
 export const media = stylex.defineConsts({
     /** Phones and iPhone Duo folded: the sidebar becomes a drawer over the articles. */
@@ -47,5 +47,12 @@ export const media = stylex.defineConsts({
     /** Phones 320px wide: the header drops the GitHub link to fit. */
     tiny: "@media (max-width: 359px)",
     /** Touch screens: larger targets and the tap controls. */
-    touch: "@media (pointer: coarse)"
+    touch: "@media (pointer: coarse)",
+    /**
+     * Two screen segments side by side, e.g. iPhone Duo partly folded like a book: the sidebar takes the left
+     * segment and the articles the right one. Not below 600px, where the sidebar is a drawer. Safari 27.1 has it
+     * behind the "Viewport Segments API" feature flag.
+     * https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@media/horizontal-viewport-segments
+     */
+    sideBySide: "@media (horizontal-viewport-segments: 2) and (min-width: 600px)"
 });

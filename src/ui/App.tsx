@@ -30,11 +30,18 @@ const styles = stylex.create({
         // iPhone Duo unfolded (626px) keeps the sidebar, narrower, next to the articles.
         gridTemplateColumns: {
             default: `clamp(200px, 30vw, ${sizes.sidebar}) minmax(0, 1fr)`,
-            [media.narrow]: "minmax(0, 1fr)"
+            [media.narrow]: "minmax(0, 1fr)",
+            // Split at the fold: the sidebar ends where the left segment ends (the body starts after the left
+            // safe area), and the articles start where the right segment starts.
+            [media.sideBySide]: "calc(env(viewport-segment-right 0 0) - env(safe-area-inset-left)) minmax(0, 1fr)"
+        },
+        columnGap: {
+            default: null,
+            [media.sideBySide]: "calc(env(viewport-segment-left 1 0) - env(viewport-segment-right 0 0))"
         },
         minHeight: 0
     },
-    collapsed: { gridTemplateColumns: "minmax(0, 1fr)" },
+    collapsed: { gridTemplateColumns: "minmax(0, 1fr)", columnGap: 0 },
     backdrop: {
         display: { default: "none", [media.narrow]: "block" },
         position: "absolute",
