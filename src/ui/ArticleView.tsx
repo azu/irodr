@@ -97,9 +97,14 @@ const styles = stylex.create({
     }
 });
 
+/** How far a touch may move and still be a tap, in CSS pixels. */
+const TAP_SLOP = 10;
+
 /** Buttons that press the k, j and s keys: they follow keys rebound by user scripts (`registerKey`). */
 function TapControls() {
     const bindings = useKeyBindings();
+    // The touch that started on a button. A tap ends near where it started; a swipe moves or is cancelled.
+    const press = useRef<{ pointerId: number; x: number; y: number } | null>(null);
     const buttons = [
         { label: "Previous item (k)", key: "k", icon: <ArrowIcon direction="up" size={22} /> },
         { label: "Next item (j)", key: "j", icon: <ArrowIcon direction="down" size={22} /> },
@@ -114,15 +119,26 @@ function TapControls() {
                     title={button.label}
                     aria-label={button.label}
                     {...stylex.props(styles.tapButton)}
-                    // Act on touch down, not on click: iOS does not fire `click` for a tap that stops a momentum
-                    // scroll, so the first tap after a manual scroll did nothing. Preventing the default also keeps
-                    // keyboard focus on the page, as the feed list does.
+                    // Act on pointer events, not on click: iOS does not fire `click` for a tap that stops a momentum
+                    // scroll, so the first tap after a manual scroll did nothing. Act on pointerup, so a swipe that
+                    // starts on a button does not open the next feed and mark this one read. Preventing the default
+                    // also keeps keyboard focus on the page, as the feed list does.
                     onPointerDown={(event) => {
                         if (event.button !== 0) return;
                         event.preventDefault();
+                        press.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY };
+                    }}
+                    onPointerUp={(event) => {
+                        const start = press.current;
+                        press.current = null;
+                        if (!start || start.pointerId !== event.pointerId) return;
+                        if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > TAP_SLOP) return;
                         bindings.trigger(button.key);
                     }}
-                    // Enter or Space on a focused button (`detail` is 0); pointer clicks were handled on pointerdown.
+                    onPointerCancel={() => {
+                        press.current = null;
+                    }}
+                    // Enter or Space on a focused button (`detail` is 0); pointer clicks were handled on pointerup.
                     onClick={(event) => {
                         if (event.detail === 0) bindings.trigger(button.key);
                     }}

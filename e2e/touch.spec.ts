@@ -107,3 +107,45 @@ test("tap controls work from the keyboard too", async ({ page }) => {
     await page.keyboard.press("Enter");
     await expect(focusedArticle(page)).toContainText("alpha article 2");
 });
+
+test("a swipe that starts on a tap control does nothing", async ({ page }) => {
+    await page.setViewportSize(UNFOLDED);
+    await page.keyboard.press("s");
+    await expect(currentFeed(page)).toHaveText("Alpha Blog (3)");
+    const next = page.getByRole("toolbar", { name: "Reading controls" }).getByRole("button", { name: "Next feed (s)" });
+    const box = await next.boundingBox();
+    if (!box) throw new Error("Next feed (s) is not visible");
+    const start = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+    await next.dispatchEvent("pointerdown", {
+        pointerId: 1,
+        pointerType: "touch",
+        button: 0,
+        clientX: start.x,
+        clientY: start.y
+    });
+    await next.dispatchEvent("pointerup", {
+        pointerId: 1,
+        pointerType: "touch",
+        button: 0,
+        clientX: start.x,
+        clientY: start.y - 80
+    });
+    await next.dispatchEvent("pointerdown", {
+        pointerId: 2,
+        pointerType: "touch",
+        button: 0,
+        clientX: start.x,
+        clientY: start.y
+    });
+    await next.dispatchEvent("pointercancel", { pointerId: 2, pointerType: "touch" });
+    await next.dispatchEvent("pointerup", {
+        pointerId: 2,
+        pointerType: "touch",
+        button: 0,
+        clientX: start.x,
+        clientY: start.y
+    });
+    // A tap after them moves one feed: the swipes did not.
+    await next.tap();
+    await expect(currentFeed(page)).toHaveText("Beta Blog (1)");
+});
