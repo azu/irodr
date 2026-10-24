@@ -250,7 +250,10 @@ test("the optional Inoreader app fields stay collapsed until used", async ({ pag
     await expect(dialog.getByLabel("Inoreader App Client Id")).toHaveValue("e2e-client");
 });
 
-test("p saves a GitHub notification to Inoreader's Read later, listed as a feed", async ({ page, api }) => {
+test("p saves a GitHub notification to Inoreader's Read later and removes it again, listed as a feed", async ({
+    page,
+    api
+}) => {
     await connectInoreader(page);
     await connectGitHub(page);
     await closeDialog(page);
@@ -262,6 +265,19 @@ test("p saves a GitHub notification to Inoreader's Read later, listed as a feed"
     await expect.poll(() => api.control<string[]>("GET", "/inoreader/saved")).toEqual([url]);
     const saves = requests(await api.log(), "inoreader", "/reader/api/0/save-web-page");
     expect(saves.map((entry) => entry.method)).toEqual(["POST"]);
+    // p again removes it from Read later, and once more saves it again.
+    await page.keyboard.press("p");
+    await expect(focusedArticle(page).getByRole("button", { name: "Read later" })).toHaveAttribute(
+        "aria-pressed",
+        "false"
+    );
+    await expect.poll(() => api.control<string[]>("GET", "/inoreader/saved")).toEqual([]);
+    const unstars = requests(await api.log(), "inoreader", "/reader/api/0/edit-tag");
+    expect(unstars.map((entry) => new URLSearchParams(entry.body).get("r"))).toEqual([
+        "user/-/state/com.google/starred"
+    ]);
+    await page.keyboard.press("p");
+    await expect.poll(() => api.control<string[]>("GET", "/inoreader/saved")).toEqual([url]);
     await page.getByRole("button", { name: "Refresh" }).click();
     await expect(feedRow(page, "Read later")).toHaveText("Read later (1)");
     // The saved page is marked read by its ID on Inoreader.
@@ -272,9 +288,10 @@ test("p saves a GitHub notification to Inoreader's Read later, listed as a feed"
     await page.keyboard.press("m");
     await expect
         .poll(async () =>
-            requests(await api.log(), "inoreader", "/reader/api/0/edit-tag").map(
-                (entry) => new URLSearchParams(entry.body).getAll("i").length
-            )
+            requests(await api.log(), "inoreader", "/reader/api/0/edit-tag")
+                .map((entry) => new URLSearchParams(entry.body))
+                .filter((body) => body.has("a"))
+                .map((body) => body.getAll("i").length)
         )
         .toEqual([1]);
     await expect(currentFeed(page)).toHaveText("Read later (0)");

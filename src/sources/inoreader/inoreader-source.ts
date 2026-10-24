@@ -393,6 +393,8 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
     // leaves the feed, and the count must drop once. Inoreader listing one unread again, in a load or in a
     // sync's unread IDs, clears it.
     const markedRead = new Set<string>();
+    // Runtime handle: item ID → the article that `saveForLater` saved for it, so it can be removed again.
+    const savedArticles = new Map<string, string>();
 
     // The connection and the custom client are read from the OAuth storage whenever the state changes.
     const snapshotOf = (current: InoreaderState): SourceSnapshot => {
@@ -575,11 +577,38 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
     const saveForLater = async (item: Item): Promise<void> => {
         if (!item.url) throw new Error(`${item.title || "The item"} has no URL to save.`);
         try {
-            await request("/save-web-page", { url: item.url, return_url: 1, star: 1 }, 2, "{}");
+            const response = await request("/save-web-page", { url: item.url, return_url: 1, star: 1 }, 2, "{}");
+            // The answer is the saved article's path, `/article/<hex>`.
+            const saved = /^\/article\/([0-9a-f]+)$/i.exec((await response.text()).trim())?.[1];
+            if (saved) savedArticles.set(item.id, `tag:google.com,2005:reader/item/${saved}`);
         } catch (error) {
             if (isAuthFailure(error)) handleFailure(error);
             throw error;
         }
+    };
+
+    /**
+     * Remove the item from Read later: unstar its article. Known for items saved in this session and for Inoreader's
+     * own items; other items are not matched by URL.
+     */
+    const removeFromLater = async (item: Item): Promise<void> => {
+        const articleId = savedArticles.get(item.id) ?? articleIds.get(item.id);
+        if (!articleId) throw new Error("Remove it from Read later in Inoreader.");
+        try {
+            await request(
+                "/edit-tag",
+                {},
+                2,
+                new URLSearchParams([
+                    ["r", READ_LATER],
+                    ["i", articleId]
+                ])
+            );
+        } catch (error) {
+            if (isAuthFailure(error)) handleFailure(error);
+            throw error;
+        }
+        savedArticles.delete(item.id);
     };
 
     const runAction = async (actionId: string, values: SettingValues): Promise<string> => {
@@ -612,6 +641,7 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
         loadItems,
         markRead,
         saveForLater,
+        removeFromLater,
         runAction
     };
 }

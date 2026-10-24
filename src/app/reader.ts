@@ -110,8 +110,11 @@ export interface Reader {
     focusedItem: () => Item | undefined;
     /** `v`: open the focused item on its website. */
     openFocusedItem: () => void;
-    /** `p`: save the item (the focused one by default) for later on the first connected source that can. */
-    saveForLater: (itemId?: string) => Promise<void>;
+    /**
+     * `p`: save the item (the focused one by default) for later on the first connected source that can, or remove it
+     * when it is saved.
+     */
+    toggleSaveForLater: (itemId?: string) => Promise<void>;
     /** Items marked read in this session, oldest first. */
     readHistory: () => readonly Item[];
     setMessage: (text: string, options?: MessageOptions) => void;
@@ -498,16 +501,31 @@ export function createReader(options: ReaderOptions): Reader {
         return state.get().view?.items.find((item) => item.id === focusItemId);
     };
 
-    const saveForLater = async (itemId = model.get().focusItemId): Promise<void> => {
+    const toggleSaveForLater = async (itemId = model.get().focusItemId): Promise<void> => {
         const item = state.get().view?.items.find((candidate) => candidate.id === itemId);
         if (!item) return;
-        if (isSavedForLater(model.get(), item)) {
-            setMessage(`Already saved for later: ${item.title}`);
-            return;
-        }
         const target = sources.find((source) => source.saveForLater && source.getSnapshot().connected);
         if (!target?.saveForLater) {
             setMessage("No connected source can save items for later.");
+            return;
+        }
+        if (isSavedForLater(model.get(), item)) {
+            if (!target.removeFromLater) {
+                setMessage(`Already saved for later: ${item.title}`);
+                return;
+            }
+            // Show it removed at once; undo that when the source rejects it.
+            apply((current) => withSavedForLater(current, item.id, false), { view: true });
+            try {
+                await target.removeFromLater(item);
+                setMessage(`No longer saved for later: ${item.title}`);
+            } catch (error) {
+                apply((current) => withSavedForLater(current, item.id, true), { view: true });
+                setMessage(
+                    `Could not remove ${item.title} from later. ${error instanceof Error ? error.message : ""}`.trim(),
+                    { error: true }
+                );
+            }
             return;
         }
         // Show it saved at once; undo that when the source rejects it.
@@ -563,7 +581,7 @@ export function createReader(options: ReaderOptions): Reader {
             const item = focusedItem();
             if (item?.url) options.openUrl?.(item.url);
         },
-        saveForLater,
+        toggleSaveForLater,
         readHistory: () => model.get().readHistory,
         setMessage,
         toggleCategory: (name) => apply((current) => withCategoryToggled(current, name), { list: true }),

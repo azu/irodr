@@ -15,6 +15,8 @@ interface MemorySourceConfig {
     readonly forgetRead?: boolean;
     /** Saving items for later fails. */
     readonly failSave?: boolean;
+    /** Removing items from later fails. */
+    readonly failRemove?: boolean;
 }
 
 /** An in-memory Source that records what the reader asks for. */
@@ -36,6 +38,8 @@ interface MemorySource extends Source {
     loads: () => readonly { readonly feedId: string; readonly continuation?: string }[];
     /** Titles of the items saved for later, oldest first. */
     saved: () => readonly string[];
+    /** Titles of the items removed from later, oldest first. */
+    removed: () => readonly string[];
 }
 
 interface MemoryRecords {
@@ -44,6 +48,7 @@ interface MemoryRecords {
     readonly marked: ReturnType<MemorySource["marked"]>;
     readonly loads: ReturnType<MemorySource["loads"]>;
     readonly saved: ReturnType<MemorySource["saved"]>;
+    readonly removed: ReturnType<MemorySource["removed"]>;
 }
 
 function createMemorySource(id: string, capabilities: Partial<SourceCapabilities> = {}): MemorySource {
@@ -59,7 +64,8 @@ function createMemorySource(id: string, capabilities: Partial<SourceCapabilities
         items: new Map(),
         marked: [],
         loads: [],
-        saved: []
+        saved: [],
+        removed: []
     });
 
     return {
@@ -110,6 +116,7 @@ function createMemorySource(id: string, capabilities: Partial<SourceCapabilities
         marked: () => records.get().marked,
         loads: () => records.get().loads,
         saved: () => records.get().saved,
+        removed: () => records.get().removed,
         restore: async () => ({ consumedUrl: false }),
         sync: async () => undefined,
         loadItems: async (feedId, options) => {
@@ -154,6 +161,10 @@ function createMemorySource(id: string, capabilities: Partial<SourceCapabilities
         saveForLater: async (item) => {
             records.update((current) => ({ ...current, saved: [...current.saved, item.title] }));
             if (records.get().config.failSave) throw new Error("save failed");
+        },
+        removeFromLater: async (item) => {
+            records.update((current) => ({ ...current, removed: [...current.removed, item.title] }));
+            if (records.get().config.failRemove) throw new Error("remove failed");
         },
         runAction: async () => "done"
     };
@@ -544,28 +555,59 @@ describe("Reader", () => {
         reader.stop();
     });
 
-    it("p saves the focused item for later on a connected source, once", async () => {
+    it("p saves the focused item for later on a connected source, and removes it again", async () => {
         const { reader, source } = await setup();
         await reader.openFeed("memory:A");
         expect(reader.getState().view?.canSaveForLater).toBe(true);
         reader.focusItem("memory:A/a1");
-        await reader.saveForLater();
+        await reader.toggleSaveForLater();
         expect(source.saved()).toEqual(["a1"]);
         expect([...(reader.getState().view?.savedForLater ?? [])]).toEqual(["memory:A/a1"]);
         expect(reader.getState().message.text).toBe("Saved for later: a1");
-        await reader.saveForLater("memory:A/a1");
+        await reader.toggleSaveForLater("memory:A/a1");
         expect(source.saved()).toEqual(["a1"]);
-        expect(reader.getState().message.text).toBe("Already saved for later: a1");
+        expect(source.removed()).toEqual(["a1"]);
+        expect(reader.getState().view?.savedForLater.size).toBe(0);
+        expect(reader.getState().message.text).toBe("No longer saved for later: a1");
+        await reader.toggleSaveForLater("memory:A/a1");
+        expect(source.saved()).toEqual(["a1", "a1"]);
     });
 
-    it("does not save again an item its source reports saved", async () => {
+    it("removes an item its source reports saved instead of saving it again", async () => {
         const { reader, source } = await setup();
         source.setFeed("A", [{ title: "a1", savedForLater: true }]);
         await reader.openFeed("memory:A");
         expect(reader.getState().view?.savedForLater.has("memory:A/a1")).toBe(true);
-        await reader.saveForLater("memory:A/a1");
+        await reader.toggleSaveForLater("memory:A/a1");
         expect(source.saved()).toEqual([]);
+        expect(source.removed()).toEqual(["a1"]);
+        expect(reader.getState().view?.savedForLater.has("memory:A/a1")).toBe(false);
+    });
+
+    it("keeps an item saved when the source cannot remove it", async () => {
+        const memory = createMemorySource("memory");
+        const reader = createReader({ sources: [{ ...memory, removeFromLater: undefined }] });
+        memory.setFeed("A", [{ title: "a1", savedForLater: true }]);
+        await reader.start(new URL("https://irodr.test/"));
+        await reader.openFeed("memory:A");
+        await reader.toggleSaveForLater("memory:A/a1");
+        expect(memory.saved()).toEqual([]);
         expect(reader.getState().message.text).toBe("Already saved for later: a1");
+    });
+
+    it("shows a removed item saved again when removing fails", async () => {
+        const { reader, source } = await setup();
+        source.setFeed("A", [{ title: "a1", savedForLater: true }]);
+        source.configure({ failRemove: true });
+        await reader.openFeed("memory:A");
+        const pending = reader.toggleSaveForLater("memory:A/a1");
+        expect(reader.getState().view?.savedForLater.has("memory:A/a1")).toBe(false);
+        await pending;
+        expect(reader.getState().view?.savedForLater.has("memory:A/a1")).toBe(true);
+        expect(reader.getState().message).toMatchObject({
+            text: "Could not remove a1 from later. remove failed",
+            error: true
+        });
     });
 
     it("saves items of a source that cannot save them on another source", async () => {
@@ -575,7 +617,7 @@ describe("Reader", () => {
         memory.setFeed("A", [{ title: "a1" }]);
         await reader.start(new URL("https://irodr.test/"));
         await reader.openFeed("memory:A");
-        await reader.saveForLater("memory:A/a1");
+        await reader.toggleSaveForLater("memory:A/a1");
         expect(target.saved()).toEqual(["a1"]);
     });
 
@@ -583,7 +625,7 @@ describe("Reader", () => {
         const { reader, source } = await setup();
         source.configure({ failSave: true });
         await reader.openFeed("memory:A");
-        const pending = reader.saveForLater("memory:A/a1");
+        const pending = reader.toggleSaveForLater("memory:A/a1");
         expect(reader.getState().view?.savedForLater.has("memory:A/a1")).toBe(true);
         await pending;
         expect(reader.getState().view?.savedForLater.size).toBe(0);
@@ -600,7 +642,7 @@ describe("Reader", () => {
         await reader.start(new URL("https://irodr.test/"));
         await reader.openFeed("memory:A");
         expect(reader.getState().view?.canSaveForLater).toBe(false);
-        await reader.saveForLater("memory:A/a1");
+        await reader.toggleSaveForLater("memory:A/a1");
         expect(memory.saved()).toEqual([]);
         expect(reader.getState().message.text).toBe("No connected source can save items for later.");
     });

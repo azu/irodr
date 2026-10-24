@@ -59,6 +59,7 @@ A `Source` (see `src/sources/source.ts`) adapts one provider to the reader:
 | `loadItems(feedId, options)`  | Load a page of items, with a continuation for older items                           |
 | `markRead(feedId, items)`     | Mark a feed read through the newest of the items the user has seen                  |
 | `saveForLater(item)`          | Optional. Save an item of any source for later on this provider                     |
+| `removeFromLater(item)`       | Optional. Remove an item it saved in this session, or reports saved, from later     |
 | `runAction(id, values)`       | Settings actions (connect, disconnect, filters)                                     |
 | `capabilities`                | `loadMore`, `unreadFilter`, `liveItems`: what the UI offers for its feeds           |
 
@@ -102,8 +103,9 @@ Its behavior:
 - The next feeds are prefetched, so `s` usually switches instantly. Pressing `s` again while a feed is
   loading continues from that feed, and only the latest navigation takes effect.
 - A failed mark-read keeps the feed unread and shows the error in the header.
-- `p` saves the focused item, of any source, for later on the first connected source with `saveForLater`. The item
-  shows as saved at once, and again unsaved when the request fails.
+- `p` saves the focused item, of any source, for later on the first connected source with `saveForLater`, or removes
+  a saved item with that source's `removeFromLater`. The item shows the new state at once, and the old one again when
+  the request fails.
 - Auto refresh defaults to 5 minutes and runs only in a visible, focused window with input or scrolling
   in the last 5 minutes. Saved intervals are preserved; manual refresh remains available while inactive.
 - Inoreader HTTP 429 responses pause requests for the affected API zone until `X-Reader-Limits-Reset-After`

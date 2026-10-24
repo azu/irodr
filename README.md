@@ -38,20 +38,20 @@ See [Source adapters](./docs/source-adapters.md) for details, storage and limita
 
 ### Keyboard Shortcuts
 
-| Key                                                  | Action                                                |
-| ---------------------------------------------------- | ----------------------------------------------------- |
-| <kbd>j</kbd> / <kbd>k</kbd>                          | Next / previous item                                  |
-| <kbd>s</kbd> / <kbd>a</kbd>                          | Next / previous feed (leaving a feed marks it read)   |
-| <kbd>Shift</kbd>+<kbd>s</kbd>                        | Skip to the next feed without marking the current one |
-| <kbd>m</kbd>                                         | Mark the current feed read                            |
-| <kbd>Shift</kbd>+<kbd>j</kbd>                        | Show all items and load older ones                    |
-| <kbd>t</kbd>                                         | Toggle unread / all items                             |
-| <kbd>v</kbd>                                         | Open the current item in a new tab                    |
-| <kbd>p</kbd>                                         | Save the current item to Read later (Inoreader)       |
-| <kbd>z</kbd>                                         | Collapse / expand all categories                      |
-| <kbd>Space</kbd> / <kbd>Shift</kbd>+<kbd>Space</kbd> | Scroll down / up                                      |
-| <kbd>Shift</kbd>+<kbd>t</kbd>                        | Toggle translate mode (English → Japanese)            |
-| <kbd>Shift</kbd>+<kbd>h</kbd>                        | Print read items of this session to the console       |
+| Key                                                  | Action                                                    |
+| ---------------------------------------------------- | --------------------------------------------------------- |
+| <kbd>j</kbd> / <kbd>k</kbd>                          | Next / previous item                                      |
+| <kbd>s</kbd> / <kbd>a</kbd>                          | Next / previous feed (leaving a feed marks it read)       |
+| <kbd>Shift</kbd>+<kbd>s</kbd>                        | Skip to the next feed without marking the current one     |
+| <kbd>m</kbd>                                         | Mark the current feed read                                |
+| <kbd>Shift</kbd>+<kbd>j</kbd>                        | Show all items and load older ones                        |
+| <kbd>t</kbd>                                         | Toggle unread / all items                                 |
+| <kbd>v</kbd>                                         | Open the current item in a new tab                        |
+| <kbd>p</kbd>                                         | Save or remove the current item in Read later (Inoreader) |
+| <kbd>z</kbd>                                         | Collapse / expand all categories                          |
+| <kbd>Space</kbd> / <kbd>Shift</kbd>+<kbd>Space</kbd> | Scroll down / up                                          |
+| <kbd>Shift</kbd>+<kbd>t</kbd>                        | Toggle translate mode (English → Japanese)                |
+| <kbd>Shift</kbd>+<kbd>h</kbd>                        | Print read items of this session to the console           |
 
 Shortcuts use the physical key, so they also work with non-Latin keyboard layouts.
 

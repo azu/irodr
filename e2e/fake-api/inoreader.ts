@@ -207,6 +207,10 @@ function isRead(tag: string | null): boolean {
     return normalizeStreamId(tag ?? "") === "user/-/state/com.google/read";
 }
 
+function isStarred(tag: string | null): boolean {
+    return normalizeStreamId(tag ?? "") === READ_LATER;
+}
+
 /** Whether `id` names the item: the full form `tag:google.com,2005:reader/item/…` or the short form. */
 function isItem(item: Item, id: string): boolean {
     return item.id === id || item.id.endsWith(`/item/${id}`);
@@ -389,7 +393,10 @@ export function createFakeInoreader(): FakeInoreader {
         return text("OK");
     };
 
-    /** https://www.inoreader.com/developers/edit-tag, for the read state: `a` marks and `r` unmarks the items `i`. */
+    /**
+     * https://www.inoreader.com/developers/edit-tag, for the read state (`a` marks and `r` unmarks the items `i`) and
+     * for removing the star (`r`), which takes the items out of Read later.
+     */
     const editTag = (request: FakeRequest): FakeResponse => {
         if (request.method !== "POST") return text("Method Not Allowed", 405);
         const params = formBody(request);
@@ -397,6 +404,11 @@ export function createFakeInoreader(): FakeInoreader {
         if (ids.length === 0) return text("No items", 400);
         const read = isRead(params.get("a")) ? true : isRead(params.get("r")) ? false : undefined;
         if (read !== undefined) current.state = withRead(current.state, ids, read);
+        if (isStarred(params.get("r"))) {
+            current.state = withStreamItems(current.state, READ_LATER, (items) =>
+                items.filter((item) => !ids.some((id) => isItem(item, id)))
+            );
+        }
         return text("OK");
     };
 
