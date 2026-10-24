@@ -10,10 +10,12 @@ import {
     initialState,
     markReadTimestamp,
     projectFeeds,
-    SAVED_WEB_PAGES,
+    READ_LATER,
     type SubscriptionLists,
     toItem,
+    articleKey,
     withFailure,
+    withItemsMarkedRead,
     withMarkedRead
 } from "./inoreader-source.ts";
 import { createMemoryStorage } from "./memory-storage.ts";
@@ -111,7 +113,7 @@ describe("createInoreaderSource", () => {
             ["Gamma News", "News", 5],
             ["Already Read", "News", 0],
             ["Delta Tech", "Tech", 1],
-            ["Saved web pages", "Inoreader", 0]
+            ["Read later", "Inoreader", 0]
         ]);
         expect(feeds[0]).toMatchObject({
             id: `inoreader:${ALPHA}`,
@@ -164,7 +166,7 @@ describe("createInoreaderSource", () => {
         expect(source.getSnapshot().feeds.find((feed) => feed.title === "Alpha Blog")?.unreadCount).toBe(1);
     });
 
-    it("saves an item's page for later and lists the saved web pages as a feed", async () => {
+    it("saves an item's page to Read later and lists Read later as a feed", async () => {
         const { source } = await connected();
         await source.sync();
         await source.saveForLater?.({
@@ -181,24 +183,66 @@ describe("createInoreaderSource", () => {
         expect(server.log().at(-1)).toMatchObject({
             method: "POST",
             path: "/reader/api/0/save-web-page",
-            query: { url: "https://github.com/azu/irodr/pull/137", return_url: "1", star: "0" }
+            query: { url: "https://github.com/azu/irodr/pull/137", return_url: "1", star: "1" }
         });
         await source.sync();
-        const saved = source.getSnapshot().feeds.find((feed) => feed.title === "Saved web pages");
-        expect(saved).toMatchObject({ id: `inoreader:${SAVED_WEB_PAGES}`, unreadCount: 1 });
+        const saved = source.getSnapshot().feeds.find((feed) => feed.title === "Read later");
+        expect(saved).toMatchObject({ id: `inoreader:${READ_LATER}`, unreadCount: 1 });
         const page = await source.loadItems(saved?.id ?? "", { count: 20 });
         expect(page.items.map((item) => item.url)).toEqual(["https://github.com/azu/irodr/pull/137"]);
         expect(page.items[0]?.savedForLater).toBe(true);
         await source.markRead(saved?.id ?? "", page.items);
+        // edit-tag marks the loaded items of Read later read.
+        const marked = server.log().at(-1);
+        expect(marked).toMatchObject({ method: "POST", path: "/reader/api/0/edit-tag" });
+        expect(new URLSearchParams(marked?.body).getAll("i")).toEqual([page.items[0]?.id.split("--")[1]]);
+        expect(server.inoreader.unreadCount(READ_LATER)).toBe(0);
         await source.sync();
-        expect(source.getSnapshot().feeds.find((feed) => feed.title === "Saved web pages")?.unreadCount).toBe(0);
+        expect(source.getSnapshot().feeds.find((feed) => feed.title === "Read later")?.unreadCount).toBe(0);
     });
 
-    it("lists the subscriptions when saved web pages cannot be listed", async () => {
+    it("keeps the Read later items that were not loaded unread", async () => {
         const { source } = await connected();
-        server.inoreader.configure({ failingStreams: [SAVED_WEB_PAGES] });
         await source.sync();
-        expect(source.getSnapshot().feeds.map((feed) => feed.title)).not.toContain("Saved web pages");
+        const save = (url: string) =>
+            source.saveForLater?.({
+                id: `github:${url}`,
+                feedId: "github:azu/irodr",
+                title: url,
+                url,
+                author: "",
+                contentHtml: "",
+                publishedAt: 0,
+                updatedAt: 0,
+                unread: true
+            });
+        await save("https://github.com/azu/irodr/pull/1");
+        await save("https://github.com/azu/irodr/pull/2");
+        await source.sync();
+        const feedId = `inoreader:${READ_LATER}`;
+        const page = await source.loadItems(feedId, { count: 1 });
+        await source.markRead(feedId, page.items);
+        expect(source.getSnapshot().feeds.find((feed) => feed.id === feedId)?.unreadCount).toBe(1);
+        // The reader marks the same items again when it leaves the feed after `m`.
+        await source.markRead(feedId, page.items);
+        expect(source.getSnapshot().feeds.find((feed) => feed.id === feedId)?.unreadCount).toBe(1);
+        expect(server.log().filter((entry) => entry.path === "/reader/api/0/edit-tag")).toHaveLength(1);
+        await source.sync();
+        expect(source.getSnapshot().feeds.find((feed) => feed.id === feedId)?.unreadCount).toBe(1);
+        // Marked unread in another client: the next mark-read sends it again, though the reader kept its copy.
+        server.inoreader.markUnread(READ_LATER);
+        await source.sync();
+        expect(source.getSnapshot().feeds.find((feed) => feed.id === feedId)?.unreadCount).toBe(2);
+        await source.markRead(feedId, page.items);
+        expect(server.log().filter((entry) => entry.path === "/reader/api/0/edit-tag")).toHaveLength(2);
+        expect(source.getSnapshot().feeds.find((feed) => feed.id === feedId)?.unreadCount).toBe(1);
+    });
+
+    it("lists the subscriptions when Read later cannot be listed", async () => {
+        const { source } = await connected();
+        server.inoreader.configure({ failingStreams: [READ_LATER] });
+        await source.sync();
+        expect(source.getSnapshot().feeds.map((feed) => feed.title)).not.toContain("Read later");
         expect(source.getSnapshot().feeds).toHaveLength(5);
         expect(source.getSnapshot().status.phase).toBe("idle");
     });
@@ -535,6 +579,29 @@ describe("projectFeeds", () => {
     });
 });
 
+describe("articleKey", () => {
+    it("reads the long and the short form of an article ID alike", () => {
+        expect(articleKey("tag:google.com,2005:reader/item/00000000D76F1BA3")).toBe("00000000d76f1ba3");
+        expect(articleKey("3614383011")).toBe("00000000d76f1ba3");
+        expect(articleKey("-1")).toBe("ffffffffffffffff");
+    });
+});
+
+describe("withItemsMarkedRead", () => {
+    const feeds = project(
+        initialState(true),
+        lists([subscription(A), subscription(B)], [unread(A, 3, T), unread(B, 2, T)])
+    ).feeds;
+
+    it("subtracts the marked items from the feed's unread count", () => {
+        const next = withItemsMarkedRead(stateWith({ feeds }), A, 2);
+        expect(next.feeds.map((feed) => feed.unreadCount)).toEqual([1, 2]);
+        expect(next.feeds[1]).toBe(feeds[1]);
+        expect(next.readThrough.size).toBe(0);
+        expect(withItemsMarkedRead(stateWith({ feeds }), A, 5).feeds[0]?.unreadCount).toBe(0);
+    });
+});
+
 describe("withMarkedRead", () => {
     const feeds = project(
         initialState(true),
@@ -612,6 +679,12 @@ describe("toItem", () => {
         summary: { content: "<p>Body</p>" },
         author: "Author"
     };
+
+    it("marks a starred item saved for later, also in its subscription", () => {
+        expect(toItem(`inoreader:${A}`, A, response).savedForLater).toBeUndefined();
+        const starred = { ...response, categories: [...response.categories!, "user/1/state/com.google/starred"] };
+        expect(toItem(`inoreader:${A}`, A, starred).savedForLater).toBe(true);
+    });
 
     it("keeps the irodr 1.x article ID", () => {
         const item = toItem(`inoreader:${A}`, A, response);

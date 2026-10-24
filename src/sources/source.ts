@@ -145,7 +145,7 @@ export interface Source {
      */
     markRead(feedId: string, loadedItems: readonly Item[]): Promise<void>;
     /**
-     * Save an item of any source for later on this provider, e.g. as a web page that the provider lists as a feed.
+     * Save an item of any source for later on this provider, e.g. to a read-later list that the provider lists as a feed.
      * The reader asks the first connected source that implements it.
      */
     saveForLater?(item: Item): Promise<void>;

@@ -25,11 +25,15 @@ export const INOREADER_SOURCE_ID = "inoreader";
 const TITLE = "Inoreader";
 const FEED_PREFIX = `${INOREADER_SOURCE_ID}:`;
 const READ_CATEGORY = /^user\/[^/]+\/state\/com\.google\/read$/;
+const STARRED_CATEGORY = /^user\/[^/]+\/state\/com\.google\/starred$/;
 const READ_TAG = "user/-/state/com.google/read";
-/** Web pages saved for later, from Inoreader's apps or `saveForLater`. https://www.inoreader.com/developers/stream-ids */
-export const SAVED_WEB_PAGES = "user/-/state/com.google/saved-web-pages";
-/** Unread saved web pages counted per sync; stream/items/ids returns at most 1000. */
-const SAVED_COUNT_LIMIT = 1000;
+/**
+ * Inoreader's Read later: the starred items, from Inoreader's apps or `saveForLater`.
+ * https://www.inoreader.com/developers/stream-ids
+ */
+export const READ_LATER = "user/-/state/com.google/starred";
+/** Unread Read later items counted per sync; stream/items/ids returns at most 1000. */
+const READ_LATER_COUNT_LIMIT = 1000;
 /** How long a local mark-read overrides unread counts that do not reflect it yet. */
 const READ_THROUGH_MS = 5 * 60 * 1000;
 /** Retry conservatively when a proxy does not expose Inoreader's reset header. */
@@ -79,8 +83,8 @@ export interface InoreaderState {
 export interface SubscriptionLists {
     readonly subscriptions: SubscriptionsResponse;
     readonly unreadCounts: UnreadCountsResponse;
-    /** Unread saved web pages; unread-count does not report them. Absent when they could not be listed. */
-    readonly savedWebPages?: ItemIdsResponse;
+    /** Unread Read later items, counted by their IDs. Absent when they could not be listed. */
+    readonly readLater?: ItemIdsResponse;
 }
 
 function idle(message: string): SourceStatus {
@@ -104,6 +108,16 @@ function errorMessage(error: unknown): string {
 }
 
 /** Stream IDs of feeds with basic-auth credentials differ between the two endpoints. */
+/**
+ * An article ID in one form: the hex of `tag:google.com,2005:reader/item/<hex>`. stream/items/ids returns the short
+ * form, a signed 64-bit decimal. https://www.inoreader.com/developers/item-ids
+ */
+export function articleKey(id: string): string {
+    const long = /\/item\/([0-9a-f]+)$/i.exec(id)?.[1];
+    if (long) return long.toLowerCase().padStart(16, "0");
+    return /^-?\d+$/.test(id) ? BigInt.asUintN(64, BigInt(id)).toString(16).padStart(16, "0") : id;
+}
+
 function unreadCountId(streamId: string): string {
     return streamId.replace(/(https?):\/\/(\w+):(\w+)@/, "$1://");
 }
@@ -175,16 +189,16 @@ interface ListedStream {
     readonly newest: number;
 }
 
-/** The saved web pages as a feed, counting the unread ones `stream/items/ids` returned. */
-function savedWebPagesStream(unread: ItemIdsResponse, baseUrl: string): ListedStream {
+/** Read later as a feed, counting the unread items `stream/items/ids` returned. */
+function readLaterStream(unread: ItemIdsResponse, baseUrl: string): ListedStream {
     const refs = unread.itemRefs ?? [];
     return {
-        streamId: SAVED_WEB_PAGES,
-        title: "Saved web pages",
+        streamId: READ_LATER,
+        title: "Read later",
         category: "Inoreader",
         htmlUrl: baseUrl,
         count: refs.length,
-        countLimit: SAVED_COUNT_LIMIT - 1,
+        countLimit: READ_LATER_COUNT_LIMIT - 1,
         newest: refs.reduce((newest, ref) => Math.max(newest, Number(ref.timestampUsec) || 0), 0)
     };
 }
@@ -223,7 +237,7 @@ export function projectFeeds(
             };
             return [stream];
         }),
-        ...(lists.savedWebPages ? [savedWebPagesStream(lists.savedWebPages, context.baseUrl)] : [])
+        ...(lists.readLater ? [readLaterStream(lists.readLater, context.baseUrl)] : [])
     ];
     const listed = streams.map((stream) => {
         const { count, newest } = stream;
@@ -291,6 +305,20 @@ export function withMarkedRead(state: InoreaderState, streamId: string, through:
     };
 }
 
+/**
+ * Show `marked` unread items of the feed as read. For a mark-read by item IDs, which leaves older unread items of
+ * the feed unread: the counts of such a feed come from its unread item IDs, so the next sync has them right.
+ */
+export function withItemsMarkedRead(state: InoreaderState, streamId: string, marked: number): InoreaderState {
+    const feedId = feedIdOf(streamId);
+    return {
+        ...state,
+        feeds: state.feeds.map((feed) =>
+            feed.id === feedId && marked > 0 ? { ...feed, unreadCount: Math.max(0, feed.unreadCount - marked) } : feed
+        )
+    };
+}
+
 /** A rejected session disconnects the source; other failures keep the feeds and show the error. */
 export function withFailure(state: InoreaderState, error: unknown): InoreaderState {
     return isAuthFailure(error)
@@ -322,6 +350,7 @@ export function toItem(feedId: string, streamId: string, response: StreamItemRes
     // Seconds. Guard against missing values: an invalid date must not break rendering.
     const published = response.published || 0;
     const updated = response.updated || published;
+    const categories = response.categories ?? [];
     return {
         // The irodr 1.x article ID, deliberately without the first whitespace run only.
         id: `${streamId}--${response.id}--${canonical}`.replace(/\s+/, ""),
@@ -332,9 +361,11 @@ export function toItem(feedId: string, streamId: string, response: StreamItemRes
         contentHtml: toItemContent(response),
         publishedAt: published * 1000,
         updatedAt: updated * 1000,
-        unread: !(response.categories ?? []).some((category) => READ_CATEGORY.test(category)),
-        // A saved web page is saved already; `p` must not save it again.
-        ...(feedId === feedIdOf(SAVED_WEB_PAGES) ? { savedForLater: true } : {})
+        unread: !categories.some((category) => READ_CATEGORY.test(category)),
+        // An item of Read later, also a starred one in its subscription, is saved already; `p` must not save it again.
+        ...(feedId === feedIdOf(READ_LATER) || categories.some((category) => STARRED_CATEGORY.test(category))
+            ? { savedForLater: true }
+            : {})
     };
 }
 
@@ -355,6 +386,13 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
     >(new Map());
     // Runtime handle: item → its Inoreader timestampUsec, for mark-all-as-read.
     const itemTimestamps = new WeakMap<Item, number>();
+    // Runtime handle: item ID → its Inoreader article ID, for edit-tag. Keyed by ID because the reader copies
+    // items it marked read.
+    const articleIds = new Map<string, string>();
+    // Runtime handle: article IDs that edit-tag marked read. The reader may mark the same items again when it
+    // leaves the feed, and the count must drop once. Inoreader listing one unread again, in a load or in a
+    // sync's unread IDs, clears it.
+    const markedRead = new Set<string>();
 
     // The connection and the custom client are read from the OAuth storage whenever the state changes.
     const snapshotOf = (current: InoreaderState): SourceSnapshot => {
@@ -376,7 +414,7 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
         params: Readonly<Record<string, string | number | undefined>> = {},
         zone: ApiZone = 1,
         /** Sends a POST request with this body. */
-        body?: string
+        body?: string | URLSearchParams
     ): Promise<Response> => {
         const checkRateLimit = (): void => {
             const limit = rateLimits.get().get(zone);
@@ -439,12 +477,12 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
         if (!oauth.token()) return;
         updateStatus({ phase: "syncing", message: "Loading Inoreader subscriptions…" });
         try {
-            const [subscriptions, unreadCounts, savedWebPages] = await Promise.all([
+            const [subscriptions, unreadCounts, readLater] = await Promise.all([
                 request("/subscription/list").then((response) => response.json() as Promise<SubscriptionsResponse>),
                 request("/unread-count").then((response) => response.json() as Promise<UnreadCountsResponse>),
-                request("/stream/items/ids", { s: SAVED_WEB_PAGES, xt: READ_TAG, n: SAVED_COUNT_LIMIT })
+                request("/stream/items/ids", { s: READ_LATER, xt: READ_TAG, n: READ_LATER_COUNT_LIMIT })
                     .then((response) => response.json() as Promise<ItemIdsResponse>)
-                    // Saved web pages are a Pro feature. Without them the subscriptions are still listed.
+                    // Without Read later the subscriptions are still listed.
                     .catch((error: unknown) => {
                         if (isAuthFailure(error) || (error instanceof InoreaderRequestError && error.status === 429)) {
                             throw error;
@@ -452,11 +490,13 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
                         return undefined;
                     })
             ]);
+            const unreadKeys = new Set((readLater?.itemRefs ?? []).map((ref) => articleKey(ref.id)));
+            for (const id of markedRead) if (unreadKeys.has(articleKey(id))) markedRead.delete(id);
             state.update((current) =>
                 withStatus(
                     projectFeeds(
                         current,
-                        { subscriptions, unreadCounts, savedWebPages },
+                        { subscriptions, unreadCounts, readLater },
                         { baseUrl: options.baseUrl, now: options.now() }
                     ),
                     idle("Inoreader is connected.")
@@ -477,10 +517,13 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
             const json = (await response.json()) as StreamContentsResponse;
             const loaded = json.items.map((item) => ({
                 item: toItem(feedId, json.id || streamId, item),
-                timestamp: Number(item.timestampUsec)
+                timestamp: Number(item.timestampUsec),
+                articleId: item.id
             }));
-            for (const { item, timestamp } of loaded) {
+            for (const { item, timestamp, articleId } of loaded) {
                 if (Number.isFinite(timestamp)) itemTimestamps.set(item, timestamp);
+                articleIds.set(item.id, articleId);
+                if (item.unread) markedRead.delete(articleId);
             }
             return { items: loaded.map(({ item }) => item), continuation: json.continuation || undefined };
         } catch (error) {
@@ -498,6 +541,24 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
         // Nothing was shown, so nothing is marked read.
         if (through === undefined) return;
         try {
+            if (streamId === READ_LATER) {
+                // mark-all-as-read answered OK for the saved web pages but left them unread, so mark the loaded
+                // unread items of this state stream read by their IDs. https://www.inoreader.com/developers/edit-tag
+                const ids = loadedItems.flatMap((item) => {
+                    const articleId = item.unread ? articleIds.get(item.id) : undefined;
+                    return articleId && !markedRead.has(articleId) ? [articleId] : [];
+                });
+                if (ids.length === 0) return;
+                await request(
+                    "/edit-tag",
+                    {},
+                    2,
+                    new URLSearchParams([["a", READ_TAG], ...ids.map((id): [string, string] => ["i", id])])
+                );
+                for (const id of ids) markedRead.add(id);
+                state.update((current) => withItemsMarkedRead(current, streamId, ids.length));
+                return;
+            }
             await request("/mark-all-as-read", { s: streamId, ts: through }, 2);
         } catch (error) {
             if (isAuthFailure(error)) handleFailure(error);
@@ -507,13 +568,14 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
     };
 
     /**
-     * Save the item's page as a saved web page. Not in the public API documentation: this is the request of
-     * Inoreader's browser extension, which lets Inoreader fetch the page by its URL.
+     * Save the item's page to Read later. Not in the public API documentation: this is the request of Inoreader's
+     * browser extension, which lets Inoreader fetch the page by its URL. `star=1` saves to Read later, `star=0`
+     * only to Web pages (the extension's "Save target" setting).
      */
     const saveForLater = async (item: Item): Promise<void> => {
         if (!item.url) throw new Error(`${item.title || "The item"} has no URL to save.`);
         try {
-            await request("/save-web-page", { url: item.url, return_url: 1, star: 0 }, 2, "{}");
+            await request("/save-web-page", { url: item.url, return_url: 1, star: 1 }, 2, "{}");
         } catch (error) {
             if (isAuthFailure(error)) handleFailure(error);
             throw error;

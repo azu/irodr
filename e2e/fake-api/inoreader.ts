@@ -3,7 +3,7 @@ import { bearer, escapeHtml, type FakeRequest, type FakeResponse, formBody, html
 /**
  * A fake Inoreader implementing the parts of https://www.inoreader.com/developers/ irodr uses:
  * OAuth 2.0 (authorization code + refresh token), subscription list, unread counts,
- * stream contents with continuation, item IDs, mark-all-as-read, and saving web pages
+ * stream contents with continuation, item IDs, mark-all-as-read, edit-tag for the read state, and saving web pages
  * (`save-web-page`, the request of Inoreader's browser extension; not in the public documentation).
  */
 
@@ -68,7 +68,7 @@ export interface FakeInoreader {
     expireTokens: () => void;
     streamIds: () => string[];
     unreadCount: (streamId: string) => number;
-    /** URLs of the saved web pages, newest first. */
+    /** URLs of the Read later items, newest first. */
     savedUrls: () => string[];
     handle: (request: FakeRequest, path: string) => FakeResponse;
 }
@@ -100,8 +100,9 @@ interface State {
 
 const USER = "user/1005921515";
 const READ = `${USER}/state/com.google/read`;
-/** Saved web pages, a state stream: not a subscription, and not in unread-count. */
-const SAVED_WEB_PAGES = "user/-/state/com.google/saved-web-pages";
+/** Saved web pages and Read later (the starred items): state streams, not subscriptions, not in unread-count. */
+export const SAVED_WEB_PAGES = "user/-/state/com.google/saved-web-pages";
+export const READ_LATER = "user/-/state/com.google/starred";
 
 /** Stream IDs name the current user as "user/-". */
 function normalizeStreamId(streamId: string): string {
@@ -164,7 +165,8 @@ function scenarioState(scenario: InoreaderScenario, sequence: number): State {
     return (scenario.subscriptions ?? []).reduce(withSubscription, {
         ...empty,
         streams: new Map([
-            [SAVED_WEB_PAGES, { seed: { id: SAVED_WEB_PAGES, title: "Saved web pages", items: [] }, items: [] }]
+            [SAVED_WEB_PAGES, { seed: { id: SAVED_WEB_PAGES, title: "Saved web pages", items: [] }, items: [] }],
+            [READ_LATER, { seed: { id: READ_LATER, title: "Read later", items: [] }, items: [] }]
         ])
     });
 }
@@ -198,6 +200,26 @@ function withExpiredTokens(state: State): State {
 function withReadBefore(state: State, streamId: string, timestampUsec: number): State {
     return withStreamItems(state, streamId, (items) =>
         items.map((item) => (item.timestampUsec < timestampUsec ? { ...item, read: true } : item))
+    );
+}
+
+function isRead(tag: string | null): boolean {
+    return normalizeStreamId(tag ?? "") === "user/-/state/com.google/read";
+}
+
+/** Whether `id` names the item: the full form `tag:google.com,2005:reader/item/…` or the short form. */
+function isItem(item: Item, id: string): boolean {
+    return item.id === id || item.id.endsWith(`/item/${id}`);
+}
+
+/** Mark the items with `ids` read or unread in every stream. */
+function withRead(state: State, ids: readonly string[], read: boolean): State {
+    return [...state.streams.keys()].reduce(
+        (current, streamId) =>
+            withStreamItems(current, streamId, (items) =>
+                items.map((item) => (ids.some((id) => isItem(item, id)) ? { ...item, read } : item))
+            ),
+        state
     );
 }
 
@@ -358,6 +380,8 @@ export function createFakeInoreader(): FakeInoreader {
         const streamId = normalizeStreamId(params.get("s") ?? "");
         if (!current.state.streams.has(streamId)) return text("Unknown stream", 400);
         if (current.state.config.failingMarkRead.includes(streamId)) return text("Internal Server Error", 500);
+        // Observed with the real service: OK for the saved web pages, which stay unread.
+        if (streamId === SAVED_WEB_PAGES) return text("OK");
         const raw = Number(params.get("ts"));
         // "Unix Timestamp in seconds or microseconds"; articles older than it are marked read.
         const ts = raw < 1e12 ? raw * 1_000_000 : raw;
@@ -365,21 +389,44 @@ export function createFakeInoreader(): FakeInoreader {
         return text("OK");
     };
 
-    /** Save a web page by its URL, as Inoreader's browser extension does. Answers the saved article's path. */
+    /** https://www.inoreader.com/developers/edit-tag, for the read state: `a` marks and `r` unmarks the items `i`. */
+    const editTag = (request: FakeRequest): FakeResponse => {
+        if (request.method !== "POST") return text("Method Not Allowed", 405);
+        const params = formBody(request);
+        const ids = params.getAll("i");
+        if (ids.length === 0) return text("No items", 400);
+        const read = isRead(params.get("a")) ? true : isRead(params.get("r")) ? false : undefined;
+        if (read !== undefined) current.state = withRead(current.state, ids, read);
+        return text("OK");
+    };
+
+    /**
+     * Save a web page by its URL, as Inoreader's browser extension does: to Web pages, and with `star=1` also to
+     * Read later. Answers the saved article's path.
+     */
     const saveWebPage = (request: FakeRequest): FakeResponse => {
         if (request.method !== "POST") return text("Method Not Allowed", 405);
         const pageUrl = request.url.searchParams.get("url") ?? "";
         if (!URL.canParse(pageUrl)) return text("Invalid URL", 400);
         const id = (current.state.sequence + 1).toString(16).padStart(16, "0");
-        current.state = withItems(current.state, SAVED_WEB_PAGES, [
-            {
-                id: `tag:google.com,2005:reader/item/${id}`,
-                title: `Saved page ${pageUrl}`,
-                url: pageUrl,
-                content: `<p>Saved from ${escapeHtml(pageUrl)}.</p>`,
-                published: Math.floor(Date.now() / 1000)
-            }
-        ]);
+        const seed: InoreaderItemSeed = {
+            id: `tag:google.com,2005:reader/item/${id}`,
+            title: `Saved page ${pageUrl}`,
+            url: pageUrl,
+            content: `<p>Saved from ${escapeHtml(pageUrl)}.</p>`,
+            published: Math.floor(Date.now() / 1000)
+        };
+        const saved = withItems(current.state, SAVED_WEB_PAGES, [seed]);
+        // One article in both streams, with one crawl time.
+        current.state =
+            request.url.searchParams.get("star") === "1"
+                ? withStreamItems(saved, READ_LATER, (items) =>
+                      [
+                          ...(saved.streams.get(SAVED_WEB_PAGES)?.items.filter((item) => item.id === seed.id) ?? []),
+                          ...items
+                      ].toSorted((a, b) => b.timestampUsec - a.timestampUsec)
+                  )
+                : saved;
         return text(`/article/${id}`);
     };
 
@@ -392,7 +439,7 @@ export function createFakeInoreader(): FakeInoreader {
         if (expires === undefined || expires <= Date.now()) return text("Unauthorized", 401);
         const api = path.slice("/reader/api/0".length);
         // https://www.inoreader.com/developers/rate-limiting
-        const zone = api === "/mark-all-as-read" || api === "/save-web-page" ? 2 : 1;
+        const zone = api === "/mark-all-as-read" || api === "/save-web-page" || api === "/edit-tag" ? 2 : 1;
         if (current.state.config.rateLimitedZones.includes(zone)) {
             const seconds = current.state.config.limitsResetAfter;
             return text(
@@ -410,6 +457,7 @@ export function createFakeInoreader(): FakeInoreader {
         if (api === "/stream/items/ids") return itemIds(current.state, request.url);
         if (api === "/mark-all-as-read") return markAllAsRead(request);
         if (api === "/save-web-page") return saveWebPage(request);
+        if (api === "/edit-tag") return editTag(request);
         return json({ error: "not found" }, 404);
     };
 
@@ -430,7 +478,7 @@ export function createFakeInoreader(): FakeInoreader {
             current.state = withExpiredTokens(current.state);
         },
         streamIds: () => [...current.state.streams.keys()].filter(isSubscription),
-        savedUrls: () => current.state.streams.get(SAVED_WEB_PAGES)?.items.map((item) => item.url ?? "") ?? [],
+        savedUrls: () => current.state.streams.get(READ_LATER)?.items.map((item) => item.url ?? "") ?? [],
         unreadCount: (streamId) => current.state.streams.get(streamId)?.items.filter((item) => !item.read).length ?? 0,
         handle
     };
