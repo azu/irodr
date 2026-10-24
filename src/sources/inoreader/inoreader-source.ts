@@ -25,6 +25,7 @@ export const INOREADER_SOURCE_ID = "inoreader";
 const TITLE = "Inoreader";
 const FEED_PREFIX = `${INOREADER_SOURCE_ID}:`;
 const READ_CATEGORY = /^user\/[^/]+\/state\/com\.google\/read$/;
+const STARRED_CATEGORY = /^user\/[^/]+\/state\/com\.google\/starred$/;
 const READ_TAG = "user/-/state/com.google/read";
 /**
  * Inoreader's Read later: the starred items, from Inoreader's apps or `saveForLater`.
@@ -349,6 +350,7 @@ export function toItem(feedId: string, streamId: string, response: StreamItemRes
     // Seconds. Guard against missing values: an invalid date must not break rendering.
     const published = response.published || 0;
     const updated = response.updated || published;
+    const categories = response.categories ?? [];
     return {
         // The irodr 1.x article ID, deliberately without the first whitespace run only.
         id: `${streamId}--${response.id}--${canonical}`.replace(/\s+/, ""),
@@ -359,9 +361,11 @@ export function toItem(feedId: string, streamId: string, response: StreamItemRes
         contentHtml: toItemContent(response),
         publishedAt: published * 1000,
         updatedAt: updated * 1000,
-        unread: !(response.categories ?? []).some((category) => READ_CATEGORY.test(category)),
-        // An item of Read later is saved already; `p` must not save it again.
-        ...(feedId === feedIdOf(READ_LATER) ? { savedForLater: true } : {})
+        unread: !categories.some((category) => READ_CATEGORY.test(category)),
+        // An item of Read later, also a starred one in its subscription, is saved already; `p` must not save it again.
+        ...(feedId === feedIdOf(READ_LATER) || categories.some((category) => STARRED_CATEGORY.test(category))
+            ? { savedForLater: true }
+            : {})
     };
 }
 

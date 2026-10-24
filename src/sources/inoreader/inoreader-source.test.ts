@@ -680,6 +680,12 @@ describe("toItem", () => {
         author: "Author"
     };
 
+    it("marks a starred item saved for later, also in its subscription", () => {
+        expect(toItem(`inoreader:${A}`, A, response).savedForLater).toBeUndefined();
+        const starred = { ...response, categories: [...response.categories!, "user/1/state/com.google/starred"] };
+        expect(toItem(`inoreader:${A}`, A, starred).savedForLater).toBe(true);
+    });
+
     it("keeps the irodr 1.x article ID", () => {
         const item = toItem(`inoreader:${A}`, A, response);
         expect(item.id).toBe(
