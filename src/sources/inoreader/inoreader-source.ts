@@ -107,6 +107,16 @@ function errorMessage(error: unknown): string {
 }
 
 /** Stream IDs of feeds with basic-auth credentials differ between the two endpoints. */
+/**
+ * An article ID in one form: the hex of `tag:google.com,2005:reader/item/<hex>`. stream/items/ids returns the short
+ * form, a signed 64-bit decimal. https://www.inoreader.com/developers/item-ids
+ */
+export function articleKey(id: string): string {
+    const long = /\/item\/([0-9a-f]+)$/i.exec(id)?.[1];
+    if (long) return long.toLowerCase().padStart(16, "0");
+    return /^-?\d+$/.test(id) ? BigInt.asUintN(64, BigInt(id)).toString(16).padStart(16, "0") : id;
+}
+
 function unreadCountId(streamId: string): string {
     return streamId.replace(/(https?):\/\/(\w+):(\w+)@/, "$1://");
 }
@@ -376,7 +386,8 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
     // items it marked read.
     const articleIds = new Map<string, string>();
     // Runtime handle: article IDs that edit-tag marked read. The reader may mark the same items again when it
-    // leaves the feed, and the count must drop once. Inoreader listing one unread again clears it.
+    // leaves the feed, and the count must drop once. Inoreader listing one unread again, in a load or in a
+    // sync's unread IDs, clears it.
     const markedRead = new Set<string>();
 
     // The connection and the custom client are read from the OAuth storage whenever the state changes.
@@ -475,6 +486,8 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
                         return undefined;
                     })
             ]);
+            const unreadKeys = new Set((readLater?.itemRefs ?? []).map((ref) => articleKey(ref.id)));
+            for (const id of markedRead) if (unreadKeys.has(articleKey(id))) markedRead.delete(id);
             state.update((current) =>
                 withStatus(
                     projectFeeds(

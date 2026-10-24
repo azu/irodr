@@ -13,6 +13,7 @@ import {
     READ_LATER,
     type SubscriptionLists,
     toItem,
+    articleKey,
     withFailure,
     withItemsMarkedRead,
     withMarkedRead
@@ -227,6 +228,13 @@ describe("createInoreaderSource", () => {
         expect(source.getSnapshot().feeds.find((feed) => feed.id === feedId)?.unreadCount).toBe(1);
         expect(server.log().filter((entry) => entry.path === "/reader/api/0/edit-tag")).toHaveLength(1);
         await source.sync();
+        expect(source.getSnapshot().feeds.find((feed) => feed.id === feedId)?.unreadCount).toBe(1);
+        // Marked unread in another client: the next mark-read sends it again, though the reader kept its copy.
+        server.inoreader.markUnread(READ_LATER);
+        await source.sync();
+        expect(source.getSnapshot().feeds.find((feed) => feed.id === feedId)?.unreadCount).toBe(2);
+        await source.markRead(feedId, page.items);
+        expect(server.log().filter((entry) => entry.path === "/reader/api/0/edit-tag")).toHaveLength(2);
         expect(source.getSnapshot().feeds.find((feed) => feed.id === feedId)?.unreadCount).toBe(1);
     });
 
@@ -568,6 +576,14 @@ describe("projectFeeds", () => {
         const expired = project(state, synced, NOW + 5 * 60 * 1000 + 1);
         expect(expired.feeds[0]?.unreadCount).toBe(3);
         expect(expired.readThrough.has(A)).toBe(false);
+    });
+});
+
+describe("articleKey", () => {
+    it("reads the long and the short form of an article ID alike", () => {
+        expect(articleKey("tag:google.com,2005:reader/item/00000000D76F1BA3")).toBe("00000000d76f1ba3");
+        expect(articleKey("3614383011")).toBe("00000000d76f1ba3");
+        expect(articleKey("-1")).toBe("ffffffffffffffff");
     });
 });
 

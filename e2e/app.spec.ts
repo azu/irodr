@@ -266,6 +266,8 @@ test("p saves a GitHub notification to Inoreader's Read later, listed as a feed"
     await expect(feedRow(page, "Read later")).toHaveText("Read later (1)");
     // The saved page is marked read by its ID on Inoreader.
     await feedRow(page, "Read later").click();
+    // octo/docs also shows one article: wait until Read later is open.
+    await expect(currentFeed(page)).toHaveText("Read later (1)");
     await expect(articles(page)).toHaveCount(1);
     await page.keyboard.press("m");
     await expect
