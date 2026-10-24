@@ -264,4 +264,18 @@ test("p saves a GitHub notification as an Inoreader web page, listed as a feed",
     expect(saves.map((entry) => entry.method)).toEqual(["POST"]);
     await page.getByRole("button", { name: "Refresh" }).click();
     await expect(feedRow(page, "Saved web pages")).toHaveText("Saved web pages (1)");
+    // The saved page is marked read by its ID on Inoreader.
+    await feedRow(page, "Saved web pages").click();
+    await expect(articles(page)).toHaveCount(1);
+    await page.keyboard.press("m");
+    await expect
+        .poll(async () =>
+            requests(await api.log(), "inoreader", "/reader/api/0/edit-tag").map(
+                (entry) => new URLSearchParams(entry.body).getAll("i").length
+            )
+        )
+        .toEqual([1]);
+    await expect(currentFeed(page)).toHaveText("Saved web pages (0)");
+    const unread = await api.control<Record<string, number>>("GET", "/inoreader/unread");
+    expect(unread["user/-/state/com.google/saved-web-pages"]).toBe(0);
 });

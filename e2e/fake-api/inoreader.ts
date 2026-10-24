@@ -101,7 +101,7 @@ interface State {
 const USER = "user/1005921515";
 const READ = `${USER}/state/com.google/read`;
 /** Saved web pages, a state stream: not a subscription, and not in unread-count. */
-const SAVED_WEB_PAGES = "user/-/state/com.google/saved-web-pages";
+export const SAVED_WEB_PAGES = "user/-/state/com.google/saved-web-pages";
 
 /** Stream IDs name the current user as "user/-". */
 function normalizeStreamId(streamId: string): string {

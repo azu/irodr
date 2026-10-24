@@ -291,6 +291,20 @@ export function withMarkedRead(state: InoreaderState, streamId: string, through:
     };
 }
 
+/**
+ * Show `marked` unread items of the feed as read. For a mark-read by item IDs, which leaves older unread items of
+ * the feed unread: the counts of such a feed come from its unread item IDs, so the next sync has them right.
+ */
+export function withItemsMarkedRead(state: InoreaderState, streamId: string, marked: number): InoreaderState {
+    const feedId = feedIdOf(streamId);
+    return {
+        ...state,
+        feeds: state.feeds.map((feed) =>
+            feed.id === feedId && marked > 0 ? { ...feed, unreadCount: Math.max(0, feed.unreadCount - marked) } : feed
+        )
+    };
+}
+
 /** A rejected session disconnects the source; other failures keep the feeds and show the error. */
 export function withFailure(state: InoreaderState, error: unknown): InoreaderState {
     return isAuthFailure(error)
@@ -517,9 +531,10 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
                     2,
                     new URLSearchParams([["a", READ_TAG], ...ids.map((id): [string, string] => ["i", id])])
                 );
-            } else {
-                await request("/mark-all-as-read", { s: streamId, ts: through }, 2);
+                state.update((current) => withItemsMarkedRead(current, streamId, ids.length));
+                return;
             }
+            await request("/mark-all-as-read", { s: streamId, ts: through }, 2);
         } catch (error) {
             if (isAuthFailure(error)) handleFailure(error);
             throw error;

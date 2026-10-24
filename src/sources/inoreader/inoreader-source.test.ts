@@ -14,6 +14,7 @@ import {
     type SubscriptionLists,
     toItem,
     withFailure,
+    withItemsMarkedRead,
     withMarkedRead
 } from "./inoreader-source.ts";
 import { createMemoryStorage } from "./memory-storage.ts";
@@ -197,6 +198,32 @@ describe("createInoreaderSource", () => {
         expect(server.inoreader.unreadCount(SAVED_WEB_PAGES)).toBe(0);
         await source.sync();
         expect(source.getSnapshot().feeds.find((feed) => feed.title === "Saved web pages")?.unreadCount).toBe(0);
+    });
+
+    it("keeps the saved web pages that were not loaded unread", async () => {
+        const { source } = await connected();
+        await source.sync();
+        const save = (url: string) =>
+            source.saveForLater?.({
+                id: `github:${url}`,
+                feedId: "github:azu/irodr",
+                title: url,
+                url,
+                author: "",
+                contentHtml: "",
+                publishedAt: 0,
+                updatedAt: 0,
+                unread: true
+            });
+        await save("https://github.com/azu/irodr/pull/1");
+        await save("https://github.com/azu/irodr/pull/2");
+        await source.sync();
+        const feedId = `inoreader:${SAVED_WEB_PAGES}`;
+        const page = await source.loadItems(feedId, { count: 1 });
+        await source.markRead(feedId, page.items);
+        expect(source.getSnapshot().feeds.find((feed) => feed.id === feedId)?.unreadCount).toBe(1);
+        await source.sync();
+        expect(source.getSnapshot().feeds.find((feed) => feed.id === feedId)?.unreadCount).toBe(1);
     });
 
     it("lists the subscriptions when saved web pages cannot be listed", async () => {
@@ -537,6 +564,21 @@ describe("projectFeeds", () => {
         const expired = project(state, synced, NOW + 5 * 60 * 1000 + 1);
         expect(expired.feeds[0]?.unreadCount).toBe(3);
         expect(expired.readThrough.has(A)).toBe(false);
+    });
+});
+
+describe("withItemsMarkedRead", () => {
+    const feeds = project(
+        initialState(true),
+        lists([subscription(A), subscription(B)], [unread(A, 3, T), unread(B, 2, T)])
+    ).feeds;
+
+    it("subtracts the marked items from the feed's unread count", () => {
+        const next = withItemsMarkedRead(stateWith({ feeds }), A, 2);
+        expect(next.feeds.map((feed) => feed.unreadCount)).toEqual([1, 2]);
+        expect(next.feeds[1]).toBe(feeds[1]);
+        expect(next.readThrough.size).toBe(0);
+        expect(withItemsMarkedRead(stateWith({ feeds }), A, 5).feeds[0]?.unreadCount).toBe(0);
     });
 });
 
