@@ -15,6 +15,11 @@ const styles = stylex.create({
         height: "100dvh",
         display: "grid",
         gridTemplateRows: `${sizes.header} minmax(0, 1fr)`,
+        // viewport-fit=cover: keep the header out of the area Safari blurs under the status bar,
+        // and the sidebar out of the notch in landscape.
+        paddingBlockStart: "env(safe-area-inset-top)",
+        paddingInlineStart: "env(safe-area-inset-left)",
+        paddingInlineEnd: "env(safe-area-inset-right)",
         color: colors.text,
         backgroundColor: colors.background
     },

@@ -12,8 +12,19 @@ body,
     margin: 0;
 }
 
+/* iOS Safari blurs the page edge under its floating bars; match the header so the band looks blank. */
+html {
+    background-color: #ffffff;
+}
+
 body {
-    font-family: system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
+    font-family:
+        system-ui,
+        -apple-system,
+        "Segoe UI",
+        "Hiragino Sans",
+        "Noto Sans JP",
+        sans-serif;
     font-size: 15px;
     -webkit-font-smoothing: antialiased;
 }
