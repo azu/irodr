@@ -14,7 +14,8 @@ describe("preferences", () => {
             normalizePreferences({
                 fetchContentsCount: 500,
                 prefetchSubscriptionCount: -1,
-                autoRefreshSubscriptionSec: "x"
+                autoRefreshSubscriptionSec: "x",
+                tapControlsSide: "top"
             })
         ).toEqual({
             ...DEFAULT_PREFERENCES,
@@ -31,6 +32,8 @@ describe("preferences", () => {
         };
         savePreferences(storage, { ...DEFAULT_PREFERENCES, prefetchSubscriptionCount: 2 });
         expect(loadPreferences(storage).prefetchSubscriptionCount).toBe(2);
+        savePreferences(storage, { ...DEFAULT_PREFERENCES, tapControlsSide: "left" });
+        expect(loadPreferences(storage).tapControlsSide).toBe("left");
         values.set("irodr:preferences", "{broken");
         expect(loadPreferences(storage)).toEqual(DEFAULT_PREFERENCES);
     });
@@ -46,7 +49,7 @@ describe("preferences", () => {
                 autoRefreshSubscriptionSec: 300
             }
         };
-        expect(legacyPreferences([record])).toEqual(record.preferences);
+        expect(legacyPreferences([record])).toEqual({ ...record.preferences, tapControlsSide: "right" });
         expect(legacyPreferences([])).toBeUndefined();
         expect(legacyPreferences([null, "x"])).toBeUndefined();
     });

@@ -29,5 +29,23 @@ export const sizes = stylex.defineVars({
     sidebar: "300px",
     feedRow: "32px",
     /** The sticky category header in the feed list. */
-    categoryHeader: "24px"
+    categoryHeader: "24px",
+    /** The control area at the bottom left on touch screens when the tap controls are on the left. */
+    leftControlArea: "104px"
+});
+
+/**
+ * Layout breakpoints. Safari does not expose the fold of iPhone Duo (no Viewport Segments API), so the layout
+ * follows the viewport width: about 466px folded and 626px unfolded in portrait.
+ */
+export const media = stylex.defineConsts({
+    /** Phones and iPhone Duo folded: the sidebar becomes a drawer over the articles. */
+    narrow: "@media (max-width: 599px)",
+    wide: "@media (min-width: 600px)",
+    /** Too narrow for the header's button labels and the subscription count. */
+    compact: "@media (max-width: 719px)",
+    /** Phones 320px wide: the header drops the GitHub link to fit. */
+    tiny: "@media (max-width: 359px)",
+    /** Touch screens: larger targets and the tap controls. */
+    touch: "@media (pointer: coarse)"
 });

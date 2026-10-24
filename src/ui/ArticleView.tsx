@@ -1,16 +1,16 @@
 import * as stylex from "@stylexjs/stylex";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ArticleView as View } from "../app/reader.ts";
 import { safeUrl } from "../lib/sanitize.ts";
 import { formatDateTime, isoDateTime } from "../lib/time.ts";
 import { formatUnreadCount } from "../sources/source.ts";
 import { Article } from "./Article.tsx";
 import { withClass } from "./classes.ts";
-import { useReader, useReaderState } from "./context.tsx";
+import { useReader, useReaderState, useKeyBindings } from "./context.tsx";
 import { activeItemId, CLASS, itemElement } from "./dom.ts";
-import { SettingsIcon } from "./icons.tsx";
+import { ArrowIcon, BookmarkIcon, NextFeedIcon, SettingsIcon } from "./icons.tsx";
 import { ProgressBar } from "./ProgressBar.tsx";
-import { colors } from "./tokens.stylex.ts";
+import { colors, media, sizes } from "./tokens.stylex.ts";
 
 const styles = stylex.create({
     main: { position: "relative", minWidth: 0, minHeight: 0, display: "flex", flexDirection: "column" },
@@ -63,8 +63,153 @@ const styles = stylex.create({
         borderColor: colors.border
     },
     // Lets the last item scroll to the top of the view.
-    padding: { height: "100vh" }
+    padding: { height: "100vh" },
+    // Touch screens get buttons for k, j and s. Bottom right: in reach of the right thumb, and away from the
+    // fold in the middle of iPhone Duo's inner display.
+    tapControls: {
+        display: { default: "none", [media.touch]: "flex" },
+        flexDirection: "column",
+        gap: 8,
+        // Fixed to a screen corner, also on the left where the sidebar is (preferences: tapControlsSide).
+        position: "fixed",
+        // Clear of the rounded screen corners of iPad and iPhone Duo. The safe area insets are 0 unless the page
+        // uses `viewport-fit=cover`, so the minimums keep the buttons away from the corner without it.
+        insetBlockEnd: "max(40px, calc(env(safe-area-inset-bottom) + 16px))",
+        zIndex: 1
+    },
+    tapControlsRight: { insetInlineEnd: "max(20px, calc(env(safe-area-inset-right) + 12px))" },
+    // On the left the buttons sit in a row on a solid area, so a tap that misses a button does not open a feed of
+    // the sidebar under it. FeedList leaves room for this area below its last feed.
+    tapControlsLeft: {
+        flexDirection: "row",
+        alignItems: "flex-start",
+        gap: 8,
+        boxSizing: "border-box",
+        height: sizes.leftControlArea,
+        insetInlineStart: 0,
+        insetBlockEnd: 0,
+        paddingBlockStart: 12,
+        paddingInlineStart: "max(20px, calc(env(safe-area-inset-left) + 12px))",
+        paddingInlineEnd: 20,
+        borderBlockStartWidth: 1,
+        borderBlockStartStyle: "solid",
+        borderBlockStartColor: colors.border,
+        borderInlineEndWidth: 1,
+        borderInlineEndStyle: "solid",
+        borderInlineEndColor: colors.border,
+        borderStartEndRadius: 12,
+        backgroundColor: colors.subtle
+    },
+    lastInRow: { order: 1 },
+    // Feedback while a finger is on a button: `:active` is unreliable on iOS when pointerdown is prevented.
+    tapButtonPressed: { backgroundColor: colors.hover, transform: "scale(0.92)" },
+    // The focused item is saved for later: a filled, colored button, visible at a glance.
+    tapButtonSaved: { backgroundColor: colors.accent, borderColor: colors.accent, color: colors.accentText },
+    tapButton: {
+        display: "grid",
+        placeItems: "center",
+        // Apple's minimum hit target: 44 × 44 pt.
+        width: 44,
+        height: 44,
+        padding: 0,
+        borderWidth: 1,
+        borderStyle: "solid",
+        borderColor: colors.border,
+        borderRadius: 22,
+        backgroundColor: "rgb(255 255 255 / 0.85)",
+        color: colors.text,
+        boxShadow: "0 1px 4px rgb(0 0 0 / 0.15)",
+        cursor: "pointer",
+        // No double-tap zoom, so repeated taps move on immediately.
+        touchAction: "manipulation",
+        transitionProperty: "transform, background-color",
+        transitionDuration: "80ms"
+    }
 });
+
+/** How far a touch may move and still be a tap, in CSS pixels. */
+const TAP_SLOP = 10;
+
+/**
+ * Buttons that press the p, k, j and s keys: they follow keys rebound by user scripts (`registerKey`).
+ * `savedForLater` is whether the focused item is saved for later, or undefined when its source cannot save items.
+ */
+function TapControls({ savedForLater }: { savedForLater?: boolean }) {
+    const bindings = useKeyBindings();
+    const side = useReaderState((state) => state.preferences.tapControlsSide);
+    // The touch that started on a button. A tap ends on the same button near where it started; a swipe moves or is
+    // cancelled.
+    const press = useRef<{ key: string; pointerId: number; x: number; y: number } | null>(null);
+    const [pressedKey, setPressedKey] = useState<string | undefined>(undefined);
+    const buttons = [
+        // Read later sits away from the corner: first in the column on the right, last in the row on the left, so
+        // k, j and s stay where they were.
+        ...(savedForLater === undefined
+            ? []
+            : [{ label: "Read later (p)", key: "p", icon: <BookmarkIcon filled={savedForLater} size={20} /> }]),
+        { label: "Previous item (k)", key: "k", icon: <ArrowIcon direction="up" size={22} /> },
+        { label: "Next item (j)", key: "j", icon: <ArrowIcon direction="down" size={22} /> },
+        { label: "Next feed (s)", key: "s", icon: <NextFeedIcon size={20} /> }
+    ];
+    return (
+        <div
+            role="toolbar"
+            aria-label="Reading controls"
+            data-side={side}
+            {...stylex.props(styles.tapControls, side === "left" ? styles.tapControlsLeft : styles.tapControlsRight)}
+        >
+            {buttons.map((button) => (
+                <button
+                    key={button.key}
+                    type="button"
+                    title={button.label}
+                    aria-label={button.label}
+                    aria-pressed={button.key === "p" ? savedForLater : undefined}
+                    {...stylex.props(
+                        styles.tapButton,
+                        button.key === "p" && side === "left" && styles.lastInRow,
+                        button.key === "p" && savedForLater === true && styles.tapButtonSaved,
+                        pressedKey === button.key && styles.tapButtonPressed
+                    )}
+                    // Act on pointer events, not on click: iOS does not fire `click` for a tap that stops a momentum
+                    // scroll, so the first tap after a manual scroll did nothing. Act on pointerup, so a swipe that
+                    // starts on a button does not open the next feed and mark this one read. Preventing the default
+                    // also keeps keyboard focus on the page, as the feed list does.
+                    onPointerDown={(event) => {
+                        if (event.button !== 0) return;
+                        event.preventDefault();
+                        setPressedKey(button.key);
+                        press.current = {
+                            key: button.key,
+                            pointerId: event.pointerId,
+                            x: event.clientX,
+                            y: event.clientY
+                        };
+                    }}
+                    onPointerUp={(event) => {
+                        const start = press.current;
+                        press.current = null;
+                        setPressedKey(undefined);
+                        if (!start || start.key !== button.key || start.pointerId !== event.pointerId) return;
+                        if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > TAP_SLOP) return;
+                        bindings.trigger(button.key);
+                    }}
+                    onPointerCancel={() => {
+                        press.current = null;
+                        setPressedKey(undefined);
+                    }}
+                    onPointerLeave={() => setPressedKey(undefined)}
+                    // Enter or Space on a focused button (`detail` is 0); pointer clicks were handled on pointerup.
+                    onClick={(event) => {
+                        if (event.detail === 0) bindings.trigger(button.key);
+                    }}
+                >
+                    {button.icon}
+                </button>
+            ))}
+        </div>
+    );
+}
 
 function FeedHeader({ view }: { view: View }) {
     const reader = useReader();
@@ -168,6 +313,11 @@ export function ArticleView() {
     return (
         <main {...stylex.props(styles.main)}>
             <ProgressBar loading={loading} />
+            <TapControls
+                savedForLater={
+                    view?.canSaveForLater ? focusItemId !== undefined && view.savedForLater.has(focusItemId) : undefined
+                }
+            />
             <div
                 ref={scroller}
                 {...withClass(CLASS.scroller, styles.scroller)}

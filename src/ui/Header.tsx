@@ -1,15 +1,15 @@
 import * as stylex from "@stylexjs/stylex";
 import { useReader, useReaderState } from "./context.tsx";
-import { GitHubIcon, RefreshIcon, SettingsIcon, SignpostIcon, SourcesIcon } from "./icons.tsx";
-import { colors, sizes } from "./tokens.stylex.ts";
+import { GitHubIcon, RefreshIcon, SettingsIcon, SidebarIcon, SignpostIcon, SourcesIcon } from "./icons.tsx";
+import { colors, media, sizes } from "./tokens.stylex.ts";
 
 const styles = stylex.create({
     header: {
         height: sizes.header,
         display: "flex",
         alignItems: "center",
-        gap: 12,
-        paddingInline: 12,
+        gap: { default: 12, [media.compact]: 8 },
+        paddingInline: { default: 12, [media.compact]: 8 },
         borderBottomWidth: 1,
         borderBottomStyle: "solid",
         borderBottomColor: colors.border,
@@ -22,7 +22,8 @@ const styles = stylex.create({
         display: "inline-flex",
         alignItems: "center",
         gap: 4,
-        height: 28,
+        flexShrink: 0,
+        height: { default: 28, [media.touch]: 36 },
         paddingInline: 8,
         borderStyle: "none",
         borderRadius: 4,
@@ -36,7 +37,8 @@ const styles = stylex.create({
         flexBasis: 0,
         display: "flex",
         alignItems: "center",
-        justifyContent: "center",
+        // Centered text is cut on both sides when it does not fit; keep its start visible on narrow screens.
+        justifyContent: { default: "center", [media.compact]: "flex-start" },
         gap: 4,
         minWidth: 0,
         overflow: "hidden",
@@ -44,24 +46,46 @@ const styles = stylex.create({
         fontSize: 14
     },
     stat: { fontSize: 14 },
-    link: { display: "inline-flex", color: colors.text }
+    // On iPhone Duo folded and other phones, the header keeps the icons and the unread count.
+    wideOnly: { display: { default: null, [media.compact]: "none" } },
+    link: { display: { default: "inline-flex", [media.tiny]: "none" }, color: colors.text }
 });
 
-export function Header() {
+export function Header({ onToggleSidebar }: { onToggleSidebar: () => void }) {
     const reader = useReader();
     const message = useReaderState((state) => state.message);
     const totals = useReaderState((state) => state.totals);
     return (
         <header {...stylex.props(styles.header)}>
+            <button
+                type="button"
+                title="Toggle subscriptions"
+                aria-label="Toggle subscriptions"
+                {...stylex.props(styles.button)}
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={onToggleSidebar}
+            >
+                <SidebarIcon />
+            </button>
             <h1 {...stylex.props(styles.logo)} title="Irodr">
                 <img src="/favicon.png" alt="I" width={20} height={20} />
                 rodr
             </h1>
-            <button type="button" {...stylex.props(styles.button)} onClick={() => void reader.refresh()}>
-                <RefreshIcon /> Refresh
+            <button
+                type="button"
+                aria-label="Refresh"
+                {...stylex.props(styles.button)}
+                onClick={() => void reader.refresh()}
+            >
+                <RefreshIcon /> <span {...stylex.props(styles.wideOnly)}>Refresh</span>
             </button>
-            <button type="button" {...stylex.props(styles.button)} onClick={() => reader.openPanel("sources")}>
-                <SourcesIcon /> Sources
+            <button
+                type="button"
+                aria-label="Sources"
+                {...stylex.props(styles.button)}
+                onClick={() => reader.openPanel("sources")}
+            >
+                <SourcesIcon /> <span {...stylex.props(styles.wideOnly)}>Sources</span>
             </button>
             <output aria-live="polite" data-testid="header-message" {...stylex.props(styles.message)}>
                 {message.icon === "end" ? <SignpostIcon /> : null}
@@ -70,7 +94,7 @@ export function Header() {
             <span data-testid="total-unread" {...stylex.props(styles.stat)}>
                 Unread: {totals.unread}
             </span>
-            <span data-testid="total-feeds" {...stylex.props(styles.stat)}>
+            <span data-testid="total-feeds" {...stylex.props(styles.stat, styles.wideOnly)}>
                 Subscriptions: {totals.feeds}
             </span>
             <button

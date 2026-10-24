@@ -6,13 +6,18 @@ export interface Preferences {
     readonly enableAutoRefreshSubscription: boolean;
     /** Seconds between automatic refreshes. */
     readonly autoRefreshSubscriptionSec: number;
+    /** The screen side of the k/j/s buttons on touch screens. "left" frees the right hand for scrolling. */
+    readonly tapControlsSide: TapControlsSide;
 }
+
+export type TapControlsSide = "right" | "left";
 
 export const DEFAULT_PREFERENCES: Preferences = {
     prefetchSubscriptionCount: 5,
     fetchContentsCount: 20,
     enableAutoRefreshSubscription: true,
-    autoRefreshSubscriptionSec: 300
+    autoRefreshSubscriptionSec: 300,
+    tapControlsSide: "right"
 };
 
 const KEY = "irodr:preferences";
@@ -41,7 +46,8 @@ export function normalizePreferences(value: Partial<Record<keyof Preferences, un
             DEFAULT_PREFERENCES.autoRefreshSubscriptionSec,
             1,
             24 * 60 * 60
-        )
+        ),
+        tapControlsSide: value.tapControlsSide === "left" ? "left" : "right"
     };
 }
 

@@ -1,6 +1,6 @@
 import * as stylex from "@stylexjs/stylex";
 import { useState } from "react";
-import type { Preferences } from "../app/preferences.ts";
+import type { Preferences, TapControlsSide } from "../app/preferences.ts";
 import { useReader, useReaderState } from "./context.tsx";
 import { Dialog } from "./Dialog.tsx";
 import { colors } from "./tokens.stylex.ts";
@@ -41,11 +41,12 @@ const NUMBER_FIELDS: { name: NumberField; label: string }[] = [
 ];
 
 /** Number fields stay text while editing, so a field can be cleared before typing a new value. */
-type Draft = Pick<Preferences, "enableAutoRefreshSubscription"> & Record<NumberField, string>;
+type Draft = Pick<Preferences, "enableAutoRefreshSubscription" | "tapControlsSide"> & Record<NumberField, string>;
 
 function toDraft(preferences: Preferences): Draft {
     return {
         enableAutoRefreshSubscription: preferences.enableAutoRefreshSubscription,
+        tapControlsSide: preferences.tapControlsSide,
         autoRefreshSubscriptionSec: String(preferences.autoRefreshSubscriptionSec),
         prefetchSubscriptionCount: String(preferences.prefetchSubscriptionCount),
         fetchContentsCount: String(preferences.fetchContentsCount)
@@ -59,7 +60,11 @@ function fromDraft(draft: Draft): Partial<Preferences> {
         const value = draft[name].trim();
         if (value !== "") numbers[name] = Number(value);
     }
-    return { enableAutoRefreshSubscription: draft.enableAutoRefreshSubscription, ...numbers };
+    return {
+        enableAutoRefreshSubscription: draft.enableAutoRefreshSubscription,
+        tapControlsSide: draft.tapControlsSide,
+        ...numbers
+    };
 }
 
 function PreferencesForm({ preferences }: { preferences: Preferences }) {
@@ -106,6 +111,25 @@ function PreferencesForm({ preferences }: { preferences: Preferences }) {
                     />
                 </label>
             ))}
+            <label {...stylex.props(styles.field)}>
+                Tap Controls Side
+                <select
+                    name="tapControlsSide"
+                    value={draft.tapControlsSide}
+                    onChange={(event) => {
+                        const value = event.currentTarget.value as TapControlsSide;
+                        setDraft((current) => ({ ...current, tapControlsSide: value }));
+                    }}
+                    {...stylex.props(styles.input)}
+                >
+                    <option value="right">Right</option>
+                    <option value="left">Left</option>
+                </select>
+            </label>
+            <p {...stylex.props(styles.description)}>
+                The k / j / s buttons shown on touch screens. Put them on the left to scroll articles with the right
+                hand.
+            </p>
             <button type="submit" {...stylex.props(styles.save)}>
                 Save
             </button>
