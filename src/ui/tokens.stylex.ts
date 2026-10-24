@@ -29,7 +29,9 @@ export const sizes = stylex.defineVars({
     sidebar: "300px",
     feedRow: "32px",
     /** The sticky category header in the feed list. */
-    categoryHeader: "24px"
+    categoryHeader: "24px",
+    /** The control area at the bottom left on touch screens when the tap controls are on the left. */
+    leftControlArea: "104px"
 });
 
 /**

@@ -37,6 +37,11 @@ const styles = stylex.create({
     shownWithDrawer: { display: "block" },
     hidden: { display: "none" },
     hiddenWithDrawer: { display: { default: "none", [media.narrow]: "block" } },
+    // Room below the last feed for the tap controls on the left (ArticleView), so every feed can scroll above them.
+    leftControlArea: {
+        paddingBlockEnd: { default: null, [media.touch]: sizes.leftControlArea },
+        scrollPaddingBottom: { default: null, [media.touch]: sizes.leftControlArea }
+    },
     list: { listStyle: "none", margin: 0, padding: 0 },
     categoryButton: {
         display: "flex",
@@ -215,6 +220,7 @@ export function FeedList({
     onOpenFeed: () => void;
 }) {
     const list = useReaderState((state) => state.list);
+    const controlsOnLeft = useReaderState((state) => state.preferences.tapControlsSide === "left");
     const current = list.currentFeedId;
     const index = current ? list.navigation.indexOf(current) : -1;
 
@@ -232,7 +238,15 @@ export function FeedList({
     }, [drawerOpen, current]);
 
     return (
-        <nav aria-label="Subscriptions" {...withClass(CLASS.feedList, styles.nav, displayStyle(collapsed, drawerOpen))}>
+        <nav
+            aria-label="Subscriptions"
+            {...withClass(
+                CLASS.feedList,
+                styles.nav,
+                displayStyle(collapsed, drawerOpen),
+                controlsOnLeft && styles.leftControlArea
+            )}
+        >
             <ul {...stylex.props(styles.list)}>
                 {list.categories.map((category) => (
                     <Category

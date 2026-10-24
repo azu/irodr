@@ -181,7 +181,14 @@ test("the tap controls can move to the left side", async ({ page }) => {
     await expect(page.getByRole("dialog")).toHaveCount(0);
     await expect(controls).toHaveAttribute("data-side", "left");
     const left = await controls.boundingBox();
-    expect(left && left.x + left.width < UNFOLDED.width / 2).toBe(true);
+    if (!left) throw new Error("Reading controls are not visible");
+    expect(left.x + left.width < UNFOLDED.width / 2).toBe(true);
+    // A tap that misses the buttons lands on the control area, not on a feed under it.
+    const missed = await page.evaluate(
+        ({ x, y }) => document.elementFromPoint(x, y)?.closest('[role="toolbar"]') !== null,
+        { x: left.x + left.width - 4, y: left.y + left.height - 4 }
+    );
+    expect(missed).toBe(true);
 
     // Still works there, and the choice is kept.
     await controls.getByRole("button", { name: "Next feed (s)" }).tap();

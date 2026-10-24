@@ -10,7 +10,7 @@ import { useReader, useReaderState, useKeyBindings } from "./context.tsx";
 import { activeItemId, CLASS, itemElement } from "./dom.ts";
 import { ArrowIcon, NextFeedIcon, SettingsIcon } from "./icons.tsx";
 import { ProgressBar } from "./ProgressBar.tsx";
-import { colors, media } from "./tokens.stylex.ts";
+import { colors, media, sizes } from "./tokens.stylex.ts";
 
 const styles = stylex.create({
     main: { position: "relative", minWidth: 0, minHeight: 0, display: "flex", flexDirection: "column" },
@@ -78,7 +78,28 @@ const styles = stylex.create({
         zIndex: 1
     },
     tapControlsRight: { insetInlineEnd: "max(20px, calc(env(safe-area-inset-right) + 12px))" },
-    tapControlsLeft: { insetInlineStart: "max(20px, calc(env(safe-area-inset-left) + 12px))" },
+    // On the left the buttons sit in a row on a solid area, so a tap that misses a button does not open a feed of
+    // the sidebar under it. FeedList leaves room for this area below its last feed.
+    tapControlsLeft: {
+        flexDirection: "row",
+        alignItems: "flex-start",
+        gap: 12,
+        boxSizing: "border-box",
+        height: sizes.leftControlArea,
+        insetInlineStart: 0,
+        insetBlockEnd: 0,
+        paddingBlockStart: 12,
+        paddingInlineStart: "max(20px, calc(env(safe-area-inset-left) + 12px))",
+        paddingInlineEnd: 20,
+        borderBlockStartWidth: 1,
+        borderBlockStartStyle: "solid",
+        borderBlockStartColor: colors.border,
+        borderInlineEndWidth: 1,
+        borderInlineEndStyle: "solid",
+        borderInlineEndColor: colors.border,
+        borderStartEndRadius: 12,
+        backgroundColor: colors.subtle
+    },
     tapButton: {
         display: "grid",
         placeItems: "center",
