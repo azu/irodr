@@ -168,6 +168,22 @@ test("a swipe that starts on a tap control does nothing", async ({ page }) => {
     await expect(currentFeed(page)).toHaveText("Beta Blog (1)");
 });
 
+test("header buttons act on a tap that has no click", async ({ page }) => {
+    // iOS does not fire `click` for a tap that stops a momentum scroll: the header acts on pointerup.
+    await page.setViewportSize(UNFOLDED);
+    const preferences = page.getByRole("button", { name: "Preferences" });
+    const box = await preferences.boundingBox();
+    if (!box) throw new Error("Preferences is not visible");
+    const point = { pointerId: 1, pointerType: "touch", button: 0, clientX: box.x + 4, clientY: box.y + 4 };
+    await preferences.dispatchEvent("pointerdown", point);
+    await preferences.dispatchEvent("pointerup", point);
+    await expect(page.getByRole("dialog", { name: "App Preference" })).toBeVisible();
+    await closeDialog(page);
+    // An ordinary tap, with its click, opens it once too.
+    await preferences.tap();
+    await expect(page.getByRole("dialog", { name: "App Preference" })).toBeVisible();
+});
+
 test("the tap controls can move to the left side", async ({ page }) => {
     await page.setViewportSize(UNFOLDED);
     const controls = page.getByRole("toolbar", { name: "Reading controls" });
