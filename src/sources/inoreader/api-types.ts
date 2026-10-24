@@ -36,6 +36,12 @@ export interface UnreadCountsResponse {
     readonly unreadcounts: readonly UnreadCountResponse[];
 }
 
+/** https://www.inoreader.com/developers/item-ids */
+export interface ItemIdsResponse {
+    readonly itemRefs?: readonly { readonly id: string; readonly timestampUsec: string }[];
+    readonly continuation?: string;
+}
+
 export interface Enclosure {
     readonly href: string;
     readonly type?: string;

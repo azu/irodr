@@ -96,6 +96,8 @@ export async function startFakeApi(options: { port?: number; host?: string } = {
                         : {})
                 });
                 return json({ ok: true });
+            case "GET /inoreader/saved":
+                return json(inoreader.savedUrls());
             case "GET /inoreader/unread":
                 return json(Object.fromEntries(inoreader.streamIds().map((id) => [id, inoreader.unreadCount(id)])));
             case "POST /github/notifications":

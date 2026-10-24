@@ -123,7 +123,14 @@ function FeedHeader({ view }: { view: View }) {
 function Body({ view, focusItemId }: { view: View; focusItemId?: string }) {
     if (!view.loaded) return <p {...stylex.props(styles.empty)}>Loading…</p>;
     if (view.items.length === 0) return <p {...stylex.props(styles.empty)}>No unread items in this feed.</p>;
-    return view.items.map((item) => <Article key={item.id} item={item} focused={item.id === focusItemId} />);
+    return view.items.map((item) => (
+        <Article
+            key={item.id}
+            item={item}
+            focused={item.id === focusItemId}
+            savedForLater={view.canSaveForLater ? view.savedForLater.has(item.id) : undefined}
+        />
+    ));
 }
 
 export function ArticleView() {

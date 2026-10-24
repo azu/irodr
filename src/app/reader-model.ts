@@ -85,6 +85,8 @@ export interface ReaderModel {
     readonly readItems: ReadonlyMap<string, readonly Item[]>;
     /** The error message last seen per source ID ("" for none), so each error is reported once. */
     readonly lastErrors: ReadonlyMap<string, string>;
+    /** IDs of the items saved for later in this session, including saves in flight. */
+    readonly savedForLater: ReadonlySet<string>;
 }
 
 export function initialModel(preferences: Preferences): ReaderModel {
@@ -102,7 +104,8 @@ export function initialModel(preferences: Preferences): ReaderModel {
         preferences,
         readHistory: [],
         readItems: new Map(),
-        lastErrors: new Map()
+        lastErrors: new Map(),
+        savedForLater: new Set()
     };
 }
 
@@ -279,6 +282,23 @@ export function withReadItems(model: ReaderModel, feedId: string, items: readonl
 /** Add items marked read to the history, keeping the latest READ_HISTORY_LIMIT. */
 export function withReadHistory(model: ReaderModel, items: readonly Item[]): ReaderModel {
     return { ...model, readHistory: [...model.readHistory, ...items].slice(-READ_HISTORY_LIMIT) };
+}
+
+// ---------------------------------------------------------------- save for later
+
+/** Whether `item` is saved for later: by its source, or in this session. */
+export function isSavedForLater(model: Pick<ReaderModel, "savedForLater">, item: Item): boolean {
+    return item.savedForLater === true || model.savedForLater.has(item.id);
+}
+
+export function withSavedForLater(model: ReaderModel, itemId: string, saved: boolean): ReaderModel {
+    if (model.savedForLater.has(itemId) === saved) return model;
+    return {
+        ...model,
+        savedForLater: saved
+            ? new Set([...model.savedForLater, itemId])
+            : new Set([...model.savedForLater].filter((id) => id !== itemId))
+    };
 }
 
 // ---------------------------------------------------------------- UI state
