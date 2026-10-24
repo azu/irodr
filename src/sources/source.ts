@@ -42,6 +42,8 @@ export interface Item {
     readonly updatedAt: number;
     /** Unread state when the item was loaded. */
     readonly unread: boolean;
+    /** Already saved for later on a provider, e.g. an item of its saved pages. */
+    readonly savedForLater?: boolean;
 }
 
 export interface ItemPage {

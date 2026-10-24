@@ -188,6 +188,7 @@ describe("createInoreaderSource", () => {
         expect(saved).toMatchObject({ id: `inoreader:${SAVED_WEB_PAGES}`, unreadCount: 1 });
         const page = await source.loadItems(saved?.id ?? "", { count: 20 });
         expect(page.items.map((item) => item.url)).toEqual(["https://github.com/azu/irodr/pull/137"]);
+        expect(page.items[0]?.savedForLater).toBe(true);
         await source.markRead(saved?.id ?? "", page.items);
         await source.sync();
         expect(source.getSnapshot().feeds.find((feed) => feed.title === "Saved web pages")?.unreadCount).toBe(0);

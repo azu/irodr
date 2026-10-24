@@ -2,7 +2,14 @@ import { shallowEqual } from "../lib/equal.ts";
 import { uniqueBy } from "../lib/unique.ts";
 import type { Feed, Item, Source, SourceCapabilities, SourceSnapshot } from "../sources/source.ts";
 import type { Preferences } from "./preferences.ts";
-import { type Message, type Panel, type ReaderModel, recentFeeds, type ScrollRequest } from "./reader-model.ts";
+import {
+    isSavedForLater,
+    type Message,
+    type Panel,
+    type ReaderModel,
+    recentFeeds,
+    type ScrollRequest
+} from "./reader-model.ts";
 
 /**
  * The public reader state, projected from the model and the sources' snapshots.
@@ -46,7 +53,7 @@ export interface ArticleView {
     readonly loaded: boolean;
     /** A connected source can save items for later (`p`). */
     readonly canSaveForLater: boolean;
-    /** IDs of the displayed items saved for later in this session. */
+    /** IDs of the displayed items saved for later, by their source or in this session. */
     readonly savedForLater: ReadonlySet<string>;
 }
 
@@ -225,7 +232,7 @@ function articleView(
     const all = entry?.items ?? [];
     const filterEnabled = model.filterEnabled && capabilities.unreadFilter;
     const items = filterEnabled && entry ? entry.unreadItems : all;
-    const saved = new Set(items.filter((item) => model.savedForLater.has(item.id)).map((item) => item.id));
+    const saved = new Set(items.filter((item) => isSavedForLater(model, item)).map((item) => item.id));
     const view: ArticleView = {
         feed,
         capabilities,

@@ -286,6 +286,11 @@ export function withReadHistory(model: ReaderModel, items: readonly Item[]): Rea
 
 // ---------------------------------------------------------------- save for later
 
+/** Whether `item` is saved for later: by its source, or in this session. */
+export function isSavedForLater(model: Pick<ReaderModel, "savedForLater">, item: Item): boolean {
+    return item.savedForLater === true || model.savedForLater.has(item.id);
+}
+
 export function withSavedForLater(model: ReaderModel, itemId: string, saved: boolean): ReaderModel {
     if (model.savedForLater.has(itemId) === saved) return model;
     return {

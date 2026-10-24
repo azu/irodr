@@ -332,7 +332,9 @@ export function toItem(feedId: string, streamId: string, response: StreamItemRes
         contentHtml: toItemContent(response),
         publishedAt: published * 1000,
         updatedAt: updated * 1000,
-        unread: !(response.categories ?? []).some((category) => READ_CATEGORY.test(category))
+        unread: !(response.categories ?? []).some((category) => READ_CATEGORY.test(category)),
+        // A saved web page is saved already; `p` must not save it again.
+        ...(feedId === feedIdOf(SAVED_WEB_PAGES) ? { savedForLater: true } : {})
     };
 }
 

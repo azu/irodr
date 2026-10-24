@@ -21,7 +21,11 @@ interface MemorySourceConfig {
 interface MemorySource extends Source {
     /** Change how the source behaves from now on. */
     configure: (patch: Partial<MemorySourceConfig>) => void;
-    setFeed: (title: string, items: readonly { title: string; unread?: boolean }[], category?: string) => Feed;
+    setFeed: (
+        title: string,
+        items: readonly { title: string; unread?: boolean; savedForLater?: boolean }[],
+        category?: string
+    ) => Feed;
     removeFeed: (id: string) => void;
     /** List a feed a second time, right after itself, as Inoreader did for a duplicated subscription. */
     duplicateFeed: (id: string) => void;
@@ -85,7 +89,8 @@ function createMemorySource(id: string, capabilities: Partial<SourceCapabilities
                 contentHtml: "",
                 publishedAt: 1000 - index,
                 updatedAt: 1000 - index,
-                unread: item.unread !== false
+                unread: item.unread !== false,
+                savedForLater: item.savedForLater
             }));
             records.update((current) => ({ ...current, items: new Map([...current.items, [feedId, loaded]]) }));
             snapshot.update((current) => ({
@@ -550,6 +555,16 @@ describe("Reader", () => {
         expect(reader.getState().message.text).toBe("Saved for later: a1");
         await reader.saveForLater("memory:A/a1");
         expect(source.saved()).toEqual(["a1"]);
+        expect(reader.getState().message.text).toBe("Already saved for later: a1");
+    });
+
+    it("does not save again an item its source reports saved", async () => {
+        const { reader, source } = await setup();
+        source.setFeed("A", [{ title: "a1", savedForLater: true }]);
+        await reader.openFeed("memory:A");
+        expect(reader.getState().view?.savedForLater.has("memory:A/a1")).toBe(true);
+        await reader.saveForLater("memory:A/a1");
+        expect(source.saved()).toEqual([]);
         expect(reader.getState().message.text).toBe("Already saved for later: a1");
     });
 

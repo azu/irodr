@@ -6,6 +6,7 @@ import {
     cacheEntry,
     freshEntry,
     initialModel,
+    isSavedForLater,
     type MessageOptions,
     navigationStarted,
     opened,
@@ -500,7 +501,7 @@ export function createReader(options: ReaderOptions): Reader {
     const saveForLater = async (itemId = model.get().focusItemId): Promise<void> => {
         const item = state.get().view?.items.find((candidate) => candidate.id === itemId);
         if (!item) return;
-        if (model.get().savedForLater.has(item.id)) {
+        if (isSavedForLater(model.get(), item)) {
             setMessage(`Already saved for later: ${item.title}`);
             return;
         }
