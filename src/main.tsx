@@ -7,6 +7,7 @@ import "./global.css";
 import { createActivityMonitor } from "./lib/activity.ts";
 import { createEmitter } from "./lib/emitter.ts";
 import { browserWriteLock, createIndexedDBStore, readAllValues } from "./lib/kv-store.ts";
+import { createSafeAreaRefresher } from "./lib/safe-area.ts";
 import { safeUrl } from "./lib/sanitize.ts";
 import { createGitHubSource } from "./sources/github/github-source.ts";
 import { createInoreaderSource } from "./sources/inoreader/inoreader-source.ts";
@@ -82,6 +83,17 @@ const reader = createReader({
         return () => clearInterval(id);
     }
 });
+
+const viewportMeta = document.querySelector<HTMLMetaElement>('meta[name="viewport"]');
+if (viewportMeta && window.visualViewport) {
+    createSafeAreaRefresher({
+        viewport: window.visualViewport,
+        meta: viewportMeta,
+        setTimeout: (task, ms) => window.setTimeout(task, ms),
+        clearTimeout: (id) => window.clearTimeout(id),
+        nextFrame: (task) => requestAnimationFrame(() => task())
+    });
+}
 
 const translate = createTranslateMode((message, options) => reader.setMessage(message, options));
 const shortcuts = createShortcuts(reader, translate);
