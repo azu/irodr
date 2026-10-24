@@ -33,6 +33,8 @@ test("tap controls do what s, j and k do", async ({ page }) => {
 
     await controls.getByRole("button", { name: "Next item (j)" }).tap();
     await expect(focusedArticle(page)).toContainText("alpha article 1");
+    // The page itself scrolls too, so Safari can minimize its toolbar.
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
     await controls.getByRole("button", { name: "Next item (j)" }).tap();
     await expect(focusedArticle(page)).toContainText("alpha article 2");
     await controls.getByRole("button", { name: "Previous item (k)" }).tap();

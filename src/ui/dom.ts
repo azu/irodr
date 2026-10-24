@@ -54,3 +54,11 @@ export function activeItemId(scroller: HTMLElement): string | undefined {
 export function scrollByPage(scroller: HTMLElement, direction: 1 | -1, ratio = 0.3): void {
     scroller.scrollBy(0, (window.innerHeight / 2) * direction * ratio);
 }
+
+/**
+ * Scroll the page itself to its end, so Safari can minimize its toolbar. The article view is a scroll container
+ * inside a page of the viewport's height, and Safari minimizes the toolbar only when the page scrolls.
+ */
+export function hideBrowserToolbar(): void {
+    window.scrollTo(0, document.documentElement.scrollHeight);
+}

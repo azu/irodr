@@ -7,7 +7,7 @@ import { formatUnreadCount } from "../sources/source.ts";
 import { Article } from "./Article.tsx";
 import { withClass } from "./classes.ts";
 import { useReader, useReaderState, useKeyBindings } from "./context.tsx";
-import { activeItemId, CLASS, itemElement } from "./dom.ts";
+import { activeItemId, CLASS, hideBrowserToolbar, itemElement } from "./dom.ts";
 import { ArrowIcon, NextFeedIcon, SettingsIcon } from "./icons.tsx";
 import { ProgressBar } from "./ProgressBar.tsx";
 import { colors, media } from "./tokens.stylex.ts";
@@ -70,7 +70,9 @@ const styles = stylex.create({
         display: { default: "none", [media.touch]: "flex" },
         flexDirection: "column",
         gap: 8,
-        position: "absolute",
+        // Fixed to the screen: the buttons stay put when the page scrolls and Safari's toolbar (at the top on
+        // iPhone Duo and iPad) is minimized.
+        position: "fixed",
         insetInlineEnd: 12,
         insetBlockEnd: "calc(12px + env(safe-area-inset-bottom))",
         zIndex: 1
@@ -114,7 +116,10 @@ function TapControls() {
                     {...stylex.props(styles.tapButton)}
                     // Keep keyboard focus on the page, as the feed list does.
                     onMouseDown={(event) => event.preventDefault()}
-                    onClick={() => bindings.trigger(button.key)}
+                    onClick={() => {
+                        bindings.trigger(button.key);
+                        hideBrowserToolbar();
+                    }}
                 >
                     {button.icon}
                 </button>
