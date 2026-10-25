@@ -57,6 +57,8 @@ export const media = stylex.defineConsts({
     compact: "@media (max-width: 719px)",
     /** Phones 320px wide: the header drops the GitHub link to fit. */
     tiny: "@media (max-width: 359px)",
+    /** Launched from the home screen as a web app. */
+    standalone: "@media (display-mode: standalone)",
     /** Touch screens: larger targets and the tap controls. */
     touch: "@media (pointer: coarse)",
     /**

@@ -8,6 +8,18 @@ export interface SafeAreaRefresher {
 }
 
 /**
+ * Drop `viewport-fit=cover` for a frame and put it back, so iOS computes the safe area insets and the viewport again.
+ */
+export function refreshSafeArea(meta: { content: string }, nextFrame: (task: () => void) => void): void {
+    const content = meta.content;
+    if (!content.includes(COVER)) return;
+    meta.content = content.replace(COVER, "");
+    nextFrame(() => {
+        meta.content = content;
+    });
+}
+
+/**
  * iOS Safari can keep a stale `env(safe-area-inset-top)` after its toolbar shrinks or grows, until the page is
  * shown again. Once the viewport stops resizing, drop `viewport-fit=cover` for a frame and put it back, so Safari
  * computes the insets again.
@@ -20,14 +32,7 @@ export function createSafeAreaRefresher(options: {
     readonly nextFrame: (task: () => void) => void;
 }): SafeAreaRefresher {
     const timer = createStore<number | undefined>(undefined);
-    const refresh = (): void => {
-        const content = options.meta.content;
-        if (!content.includes(COVER)) return;
-        options.meta.content = content.replace(COVER, "");
-        options.nextFrame(() => {
-            options.meta.content = content;
-        });
-    };
+    const refresh = (): void => refreshSafeArea(options.meta, options.nextFrame);
     const onResize = (): void => {
         const pending = timer.get();
         if (pending !== undefined) options.clearTimeout(pending);

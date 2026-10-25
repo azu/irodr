@@ -12,7 +12,10 @@ const NARROW_QUERY = "(max-width: 599px)";
 
 const styles = stylex.create({
     app: {
-        height: "100dvh",
+        // A home screen web app with viewport-fit=cover reports 100dvh, 100svh and visualViewport.height without the
+        // safe area insets, leaving a gap at the bottom; 100vh covers the screen there.
+        // https://bugs.webkit.org/show_bug.cgi?id=254868
+        height: { default: "100dvh", [media.standalone]: "100vh" },
         display: "grid",
         gridTemplateRows: "auto minmax(0, 1fr)",
         // viewport-fit=cover: Safari blurs the page under the status bar most at the top edge. Let the header's

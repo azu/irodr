@@ -7,7 +7,7 @@ import "./global.css";
 import { createActivityMonitor } from "./lib/activity.ts";
 import { createEmitter } from "./lib/emitter.ts";
 import { browserWriteLock, createIndexedDBStore, readAllValues } from "./lib/kv-store.ts";
-import { createSafeAreaRefresher } from "./lib/safe-area.ts";
+import { createSafeAreaRefresher, refreshSafeArea } from "./lib/safe-area.ts";
 import { safeUrl } from "./lib/sanitize.ts";
 import { createGitHubSource } from "./sources/github/github-source.ts";
 import { createInoreaderSource } from "./sources/inoreader/inoreader-source.ts";
@@ -87,6 +87,11 @@ const reader = createReader({
 const viewportMeta = document.querySelector<HTMLMetaElement>('meta[name="viewport"]');
 // A home screen web app has no Safari toolbar to shrink; changing the viewport there only moves the page.
 const standalone = window.matchMedia("(display-mode: standalone)").matches;
+if (viewportMeta && standalone) {
+    // Launched from the home screen, iOS can lay out the first page with a stale viewport and safe area: the header
+    // under the status bar and a gap at the bottom, until the app is shown again. Recompute once after launch.
+    window.setTimeout(() => refreshSafeArea(viewportMeta, (task) => requestAnimationFrame(() => task())), 300);
+}
 if (viewportMeta && window.visualViewport && !standalone) {
     createSafeAreaRefresher({
         viewport: window.visualViewport,
