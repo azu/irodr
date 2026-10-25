@@ -9,13 +9,25 @@ import { withClass } from "./classes.ts";
 import { useReader, useReaderState, useKeyBindings } from "./context.tsx";
 import { activeItemId, CLASS, itemElement } from "./dom.ts";
 import { ArrowIcon, BookmarkIcon, NextFeedIcon, SettingsIcon } from "./icons.tsx";
+import { useMediaQuery } from "./media-query.ts";
 import { usePress } from "./press.ts";
 import { ProgressBar } from "./ProgressBar.tsx";
 import { colors, media, sizes } from "./tokens.stylex.ts";
 
+/** The same query as `media.stacked`, for choosing the tap controls' layout. */
+const STACKED_QUERY = "(vertical-viewport-segments: 2) and (pointer: coarse) and (min-width: 600px)";
+
 const styles = stylex.create({
     main: { position: "relative", minWidth: 0, minHeight: 0, display: "flex", flexDirection: "column" },
-    scroller: { flexGrow: 1, flexBasis: 0, overflowY: "auto", overflowX: "hidden", outlineStyle: "none" },
+    scroller: {
+        flexGrow: 1,
+        flexBasis: 0,
+        overflowY: "auto",
+        overflowX: "hidden",
+        outlineStyle: "none",
+        // Paging (Space) leaves out the tap controls at the bottom when folded like a laptop.
+        scrollPaddingBlockEnd: { default: null, [media.stacked]: sizes.stackedControls }
+    },
     header: {
         display: "flex",
         alignItems: "center",
@@ -101,6 +113,24 @@ const styles = stylex.create({
         borderStartEndRadius: 12,
         backgroundColor: colors.subtle
     },
+    // Folded like a laptop: larger buttons in a row across the lower half of the bottom segment. The bar sticks to
+    // the bottom inside the scroller, so a swipe on it scrolls the articles.
+    tapControlsStacked: {
+        position: "sticky",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 24,
+        height: sizes.stackedControls,
+        insetBlockEnd: 0,
+        paddingBlockEnd: "env(safe-area-inset-bottom)",
+        borderBlockStartWidth: 1,
+        borderBlockStartStyle: "solid",
+        borderBlockStartColor: colors.border,
+        // Translucent, so the articles scrolled under the bar stay in sight. No backdrop-filter: blurring what
+        // scrolls under the bar costs every scroll frame.
+        backgroundColor: "rgb(244 244 244 / 0.7)"
+    },
     lastInRow: { order: 1 },
     // A line between the item buttons (k, j) and the next feed button (s), which leaves the feed.
     separator: {
@@ -121,6 +151,7 @@ const styles = stylex.create({
         marginInlineStart: 4,
         marginInlineEnd: 4
     },
+    separatorStacked: { alignSelf: "center", height: 40, marginBlockStart: 0 },
     // Feedback while a finger is on a button (usePress).
     tapButtonPressed: { backgroundColor: colors.hover, transform: "scale(0.92)" },
     // The focused item is saved for later: a filled, colored button, visible at a glance.
@@ -144,16 +175,18 @@ const styles = stylex.create({
         touchAction: "manipulation",
         transitionProperty: "transform, background-color",
         transitionDuration: "80ms"
-    }
+    },
+    tapButtonLarge: { width: 64, height: 64, borderRadius: 32 }
 });
 
 /**
  * Buttons that press the p, k, j and s keys: they follow keys rebound by user scripts (`registerKey`).
  * `savedForLater` is whether the focused item is saved for later, or undefined when its source cannot save items.
  */
-function TapControls({ savedForLater }: { savedForLater?: boolean }) {
+function TapControls({ savedForLater, stacked }: { savedForLater?: boolean; stacked: boolean }) {
     const bindings = useKeyBindings();
     const side = useReaderState((state) => state.preferences.tapControlsSide);
+    const inRow = stacked || side === "left";
     const { pressed: pressedKey, handlers } = usePress();
     const buttons = [
         // Read later sits away from the corner: first in the column on the right, last in the row on the left, so
@@ -170,14 +203,21 @@ function TapControls({ savedForLater }: { savedForLater?: boolean }) {
             role="toolbar"
             aria-label="Reading controls"
             data-side={side}
-            {...stylex.props(styles.tapControls, side === "left" ? styles.tapControlsLeft : styles.tapControlsRight)}
+            {...stylex.props(
+                styles.tapControls,
+                stacked ? styles.tapControlsStacked : side === "left" ? styles.tapControlsLeft : styles.tapControlsRight
+            )}
         >
             {buttons.map((button) => (
                 <Fragment key={button.key}>
                     {button.key === "s" ? (
                         <span
                             aria-hidden="true"
-                            {...stylex.props(styles.separator, side === "left" && styles.separatorInRow)}
+                            {...stylex.props(
+                                styles.separator,
+                                inRow && styles.separatorInRow,
+                                stacked && styles.separatorStacked
+                            )}
                         />
                     ) : null}
                     <button
@@ -187,7 +227,8 @@ function TapControls({ savedForLater }: { savedForLater?: boolean }) {
                         aria-pressed={button.key === "p" ? savedForLater : undefined}
                         {...stylex.props(
                             styles.tapButton,
-                            button.key === "p" && side === "left" && styles.lastInRow,
+                            stacked && styles.tapButtonLarge,
+                            button.key === "p" && inRow && styles.lastInRow,
                             button.key === "p" && savedForLater === true && styles.tapButtonSaved,
                             pressedKey === button.key && styles.tapButtonPressed
                         )}
@@ -277,6 +318,7 @@ export function ArticleView() {
     const loading = useReaderState((state) => state.loading);
     const scroller = useRef<HTMLDivElement>(null);
     const frame = useRef(0);
+    const stacked = useMediaQuery(STACKED_QUERY);
 
     const trackFocus = () => {
         cancelAnimationFrame(frame.current);
@@ -306,14 +348,18 @@ export function ArticleView() {
         return () => cancelAnimationFrame(id);
     }, [items, reader]);
 
+    const tapControls = (
+        <TapControls
+            stacked={stacked}
+            savedForLater={
+                view?.canSaveForLater ? focusItemId !== undefined && view.savedForLater.has(focusItemId) : undefined
+            }
+        />
+    );
     return (
         <main {...stylex.props(styles.main)}>
             <ProgressBar loading={loading} />
-            <TapControls
-                savedForLater={
-                    view?.canSaveForLater ? focusItemId !== undefined && view.savedForLater.has(focusItemId) : undefined
-                }
-            />
+            {stacked ? null : tapControls}
             <div
                 ref={scroller}
                 {...withClass(CLASS.scroller, styles.scroller)}
@@ -343,6 +389,7 @@ export function ArticleView() {
                 ) : (
                     <p {...stylex.props(styles.empty, styles.noContents)}>No contents</p>
                 )}
+                {stacked ? tapControls : null}
             </div>
         </main>
     );

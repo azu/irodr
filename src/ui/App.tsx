@@ -30,7 +30,9 @@ const styles = stylex.create({
         // iPhone Duo unfolded (626px) keeps the sidebar, narrower, next to the articles.
         gridTemplateColumns: {
             default: `clamp(200px, 30vw, ${sizes.sidebar}) minmax(0, 1fr)`,
-            [media.narrow]: "minmax(0, 1fr)"
+            [media.narrow]: "minmax(0, 1fr)",
+            [media.sideBySide]: `${sizes.thinSidebar} minmax(0, 1fr)`,
+            [media.stacked]: `${sizes.iconSidebar} minmax(0, 1fr)`
         },
         minHeight: 0
     },
