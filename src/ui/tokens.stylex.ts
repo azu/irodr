@@ -36,8 +36,12 @@ export const sizes = stylex.defineVars({
     thinSidebar: "160px",
     /** The sidebar of feed icons only when the screen is split one above the other (media.stacked). */
     iconSidebar: "44px",
-    /** The tap controls when the screen is split one above the other: the lower half of the bottom segment. */
-    stackedControls: "calc(env(viewport-segment-height 0 1) / 2)"
+    /**
+     * The tap controls when the screen is split one above the other: the lower half of the bottom segment, as iPhone
+     * Duo folds in the middle. Not `env(viewport-segment-height 0 1)`: Safari 27.1 on the device gave a value far
+     * larger than the segment.
+     */
+    stackedControls: "25dvh"
 });
 
 /**
