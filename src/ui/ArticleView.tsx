@@ -127,9 +127,9 @@ const styles = stylex.create({
         borderBlockStartWidth: 1,
         borderBlockStartStyle: "solid",
         borderBlockStartColor: colors.border,
-        // Translucent, so the articles scrolled under the bar stay in sight.
-        backgroundColor: "rgb(244 244 244 / 0.6)",
-        backdropFilter: "blur(6px)"
+        // Translucent, so the articles scrolled under the bar stay in sight. No backdrop-filter: blurring what
+        // scrolls under the bar costs every scroll frame.
+        backgroundColor: "rgb(244 244 244 / 0.7)"
     },
     lastInRow: { order: 1 },
     // A line between the item buttons (k, j) and the next feed button (s), which leaves the feed.
