@@ -19,7 +19,15 @@ const STACKED_QUERY = "(vertical-viewport-segments: 2) and (pointer: coarse) and
 
 const styles = stylex.create({
     main: { position: "relative", minWidth: 0, minHeight: 0, display: "flex", flexDirection: "column" },
-    scroller: { flexGrow: 1, flexBasis: 0, overflowY: "auto", overflowX: "hidden", outlineStyle: "none" },
+    scroller: {
+        flexGrow: 1,
+        flexBasis: 0,
+        overflowY: "auto",
+        overflowX: "hidden",
+        outlineStyle: "none",
+        // Paging (Space) leaves out the tap controls at the bottom when folded like a laptop.
+        scrollPaddingBlockEnd: { default: null, [media.stacked]: sizes.stackedControls }
+    },
     header: {
         display: "flex",
         alignItems: "center",
@@ -105,16 +113,16 @@ const styles = stylex.create({
         borderStartEndRadius: 12,
         backgroundColor: colors.subtle
     },
-    // Folded like a laptop: larger buttons in a row across the lower half of the bottom segment (App leaves room).
+    // Folded like a laptop: larger buttons in a row across the lower half of the bottom segment. The bar sticks to
+    // the bottom inside the scroller, so a swipe on it scrolls the articles.
     tapControlsStacked: {
+        position: "sticky",
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "center",
         gap: 24,
         height: sizes.stackedControls,
         insetBlockEnd: 0,
-        insetInlineStart: 0,
-        insetInlineEnd: 0,
         paddingBlockEnd: "env(safe-area-inset-bottom)",
         borderBlockStartWidth: 1,
         borderBlockStartStyle: "solid",
@@ -173,10 +181,9 @@ const styles = stylex.create({
  * Buttons that press the p, k, j and s keys: they follow keys rebound by user scripts (`registerKey`).
  * `savedForLater` is whether the focused item is saved for later, or undefined when its source cannot save items.
  */
-function TapControls({ savedForLater }: { savedForLater?: boolean }) {
+function TapControls({ savedForLater, stacked }: { savedForLater?: boolean; stacked: boolean }) {
     const bindings = useKeyBindings();
     const side = useReaderState((state) => state.preferences.tapControlsSide);
-    const stacked = useMediaQuery(STACKED_QUERY);
     const inRow = stacked || side === "left";
     const { pressed: pressedKey, handlers } = usePress();
     const buttons = [
@@ -309,6 +316,7 @@ export function ArticleView() {
     const loading = useReaderState((state) => state.loading);
     const scroller = useRef<HTMLDivElement>(null);
     const frame = useRef(0);
+    const stacked = useMediaQuery(STACKED_QUERY);
 
     const trackFocus = () => {
         cancelAnimationFrame(frame.current);
@@ -338,14 +346,18 @@ export function ArticleView() {
         return () => cancelAnimationFrame(id);
     }, [items, reader]);
 
+    const tapControls = (
+        <TapControls
+            stacked={stacked}
+            savedForLater={
+                view?.canSaveForLater ? focusItemId !== undefined && view.savedForLater.has(focusItemId) : undefined
+            }
+        />
+    );
     return (
         <main {...stylex.props(styles.main)}>
             <ProgressBar loading={loading} />
-            <TapControls
-                savedForLater={
-                    view?.canSaveForLater ? focusItemId !== undefined && view.savedForLater.has(focusItemId) : undefined
-                }
-            />
+            {stacked ? null : tapControls}
             <div
                 ref={scroller}
                 {...withClass(CLASS.scroller, styles.scroller)}
@@ -375,6 +387,7 @@ export function ArticleView() {
                 ) : (
                     <p {...stylex.props(styles.empty, styles.noContents)}>No contents</p>
                 )}
+                {stacked ? tapControls : null}
             </div>
         </main>
     );

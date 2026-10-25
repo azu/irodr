@@ -13,8 +13,6 @@ const NARROW_QUERY = "(max-width: 599px)";
 const styles = stylex.create({
     app: {
         height: "100dvh",
-        // Folded like a laptop, the tap controls take the lower half of the bottom segment.
-        paddingBlockEnd: { default: null, [media.stacked]: sizes.stackedControls },
         display: "grid",
         gridTemplateRows: "auto minmax(0, 1fr)",
         // viewport-fit=cover: Safari blurs the page under the status bar most at the top edge. Let the header's
