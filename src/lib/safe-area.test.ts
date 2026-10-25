@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
-import { createSafeAreaRefresher } from "./safe-area.ts";
+import { createSafeAreaRefresher, refreshSafeArea } from "./safe-area.ts";
 
 const CONTENT = "width=device-width, initial-scale=1, viewport-fit=cover";
 
@@ -69,5 +69,16 @@ describe("safe area refresher", () => {
         expect(timers.size).toBe(0);
         viewport.dispatchEvent(new Event("resize"));
         expect(timers.size).toBe(0);
+    });
+});
+
+describe("refreshSafeArea", () => {
+    it("drops viewport-fit=cover for a frame", () => {
+        const meta = { content: CONTENT };
+        const frames: Array<() => void> = [];
+        refreshSafeArea(meta, (task) => frames.push(task));
+        expect(meta.content).toBe("width=device-width, initial-scale=1");
+        for (const task of frames) task();
+        expect(meta.content).toBe(CONTENT);
     });
 });
