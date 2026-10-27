@@ -39,6 +39,28 @@ test("connects with OAuth and lists unread feeds by category", async ({ page }) 
     await expect(headerMessage(page)).toHaveText("Updated feeds");
 });
 
+test("Refresh asks only for the unread counts until a feed is missing from the subscriptions", async ({
+    page,
+    api
+}) => {
+    const before = (await api.log()).length;
+    const paths = async () => (await api.log()).slice(before).map((entry) => entry.path);
+    await page.getByRole("button", { name: "Refresh", exact: true }).click();
+    await expect.poll(paths).toEqual(["/reader/api/0/unread-count"]);
+    await page.getByRole("button", { name: "Refresh", exact: true }).click();
+    await expect.poll(paths).toEqual(["/reader/api/0/unread-count", "/reader/api/0/unread-count"]);
+
+    await api.control("POST", "/inoreader/subscriptions", {
+        id: "feed/https://new.example.com/rss",
+        title: "New Feed",
+        categories: ["Blogs"],
+        items: [{ id: "new-1", title: "new article", published: Math.floor(Date.now() / 1000) }]
+    });
+    await page.getByRole("button", { name: "Refresh", exact: true }).click();
+    await expect(feedRow(page, "New Feed")).toHaveText("New Feed (1)");
+    expect((await paths()).slice(2)).toEqual(["/reader/api/0/unread-count", "/reader/api/0/subscription/list"]);
+});
+
 test("keeps the session after reload", async ({ page }) => {
     await page.reload();
     await expect(feedRow(page, "Alpha Blog")).toBeVisible();
