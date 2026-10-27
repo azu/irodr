@@ -1,7 +1,9 @@
 /**
  * Counts of the Inoreader requests that pass the CORS proxy, to see which clients and endpoints use the app's daily
  * API limits (https://www.inoreader.com/developers/rate-limiting). One Netlify Blobs entry per request, keyed
- * `<UTC date>/<client><endpoint>/<request ID>`; `/cors-proxy-stats` counts them. Keys hold no tokens or feed URLs.
+ * `<UTC date>/<client><endpoint>/<request ID>`. Keys hold no tokens or feed URLs. Count one day with the Netlify CLI:
+ * netlify blobs:list inoreader-requests --prefix 2026-10-27/ --json \
+ *   | jq -r '.blobs[].key | split("/") | "\(.[1]) /\(.[2:-1] | join("/"))"' | sort | uniq -c | sort -rn
  */
 export const STATS_STORE = "inoreader-requests";
 
@@ -15,7 +17,7 @@ export const CLIENT_HEADER = "X-Irodr-Client";
 export function endpointOf(url: string): string {
     const { pathname } = new URL(url);
     const api =
-        /^\/reader\/api\/0\/(stream\/(?:contents|items\/ids|items\/contents)|(?:subscription|tag|preferences)\/[\w-]+|[\w-]+)/.exec(
+        /^\/reader\/api\/0\/(stream\/(?:contents|items\/ids|items\/contents)|(?:(?:subscription|tag|preferences)\/)?[\w-]{1,40}(?=\/|$))/.exec(
             pathname
         )?.[1];
     if (api) return `/reader/api/0/${api}`;
@@ -29,14 +31,4 @@ export function clientOf(request: Request): string {
 
 export function statsKey(date: Date, client: string, endpoint: string, id: string): string {
     return `${date.toISOString().slice(0, 10)}/${client}${endpoint}/${id}`;
-}
-
-/** Requests per "<client> <endpoint>", most first, from the keys of one day. */
-export function countKeys(keys: readonly string[]): Record<string, number> {
-    const counts = keys.reduce((counted, key) => {
-        const [, client, ...rest] = key.split("/");
-        const name = `${client} /${rest.slice(0, -1).join("/")}`;
-        return counted.set(name, (counted.get(name) ?? 0) + 1);
-    }, new Map<string, number>());
-    return Object.fromEntries([...counts].toSorted((a, b) => b[1] - a[1]));
 }
