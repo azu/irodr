@@ -492,7 +492,11 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
             checkRateLimit();
             try {
                 return await options.fetch(`${options.corsProxy}${url}`, {
-                    headers: { Authorization: `Bearer ${accessToken}` },
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                        // Lets the proxy count this version apart from irodr 1.x; it removes the header.
+                        ...(options.corsProxy ? { "X-Irodr-Client": "2" } : {})
+                    },
                     ...(body === undefined ? {} : { method: "POST", body })
                 });
             } catch {

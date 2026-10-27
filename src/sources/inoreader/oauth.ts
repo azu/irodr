@@ -150,7 +150,9 @@ export function createInoreaderOAuth(options: InoreaderOAuthOptions): InoreaderO
                 method: "POST",
                 headers: {
                     Accept: "application/json",
-                    "Content-Type": "application/x-www-form-urlencoded"
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    // Lets the proxy count this version apart from irodr 1.x; it removes the header.
+                    ...(options.corsProxy ? { "X-Irodr-Client": "2" } : {})
                 },
                 body
             });

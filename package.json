@@ -22,6 +22,7 @@
     "prepare": "vp config --no-agent"
   },
   "dependencies": {
+    "@netlify/blobs": "catalog:",
     "@stylexjs/stylex": "catalog:",
     "markdown-it": "catalog:",
     "react": "catalog:",
