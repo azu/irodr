@@ -27,8 +27,6 @@ const FEED_PREFIX = `${INOREADER_SOURCE_ID}:`;
 const READ_CATEGORY = /^user\/[^/]+\/state\/com\.google\/read$/;
 const STARRED_CATEGORY = /^user\/[^/]+\/state\/com\.google\/starred$/;
 const READ_TAG = "user/-/state/com.google/read";
-/** Writes that can change Read later: saving, unstarring and marking its items read. */
-const READ_LATER_WRITES: ReadonlySet<string> = new Set(["/save-web-page", "/edit-tag"]);
 /**
  * Inoreader's Read later: the starred items, from Inoreader's apps or `saveForLater`.
  * https://www.inoreader.com/developers/stream-ids
@@ -87,8 +85,6 @@ export interface InoreaderState {
     readonly feeds: readonly Feed[];
     /** Stream ID → the latest mark-read of this browser, which overrides unread counts that do not reflect it yet. */
     readonly readThrough: ReadonlyMap<string, ReadThrough>;
-    /** The lists later syncs reuse. A new session starts without them. */
-    readonly kept: SyncCache;
 }
 
 /** The responses a sync turns into feeds. */
@@ -106,7 +102,7 @@ export interface Kept<T> {
     readonly signature?: string;
 }
 
-/** The lists kept between syncs, in memory only: feed URLs can carry credentials. */
+/** The lists kept between syncs. Runtime only: feed URLs can carry credentials. */
 export interface SyncCache {
     readonly subscriptions?: Kept<SubscriptionsResponse>;
     readonly readLater?: Kept<ItemIdsResponse>;
@@ -229,8 +225,7 @@ export function initialState(connected: boolean): InoreaderState {
     return {
         status: connected ? idle("Inoreader is connected.") : disconnected(),
         feeds: [],
-        readThrough: new Map(),
-        kept: {}
+        readThrough: new Map()
     };
 }
 
@@ -383,25 +378,19 @@ export function withItemsMarkedRead(state: InoreaderState, streamId: string, mar
     };
 }
 
-/** A rejected session disconnects the source and starts over; other failures keep the feeds and show the error. */
+/** A rejected session disconnects the source; other failures keep the feeds and show the error. */
 export function withFailure(state: InoreaderState, error: unknown): InoreaderState {
     return isAuthFailure(error)
-        ? withStatus(initialState(false), {
-              phase: "disconnected",
-              message: `${errorMessage(error)} Open Sources to connect again.`
-          })
+        ? {
+              ...state,
+              feeds: [],
+              status: { phase: "disconnected", message: `${errorMessage(error)} Open Sources to connect again.` }
+          }
         : withStatus(state, failed(errorMessage(error)));
 }
 
-/** Keep the lists a sync received for the next syncs. */
-export function withKept(state: InoreaderState, kept: SyncCache): InoreaderState {
-    return { ...state, kept };
-}
-
-/** After a write that can change Read later, the next sync lists its unread IDs again. */
-export function withReadLaterChanged(state: InoreaderState): InoreaderState {
-    const { subscriptions } = state.kept;
-    return state.kept.readLater ? withKept(state, subscriptions ? { subscriptions } : {}) : state;
+function withDisconnected(state: InoreaderState): InoreaderState {
+    return { ...state, feeds: [], status: disconnected() };
 }
 
 function toItemContent(item: StreamItemResponse): string {
@@ -465,6 +454,9 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
     const markedRead = new Set<string>();
     // Runtime handle: item ID → the article that `saveForLater` saved for it, so it can be removed again.
     const savedArticles = new Map<string, string>();
+    // Runtime handle: the lists that later syncs reuse to save Zone 1 requests.
+    const syncCache = createStore<SyncCache>({});
+    const forgetReadLater = (): void => syncCache.update((current) => ({ subscriptions: current.subscriptions }));
 
     // The connection and the custom client are read from the OAuth storage whenever the state changes.
     const snapshotOf = (current: InoreaderState): SourceSnapshot => {
@@ -525,12 +517,14 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
         if (!response.ok) {
             throw new InoreaderRequestError(`Inoreader request failed (HTTP ${response.status}).`, response.status);
         }
-        if (READ_LATER_WRITES.has(path)) state.update(withReadLaterChanged);
         return response;
     };
 
     const handleFailure = (error: unknown): never => {
-        if (isAuthFailure(error)) oauth.clearToken();
+        if (isAuthFailure(error)) {
+            oauth.clearToken();
+            syncCache.set({});
+        }
         state.update((current) => withFailure(current, error));
         throw error;
     };
@@ -539,8 +533,9 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
         if (!oauth.isCallback(url)) return { consumedUrl: false };
         try {
             await oauth.handleCallback(url);
-            // A new session, perhaps of another account.
-            state.set(withStatus(initialState(true), idle("Inoreader connected.")));
+            // Another account may have connected.
+            syncCache.set({});
+            updateStatus(idle("Inoreader connected."));
         } catch (error) {
             updateStatus(failed(errorMessage(error)));
         }
@@ -576,20 +571,18 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
         updateStatus({ phase: "syncing", message: "Loading Inoreader subscriptions…" });
         try {
             const unreadCounts = (await (await request("/unread-count")).json()) as UnreadCountsResponse;
-            const reusable = reusableLists(state.get().kept, unreadCounts, options.now());
+            const reusable = reusableLists(syncCache.get(), unreadCounts, options.now());
             const [listed, readLaterIds] = await Promise.allSettled([
                 reusable.subscriptions ?? fetchSubscriptions(),
                 reusable.readLater ?? fetchReadLater(readLaterSignature(unreadCounts))
             ]);
-            const kept: SyncCache = {
+            // Keep what arrived even when the other request failed, e.g. at the daily limit.
+            syncCache.set({
                 ...(listed.status === "fulfilled" ? { subscriptions: listed.value } : {}),
                 ...(readLaterIds.status === "fulfilled" && readLaterIds.value ? { readLater: readLaterIds.value } : {})
-            };
-            if (listed.status === "rejected" || readLaterIds.status === "rejected") {
-                // Keep what arrived even when the other request failed, e.g. at the daily limit.
-                state.update((current) => withKept(current, kept));
-                throw [listed, readLaterIds].find((result) => result.status === "rejected")?.reason;
-            }
+            });
+            if (listed.status === "rejected") throw listed.reason;
+            if (readLaterIds.status === "rejected") throw readLaterIds.reason;
             const subscriptions = listed.value;
             const readLater = readLaterIds.value;
             const unreadKeys = new Set((readLater?.response.itemRefs ?? []).map((ref) => articleKey(ref.id)));
@@ -597,7 +590,7 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
             state.update((current) =>
                 withStatus(
                     projectFeeds(
-                        withKept(current, kept),
+                        current,
                         { subscriptions: subscriptions.response, unreadCounts, readLater: readLater?.response },
                         { baseUrl: options.baseUrl, now: options.now() }
                     ),
@@ -658,6 +651,8 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
                     new URLSearchParams([["a", READ_TAG], ...ids.map((id): [string, string] => ["i", id])])
                 );
                 for (const id of ids) markedRead.add(id);
+                // The kept IDs still list these items unread.
+                forgetReadLater();
                 state.update((current) => withItemsMarkedRead(current, streamId, ids.length));
                 return;
             }
@@ -681,6 +676,7 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
             // The answer is the saved article's path, `/article/<hex>`.
             const saved = /^\/article\/([0-9a-f]+)$/i.exec((await response.text()).trim())?.[1];
             if (saved) savedArticles.set(item.id, `tag:google.com,2005:reader/item/${saved}`);
+            forgetReadLater();
         } catch (error) {
             if (isAuthFailure(error)) handleFailure(error);
             throw error;
@@ -709,6 +705,7 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
             throw error;
         }
         savedArticles.delete(item.id);
+        forgetReadLater();
     };
 
     const runAction = async (actionId: string, values: SettingValues): Promise<string> => {
@@ -722,7 +719,8 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
             }
             case "disconnect":
                 oauth.clearToken();
-                state.set(initialState(false));
+                syncCache.set({});
+                state.update(withDisconnected);
                 return "Inoreader disconnected.";
             default:
                 throw new Error(`Unknown action: ${actionId}`);
