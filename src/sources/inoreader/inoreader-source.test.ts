@@ -21,6 +21,7 @@ import {
     toItem,
     articleKey,
     withFailure,
+    withReadLaterChanged,
     withItemsMarkedRead,
     withMarkedRead
 } from "./inoreader-source.ts";
@@ -782,11 +783,13 @@ describe("markReadTimestamp", () => {
 describe("withFailure", () => {
     const feeds = project(initialState(true), lists([subscription(A)], [unread(A, 3, T)])).feeds;
 
-    it("disconnects when the session was rejected", () => {
-        const state = stateWith({ feeds });
+    it("disconnects and starts over when the session was rejected", () => {
+        const kept = { subscriptions: { response: { subscriptions: [subscription(A)] }, at: NOW } };
+        const state = stateWith({ feeds, kept });
         expect(withFailure(state, new InoreaderAuthError("Inoreader session expired. Connect again."))).toEqual({
             ...state,
             feeds: [],
+            kept: {},
             status: {
                 phase: "disconnected",
                 message: "Inoreader session expired. Connect again. Open Sources to connect again."
@@ -897,5 +900,15 @@ describe("reusableLists", () => {
         expect(reusableLists(cache, counts(unread(STARRED, 2, T)), later).readLater).toBeUndefined();
         expect(reusableLists(cache, counts(unread(STARRED, 3, T)), NOW).readLater).toBeUndefined();
         expect(reusableLists(cache, counts(), NOW).readLater).toBeUndefined();
+    });
+});
+
+describe("withReadLaterChanged", () => {
+    it("drops the kept Read later IDs and keeps the subscriptions", () => {
+        const subscriptions = { response: { subscriptions: [subscription(A)] }, at: NOW };
+        const state = stateWith({ kept: { subscriptions, readLater: { response: { itemRefs: [] }, at: NOW } } });
+        expect(withReadLaterChanged(state).kept).toEqual({ subscriptions });
+        const unchanged = stateWith({ kept: { subscriptions } });
+        expect(withReadLaterChanged(unchanged)).toBe(unchanged);
     });
 });
