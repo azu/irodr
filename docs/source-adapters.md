@@ -13,7 +13,12 @@ This document describes the behavior of each source.
   Only a rejected grant (HTTP 400/401) disconnects; outages of the token endpoint keep the session.
 - **Custom app**: optional. A Client ID and secret entered under **Use your own Inoreader app** in Sources (collapsed
   while unused) are stored in `localStorage["irodr:inoreader-client"]`.
-- **Feeds**: `subscription/list` and `unread-count`. A feed is listed under its first category.
+- **Feeds**: `subscription/list` and `unread-count`. A feed is listed under its first category. Each sync asks for
+  `unread-count` only, because every Zone 1 request counts toward the app's daily limit
+  ([Rate limiting](https://www.inoreader.com/developers/rate-limiting)). The subscription list is reused for an hour,
+  or until the unread counts name a feed it lacks. The unread Read later IDs (`stream/items/ids`) are reused for 30
+  minutes while the starred entry of `unread-count` is unchanged, and listed again after irodr saves, removes or
+  marks read a Read later item. A reload starts over.
 - **Items**: `stream/contents` with `n` = "Fetch subscription contents Count" (default 20). `Shift+J` and
   **Read More** load older items with the continuation. The Unread/All toggle (`t`) switches between items that
   were unread when loaded and all loaded items.

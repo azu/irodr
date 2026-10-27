@@ -6,6 +6,7 @@ import {
     createFakeInoreader,
     type FakeInoreader,
     type InoreaderItemSeed,
+    type InoreaderSubscriptionSeed,
     type InoreaderScenario,
     READ_LATER
 } from "./inoreader.ts";
@@ -76,6 +77,9 @@ export async function startFakeApi(options: { port?: number; host?: string } = {
                 return json(recorded.log);
             case "POST /inoreader/items":
                 inoreader.addItems(String(body.streamId), body.items as InoreaderItemSeed[]);
+                return json({ ok: true });
+            case "POST /inoreader/subscriptions":
+                inoreader.subscribe(body as unknown as InoreaderSubscriptionSeed);
                 return json({ ok: true });
             case "POST /inoreader/expire-tokens":
                 inoreader.expireTokens();

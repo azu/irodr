@@ -2,7 +2,12 @@ import { afterAll, beforeEach, describe, expect, it } from "vite-plus/test";
 import { inoreaderSubscriptions } from "../../../e2e/fake-api/fixtures.ts";
 import { startFakeApi } from "../../../e2e/fake-api/server.ts";
 import type { Feed, Item } from "../source.ts";
-import type { StreamItemResponse, SubscriptionResponse, UnreadCountResponse } from "./api-types.ts";
+import type {
+    StreamItemResponse,
+    SubscriptionResponse,
+    UnreadCountResponse,
+    UnreadCountsResponse
+} from "./api-types.ts";
 import {
     createInoreaderSource,
     InoreaderRequestError,
@@ -11,6 +16,7 @@ import {
     markReadTimestamp,
     projectFeeds,
     READ_LATER,
+    reusableLists,
     type SubscriptionLists,
     toItem,
     articleKey,
@@ -41,6 +47,8 @@ function github(url: string): Item {
     };
 }
 afterAll(() => server.close());
+
+const idsRequests = () => server.log().filter((entry) => entry.path === "/reader/api/0/stream/items/ids");
 beforeEach(() => server.reset({ inoreader: { subscriptions: inoreaderSubscriptions() } }));
 
 const clock = { offset: 0 };
@@ -48,7 +56,14 @@ beforeEach(() => {
     clock.offset = 0;
 });
 
-function createSource(setup: { storage?: WebStorage; corsProxy?: string } = {}) {
+function createSource(
+    setup: {
+        storage?: WebStorage;
+        corsProxy?: string;
+        /** Answer a request instead of the fake API. */
+        intercept?: (url: string) => Response | undefined;
+    } = {}
+) {
     const storage = setup.storage ?? createMemoryStorage();
     const corsProxy = setup.corsProxy ?? "";
     const navigations: string[] = [];
@@ -61,6 +76,8 @@ function createSource(setup: { storage?: WebStorage; corsProxy?: string } = {}) 
         fetch: (input, init) => {
             const url = input instanceof Request ? input.url : input.toString();
             requests.push(url);
+            const intercepted = setup.intercept?.(url);
+            if (intercepted) return Promise.resolve(intercepted);
             // Play the proxy: forward the request to the URL after the prefix.
             return fetch(url.startsWith(corsProxy) ? url.slice(corsProxy.length) : url, init);
         },
@@ -80,7 +97,7 @@ async function authorize(authorizeUrl: string): Promise<URL> {
     return new URL(href);
 }
 
-async function connected(setup: { corsProxy?: string } = {}) {
+async function connected(setup: Parameters<typeof createSource>[0] = {}) {
     const created = createSource(setup);
     await created.source.runAction("connect", { clientId: "", clientSecret: "" });
     const callback = await authorize(created.navigations[0] ?? "");
@@ -145,8 +162,8 @@ describe("createInoreaderSource", () => {
         await source.sync();
         expect(requests.map((url) => new URL(url.slice("/cors-proxy/".length)).pathname)).toEqual([
             "/inoreader/oauth2/token",
-            "/inoreader/reader/api/0/subscription/list",
             "/inoreader/reader/api/0/unread-count",
+            "/inoreader/reader/api/0/subscription/list",
             "/inoreader/reader/api/0/stream/items/ids"
         ]);
         expect(requests.every((url) => url.startsWith(`/cors-proxy/${server.origin}/inoreader/`))).toBe(true);
@@ -278,6 +295,83 @@ describe("createInoreaderSource", () => {
         await source.markRead(feedId, page.items);
         expect(server.log().filter((entry) => entry.path === "/reader/api/0/edit-tag")).toHaveLength(2);
         expect(source.getSnapshot().feeds.find((feed) => feed.id === feedId)?.unreadCount).toBe(1);
+    });
+
+    it("asks only for the unread counts while the subscriptions and Read later are unchanged", async () => {
+        const { source } = await connected();
+        await source.sync();
+        const before = server.log().length;
+        server.inoreader.addItems(ALPHA, [{ id: "late", title: "late", published: Math.floor(Date.now() / 1000) }]);
+        await source.sync();
+        expect(
+            server
+                .log()
+                .slice(before)
+                .map((entry) => entry.path)
+        ).toEqual(["/reader/api/0/unread-count"]);
+        expect(source.getSnapshot().feeds.find((feed) => feed.title === "Alpha Blog")?.unreadCount).toBe(4);
+    });
+
+    it("lists the subscriptions again for a feed they lack, and after an hour", async () => {
+        const { source } = await connected();
+        await source.sync();
+        const synced = () => {
+            const start = server.log().length;
+            return async () => {
+                await source.sync();
+                return server
+                    .log()
+                    .slice(start)
+                    .map((entry) => entry.path);
+            };
+        };
+        server.inoreader.subscribe({
+            id: "feed/https://new.example.com/rss",
+            title: "New Feed",
+            categories: ["Blogs"],
+            items: [{ id: "new-1", title: "new article", published: Math.floor(Date.now() / 1000) }]
+        });
+        expect(await synced()()).toEqual(["/reader/api/0/unread-count", "/reader/api/0/subscription/list"]);
+        expect(source.getSnapshot().feeds.find((feed) => feed.title === "New Feed")?.unreadCount).toBe(1);
+        clock.offset = 60 * 60 * 1000;
+        await expect(synced()()).resolves.toContain("/reader/api/0/subscription/list");
+    });
+
+    it("lists the unread Read later IDs again after a save, and after 30 minutes", async () => {
+        const { source } = await connected();
+        await source.sync();
+        expect(idsRequests()).toHaveLength(1);
+        await source.saveForLater?.(github("https://github.com/azu/irodr/pull/1"));
+        await source.sync();
+        expect(idsRequests()).toHaveLength(2);
+        expect(source.getSnapshot().feeds.find((feed) => feed.id === `inoreader:${READ_LATER}`)?.unreadCount).toBe(1);
+        await source.sync();
+        expect(idsRequests()).toHaveLength(2);
+        clock.offset = 30 * 60 * 1000;
+        await source.sync();
+        expect(idsRequests()).toHaveLength(3);
+    });
+
+    it("keeps the subscriptions listed in a sync that hit the limit on Read later", async () => {
+        const limited = { on: true };
+        const { source } = await connected({
+            intercept: (url) =>
+                limited.on && url.includes("/stream/items/ids")
+                    ? new Response("", { status: 429, headers: { "X-Reader-Limits-Reset-After": "1" } })
+                    : undefined
+        });
+        await expect(source.sync()).rejects.toThrow("Zone 1 API limit reached");
+        limited.on = false;
+        clock.offset = 2000;
+        const before = server.log().length;
+        await source.sync();
+        expect(
+            server
+                .log()
+                .slice(before)
+                .map((entry) => entry.path)
+        ).toEqual(["/reader/api/0/unread-count", "/reader/api/0/stream/items/ids"]);
+        expect(source.getSnapshot().feeds).toHaveLength(6);
     });
 
     it("lists the subscriptions when Read later cannot be listed", async () => {
@@ -774,5 +868,34 @@ describe("toItem", () => {
         );
         const withImage = { ...response, summary: { content: '<img src="b.png">' }, enclosure };
         expect(toItem(`inoreader:${A}`, A, withImage).contentHtml).toBe('<img src="b.png">');
+    });
+});
+
+function counts(...unreadcounts: UnreadCountResponse[]): UnreadCountsResponse {
+    return { max: 1000, unreadcounts };
+}
+
+describe("reusableLists", () => {
+    const STARRED = "user/1005921515/state/com.google/starred";
+    const cache = {
+        subscriptions: { response: { subscriptions: [subscription(A)] }, at: NOW },
+        readLater: { response: { itemRefs: [] }, at: NOW, signature: `2:${T}` }
+    };
+
+    it("reuses both lists while the counts show no change", () => {
+        expect(reusableLists(cache, counts(unread(A, 1, T), unread(STARRED, 2, T)), NOW + 60_000)).toEqual(cache);
+    });
+
+    it("drops the subscriptions after an hour or for an unlisted feed", () => {
+        const hourLater = NOW + 60 * 60 * 1000;
+        expect(reusableLists(cache, counts(unread(A, 1, T)), hourLater).subscriptions).toBeUndefined();
+        expect(reusableLists(cache, counts(unread(B, 1, T)), NOW).subscriptions).toBeUndefined();
+    });
+
+    it("drops the Read later IDs after 30 minutes, or when the starred entry changed or is missing", () => {
+        const later = NOW + 30 * 60 * 1000;
+        expect(reusableLists(cache, counts(unread(STARRED, 2, T)), later).readLater).toBeUndefined();
+        expect(reusableLists(cache, counts(unread(STARRED, 3, T)), NOW).readLater).toBeUndefined();
+        expect(reusableLists(cache, counts(), NOW).readLater).toBeUndefined();
     });
 });
