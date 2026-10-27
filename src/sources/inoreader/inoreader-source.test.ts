@@ -2,7 +2,12 @@ import { afterAll, beforeEach, describe, expect, it } from "vite-plus/test";
 import { inoreaderSubscriptions } from "../../../e2e/fake-api/fixtures.ts";
 import { startFakeApi } from "../../../e2e/fake-api/server.ts";
 import type { Feed, Item } from "../source.ts";
-import type { StreamItemResponse, SubscriptionResponse, UnreadCountResponse } from "./api-types.ts";
+import type {
+    StreamItemResponse,
+    SubscriptionResponse,
+    UnreadCountResponse,
+    UnreadCountsResponse
+} from "./api-types.ts";
 import {
     createInoreaderSource,
     InoreaderRequestError,
@@ -11,6 +16,7 @@ import {
     markReadTimestamp,
     projectFeeds,
     READ_LATER,
+    reusableLists,
     type SubscriptionLists,
     toItem,
     articleKey,
@@ -147,8 +153,8 @@ describe("createInoreaderSource", () => {
         await source.sync();
         expect(requests.map((url) => new URL(url.slice("/cors-proxy/".length)).pathname)).toEqual([
             "/inoreader/oauth2/token",
-            "/inoreader/reader/api/0/subscription/list",
             "/inoreader/reader/api/0/unread-count",
+            "/inoreader/reader/api/0/subscription/list",
             "/inoreader/reader/api/0/stream/items/ids"
         ]);
         expect(requests.every((url) => url.startsWith(`/cors-proxy/${server.origin}/inoreader/`))).toBe(true);
@@ -831,5 +837,34 @@ describe("toItem", () => {
         );
         const withImage = { ...response, summary: { content: '<img src="b.png">' }, enclosure };
         expect(toItem(`inoreader:${A}`, A, withImage).contentHtml).toBe('<img src="b.png">');
+    });
+});
+
+function counts(...unreadcounts: UnreadCountResponse[]): UnreadCountsResponse {
+    return { max: 1000, unreadcounts };
+}
+
+describe("reusableLists", () => {
+    const STARRED = "user/1005921515/state/com.google/starred";
+    const cache = {
+        subscriptions: { response: { subscriptions: [subscription(A)] }, at: NOW },
+        readLater: { response: { itemRefs: [] }, at: NOW, signature: `2:${T}` }
+    };
+
+    it("reuses both lists while the counts show no change", () => {
+        expect(reusableLists(cache, counts(unread(A, 1, T), unread(STARRED, 2, T)), NOW + 60_000)).toEqual(cache);
+    });
+
+    it("drops the subscriptions after an hour or for an unlisted feed", () => {
+        const hourLater = NOW + 60 * 60 * 1000;
+        expect(reusableLists(cache, counts(unread(A, 1, T)), hourLater).subscriptions).toBeUndefined();
+        expect(reusableLists(cache, counts(unread(B, 1, T)), NOW).subscriptions).toBeUndefined();
+    });
+
+    it("drops the Read later IDs after 30 minutes, or when the starred entry changed or is missing", () => {
+        const later = NOW + 30 * 60 * 1000;
+        expect(reusableLists(cache, counts(unread(STARRED, 2, T)), later).readLater).toBeUndefined();
+        expect(reusableLists(cache, counts(unread(STARRED, 3, T)), NOW).readLater).toBeUndefined();
+        expect(reusableLists(cache, counts(), NOW).readLater).toBeUndefined();
     });
 });

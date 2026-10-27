@@ -95,32 +95,27 @@ export interface SubscriptionLists {
     readonly readLater?: ItemIdsResponse;
 }
 
-/** A response a later sync can reuse, and when it was received (epoch milliseconds). */
-export interface Fetched<T> {
+/** A response kept for later syncs, with when it arrived (epoch ms) and the unread count it was listed for. */
+export interface Kept<T> {
     readonly response: T;
     readonly at: number;
+    readonly signature?: string;
 }
 
-/** The responses kept between syncs. Runtime only: feed URLs can carry credentials. */
+/** The lists kept between syncs. Runtime only: feed URLs can carry credentials. */
 export interface SyncCache {
-    readonly subscriptions?: Fetched<SubscriptionsResponse>;
-    /** `signature` is the starred entry of the unread counts when the IDs were listed. */
-    readonly readLater?: Fetched<ItemIdsResponse | undefined> & { readonly signature: string | undefined };
-}
-
-/** Whether a sync lists the subscriptions before it knows the unread counts. */
-export function subscriptionsExpired(cache: SyncCache, now: number): boolean {
-    return cache.subscriptions === undefined || now - cache.subscriptions.at >= SUBSCRIPTIONS_MAX_AGE_MS;
+    readonly subscriptions?: Kept<SubscriptionsResponse>;
+    readonly readLater?: Kept<ItemIdsResponse>;
 }
 
 /** Whether the unread counts name a feed the subscription list lacks, e.g. one subscribed in another app. */
-export function hasUnlistedFeeds(subscriptions: SubscriptionsResponse, unreadCounts: UnreadCountsResponse): boolean {
+function hasUnlistedFeeds(subscriptions: SubscriptionsResponse, unreadCounts: UnreadCountsResponse): boolean {
     const listed = new Set(subscriptions.subscriptions.map((subscription) => unreadCountId(subscription.id)));
     return unreadCounts.unreadcounts.some((count) => count.id.startsWith("feed/") && !listed.has(count.id));
 }
 
 /**
- * The starred entry of the unread counts, which changes when Read later changes, or undefined without one.
+ * The starred entry of the unread counts, which changes with Read later, or undefined without one.
  * https://www.inoreader.com/developers/unread-counts
  */
 export function readLaterSignature(unreadCounts: UnreadCountsResponse): string | undefined {
@@ -128,15 +123,27 @@ export function readLaterSignature(unreadCounts: UnreadCountsResponse): string |
     return starred ? `${starred.count}:${starred.newestItemTimestampUsec}` : undefined;
 }
 
-/** Whether a sync lists the unread Read later IDs again, or reuses the ones it has. */
-export function readLaterExpired(cache: SyncCache, signature: string | undefined, now: number): boolean {
-    const { readLater } = cache;
-    return (
-        readLater?.response === undefined ||
-        signature === undefined ||
-        readLater.signature !== signature ||
-        now - readLater.at >= READ_LATER_MAX_AGE_MS
-    );
+/**
+ * The kept lists that a sync with these unread counts can reuse. A sync requests the others again:
+ * the subscriptions after an hour or when a feed is missing from them, the Read later IDs after 30 minutes or
+ * when the starred count changed.
+ */
+export function reusableLists(cache: SyncCache, unreadCounts: UnreadCountsResponse, now: number): SyncCache {
+    const { subscriptions, readLater } = cache;
+    const signature = readLaterSignature(unreadCounts);
+    const subscriptionsFresh =
+        subscriptions !== undefined &&
+        now - subscriptions.at < SUBSCRIPTIONS_MAX_AGE_MS &&
+        !hasUnlistedFeeds(subscriptions.response, unreadCounts);
+    const readLaterFresh =
+        readLater !== undefined &&
+        signature !== undefined &&
+        readLater.signature === signature &&
+        now - readLater.at < READ_LATER_MAX_AGE_MS;
+    return {
+        ...(subscriptionsFresh ? { subscriptions } : {}),
+        ...(readLaterFresh ? { readLater } : {})
+    };
 }
 
 function idle(message: string): SourceStatus {
@@ -447,7 +454,7 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
     const markedRead = new Set<string>();
     // Runtime handle: item ID → the article that `saveForLater` saved for it, so it can be removed again.
     const savedArticles = new Map<string, string>();
-    // Runtime handle: responses that later syncs reuse to save Zone 1 requests.
+    // Runtime handle: the lists that later syncs reuse to save Zone 1 requests.
     const syncCache = createStore<SyncCache>({});
     const forgetReadLater = (): void => syncCache.update((current) => ({ subscriptions: current.subscriptions }));
 
@@ -535,57 +542,48 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
         return { consumedUrl: true };
     };
 
-    const fetchSubscriptions = async (): Promise<SubscriptionsResponse> => {
-        const response = (await (await request("/subscription/list")).json()) as SubscriptionsResponse;
-        syncCache.update((current) => ({ ...current, subscriptions: { response, at: options.now() } }));
-        return response;
-    };
+    const fetchSubscriptions = async (): Promise<Kept<SubscriptionsResponse>> => ({
+        response: (await (await request("/subscription/list")).json()) as SubscriptionsResponse,
+        at: options.now()
+    });
 
-    const fetchReadLater = async (signature: string | undefined): Promise<ItemIdsResponse | undefined> => {
-        const response = await request("/stream/items/ids", { s: READ_LATER, xt: READ_TAG, n: READ_LATER_COUNT_LIMIT })
-            .then((answer) => answer.json() as Promise<ItemIdsResponse>)
-            // Without Read later the subscriptions are still listed.
-            .catch((error: unknown) => {
-                if (isAuthFailure(error) || (error instanceof InoreaderRequestError && error.status === 429)) {
-                    throw error;
-                }
-                return undefined;
+    /** Undefined when Read later cannot be listed: the subscriptions are still listed. */
+    const fetchReadLater = async (signature: string | undefined): Promise<Kept<ItemIdsResponse> | undefined> => {
+        try {
+            const response = await request("/stream/items/ids", {
+                s: READ_LATER,
+                xt: READ_TAG,
+                n: READ_LATER_COUNT_LIMIT
             });
-        syncCache.update((current) => ({ ...current, readLater: { response, at: options.now(), signature } }));
-        return response;
+            return { response: (await response.json()) as ItemIdsResponse, at: options.now(), signature };
+        } catch (error) {
+            if (isAuthFailure(error) || (error instanceof InoreaderRequestError && error.status === 429)) throw error;
+            return undefined;
+        }
     };
 
     /**
-     * Ask for the unread counts, and only for what they show changed: the subscription list and the Read later IDs
-     * are reused while they are recent. Each one is a Zone 1 request.
+     * Ask for the unread counts, then only for the lists they show changed. Each request counts toward the Zone 1
+     * daily limit.
      */
     const sync = async (): Promise<void> => {
         if (!oauth.token()) return;
         updateStatus({ phase: "syncing", message: "Loading Inoreader subscriptions…" });
         try {
-            const cached = syncCache.get().subscriptions;
-            const [listed, unreadCounts] = await Promise.all([
-                cached === undefined || subscriptionsExpired(syncCache.get(), options.now())
-                    ? fetchSubscriptions()
-                    : Promise.resolve(cached.response),
-                request("/unread-count").then((response) => response.json() as Promise<UnreadCountsResponse>)
-            ]);
-            const signature = readLaterSignature(unreadCounts);
+            const unreadCounts = (await (await request("/unread-count")).json()) as UnreadCountsResponse;
+            const reusable = reusableLists(syncCache.get(), unreadCounts, options.now());
             const [subscriptions, readLater] = await Promise.all([
-                listed === cached?.response && hasUnlistedFeeds(listed, unreadCounts)
-                    ? fetchSubscriptions()
-                    : Promise.resolve(listed),
-                readLaterExpired(syncCache.get(), signature, options.now())
-                    ? fetchReadLater(signature)
-                    : Promise.resolve(syncCache.get().readLater?.response)
+                reusable.subscriptions ?? fetchSubscriptions(),
+                reusable.readLater ?? fetchReadLater(readLaterSignature(unreadCounts))
             ]);
-            const unreadKeys = new Set((readLater?.itemRefs ?? []).map((ref) => articleKey(ref.id)));
+            syncCache.set({ subscriptions, ...(readLater ? { readLater } : {}) });
+            const unreadKeys = new Set((readLater?.response.itemRefs ?? []).map((ref) => articleKey(ref.id)));
             for (const id of markedRead) if (unreadKeys.has(articleKey(id))) markedRead.delete(id);
             state.update((current) =>
                 withStatus(
                     projectFeeds(
                         current,
-                        { subscriptions, unreadCounts, readLater },
+                        { subscriptions: subscriptions.response, unreadCounts, readLater: readLater?.response },
                         { baseUrl: options.baseUrl, now: options.now() }
                     ),
                     idle("Inoreader is connected.")
