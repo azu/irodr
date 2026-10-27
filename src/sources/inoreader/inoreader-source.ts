@@ -47,6 +47,8 @@ const READ_LATER_MAX_AGE_MS = 30 * 60 * 1000;
 /** Retry conservatively when a proxy does not expose Inoreader's reset header. */
 const RATE_LIMIT_RETRY_MS = 5 * 60 * 1000;
 type ApiZone = 1 | 2;
+/** Writes that can change Read later. They go through `writeReadLater`, which `request` enforces at compile time. */
+type ReadLaterWrite = "/edit-tag" | "/save-web-page";
 const CAPABILITIES = { loadMore: true, unreadFilter: true, liveItems: false } as const;
 
 export interface InoreaderSourceOptions extends InoreaderOAuthOptions {
@@ -456,7 +458,6 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
     const savedArticles = new Map<string, string>();
     // Runtime handle: the lists that later syncs reuse to save Zone 1 requests.
     const syncCache = createStore<SyncCache>({});
-    const forgetReadLater = (): void => syncCache.update((current) => ({ subscriptions: current.subscriptions }));
 
     // The connection and the custom client are read from the OAuth storage whenever the state changes.
     const snapshotOf = (current: InoreaderState): SourceSnapshot => {
@@ -473,7 +474,7 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
 
     const updateStatus = (status: SourceStatus): void => state.update((current) => withStatus(current, status));
 
-    const request = async (
+    const send = async (
         path: string,
         params: Readonly<Record<string, string | number | undefined>> = {},
         zone: ApiZone = 1,
@@ -487,7 +488,7 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
         // Also check before OAuth so a blocked request does not renew an expired token.
         checkRateLimit();
         const url = apiUrl(options.baseUrl, path, params);
-        const send = async (accessToken: string): Promise<Response> => {
+        const sendWith = async (accessToken: string): Promise<Response> => {
             checkRateLimit();
             try {
                 return await options.fetch(`${options.corsProxy}${url}`, {
@@ -499,10 +500,12 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
             }
         };
         const accessToken = await oauth.accessToken();
-        const firstResponse = await send(accessToken);
+        const firstResponse = await sendWith(accessToken);
         // The token may have been revoked or expired early: refresh once.
         const response =
-            firstResponse.status === 401 ? await send((await oauth.refresh(accessToken)).accessToken) : firstResponse;
+            firstResponse.status === 401
+                ? await sendWith((await oauth.refresh(accessToken)).accessToken)
+                : firstResponse;
         if (response.status === 429) {
             const seconds = Number(response.headers.get("X-Reader-Limits-Reset-After"));
             const delay = Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : RATE_LIMIT_RETRY_MS;
@@ -520,11 +523,32 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
         return response;
     };
 
+    /** Any request but a Read later write: those must use `writeReadLater`. */
+    const request = <Path extends string>(
+        path: Path extends ReadLaterWrite ? never : Path,
+        params?: Readonly<Record<string, string | number | undefined>>,
+        zone?: ApiZone
+    ): Promise<Response> => send(path, params, zone);
+
+    /** Send a write that can change Read later, then make the next sync list its unread IDs again. */
+    const writeReadLater = async (
+        path: ReadLaterWrite,
+        params: Readonly<Record<string, string | number | undefined>>,
+        body: string | URLSearchParams
+    ): Promise<Response> => {
+        const response = await send(path, params, 2, body);
+        syncCache.update((current) => ({ subscriptions: current.subscriptions }));
+        return response;
+    };
+
+    /** End the session: forget the token and the lists kept for it. */
+    const disconnect = (): void => {
+        oauth.clearToken();
+        syncCache.set({});
+    };
+
     const handleFailure = (error: unknown): never => {
-        if (isAuthFailure(error)) {
-            oauth.clearToken();
-            syncCache.set({});
-        }
+        if (isAuthFailure(error)) disconnect();
         state.update((current) => withFailure(current, error));
         throw error;
     };
@@ -644,15 +668,12 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
                     return articleId && !markedRead.has(articleId) ? [articleId] : [];
                 });
                 if (ids.length === 0) return;
-                await request(
+                await writeReadLater(
                     "/edit-tag",
                     {},
-                    2,
                     new URLSearchParams([["a", READ_TAG], ...ids.map((id): [string, string] => ["i", id])])
                 );
                 for (const id of ids) markedRead.add(id);
-                // The kept IDs still list these items unread.
-                forgetReadLater();
                 state.update((current) => withItemsMarkedRead(current, streamId, ids.length));
                 return;
             }
@@ -672,11 +693,10 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
     const saveForLater = async (item: Item): Promise<void> => {
         if (!item.url) throw new Error(`${item.title || "The item"} has no URL to save.`);
         try {
-            const response = await request("/save-web-page", { url: item.url, return_url: 1, star: 1 }, 2, "{}");
+            const response = await writeReadLater("/save-web-page", { url: item.url, return_url: 1, star: 1 }, "{}");
             // The answer is the saved article's path, `/article/<hex>`.
             const saved = /^\/article\/([0-9a-f]+)$/i.exec((await response.text()).trim())?.[1];
             if (saved) savedArticles.set(item.id, `tag:google.com,2005:reader/item/${saved}`);
-            forgetReadLater();
         } catch (error) {
             if (isAuthFailure(error)) handleFailure(error);
             throw error;
@@ -691,10 +711,9 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
         const articleId = savedArticles.get(item.id) ?? articleIds.get(item.id);
         if (!articleId) throw new Error("Remove it from Read later in Inoreader.");
         try {
-            await request(
+            await writeReadLater(
                 "/edit-tag",
                 {},
-                2,
                 new URLSearchParams([
                     ["r", READ_LATER],
                     ["i", articleId]
@@ -705,7 +724,6 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
             throw error;
         }
         savedArticles.delete(item.id);
-        forgetReadLater();
     };
 
     const runAction = async (actionId: string, values: SettingValues): Promise<string> => {
@@ -718,8 +736,7 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
                 return "Opening Inoreader authorization…";
             }
             case "disconnect":
-                oauth.clearToken();
-                syncCache.set({});
+                disconnect();
                 state.update(withDisconnected);
                 return "Inoreader disconnected.";
             default:
