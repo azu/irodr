@@ -56,7 +56,14 @@ beforeEach(() => {
     clock.offset = 0;
 });
 
-function createSource(setup: { storage?: WebStorage; corsProxy?: string } = {}) {
+function createSource(
+    setup: {
+        storage?: WebStorage;
+        corsProxy?: string;
+        /** Answer a request instead of the fake API. */
+        intercept?: (url: string) => Response | undefined;
+    } = {}
+) {
     const storage = setup.storage ?? createMemoryStorage();
     const corsProxy = setup.corsProxy ?? "";
     const navigations: string[] = [];
@@ -69,6 +76,8 @@ function createSource(setup: { storage?: WebStorage; corsProxy?: string } = {}) 
         fetch: (input, init) => {
             const url = input instanceof Request ? input.url : input.toString();
             requests.push(url);
+            const intercepted = setup.intercept?.(url);
+            if (intercepted) return Promise.resolve(intercepted);
             // Play the proxy: forward the request to the URL after the prefix.
             return fetch(url.startsWith(corsProxy) ? url.slice(corsProxy.length) : url, init);
         },
@@ -88,7 +97,7 @@ async function authorize(authorizeUrl: string): Promise<URL> {
     return new URL(href);
 }
 
-async function connected(setup: { corsProxy?: string } = {}) {
+async function connected(setup: Parameters<typeof createSource>[0] = {}) {
     const created = createSource(setup);
     await created.source.runAction("connect", { clientId: "", clientSecret: "" });
     const callback = await authorize(created.navigations[0] ?? "");
@@ -341,6 +350,28 @@ describe("createInoreaderSource", () => {
         clock.offset = 30 * 60 * 1000;
         await source.sync();
         expect(idsRequests()).toHaveLength(3);
+    });
+
+    it("keeps the subscriptions listed in a sync that hit the limit on Read later", async () => {
+        const limited = { on: true };
+        const { source } = await connected({
+            intercept: (url) =>
+                limited.on && url.includes("/stream/items/ids")
+                    ? new Response("", { status: 429, headers: { "X-Reader-Limits-Reset-After": "1" } })
+                    : undefined
+        });
+        await expect(source.sync()).rejects.toThrow("Zone 1 API limit reached");
+        limited.on = false;
+        clock.offset = 2000;
+        const before = server.log().length;
+        await source.sync();
+        expect(
+            server
+                .log()
+                .slice(before)
+                .map((entry) => entry.path)
+        ).toEqual(["/reader/api/0/unread-count", "/reader/api/0/stream/items/ids"]);
+        expect(source.getSnapshot().feeds).toHaveLength(6);
     });
 
     it("lists the subscriptions when Read later cannot be listed", async () => {

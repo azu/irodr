@@ -572,11 +572,19 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
         try {
             const unreadCounts = (await (await request("/unread-count")).json()) as UnreadCountsResponse;
             const reusable = reusableLists(syncCache.get(), unreadCounts, options.now());
-            const [subscriptions, readLater] = await Promise.all([
+            const [listed, readLaterIds] = await Promise.allSettled([
                 reusable.subscriptions ?? fetchSubscriptions(),
                 reusable.readLater ?? fetchReadLater(readLaterSignature(unreadCounts))
             ]);
-            syncCache.set({ subscriptions, ...(readLater ? { readLater } : {}) });
+            // Keep what arrived even when the other request failed, e.g. at the daily limit.
+            syncCache.set({
+                ...(listed.status === "fulfilled" ? { subscriptions: listed.value } : {}),
+                ...(readLaterIds.status === "fulfilled" && readLaterIds.value ? { readLater: readLaterIds.value } : {})
+            });
+            if (listed.status === "rejected") throw listed.reason;
+            if (readLaterIds.status === "rejected") throw readLaterIds.reason;
+            const subscriptions = listed.value;
+            const readLater = readLaterIds.value;
             const unreadKeys = new Set((readLater?.response.itemRefs ?? []).map((ref) => articleKey(ref.id)));
             for (const id of markedRead) if (unreadKeys.has(articleKey(id))) markedRead.delete(id);
             state.update((current) =>
