@@ -14,7 +14,10 @@ export const CLIENT_HEADER = "X-Irodr-Client";
  */
 export function endpointOf(url: string): string {
     const { pathname } = new URL(url);
-    const api = /^\/reader\/api\/0\/(stream\/(?:contents|items\/ids|items\/contents)|[\w-]+)/.exec(pathname)?.[1];
+    const api =
+        /^\/reader\/api\/0\/(stream\/(?:contents|items\/ids|items\/contents)|(?:subscription|tag|preferences)\/[\w-]+|[\w-]+)/.exec(
+            pathname
+        )?.[1];
     if (api) return `/reader/api/0/${api}`;
     return pathname === "/oauth2/token" ? pathname : "/other";
 }
