@@ -16,7 +16,7 @@ export function endpointOf(url: string): string {
     const { pathname } = new URL(url);
     const api = /^\/reader\/api\/0\/(stream\/(?:contents|items\/ids|items\/contents)|[\w-]+)/.exec(pathname)?.[1];
     if (api) return `/reader/api/0/${api}`;
-    return pathname.startsWith("/oauth2/") ? pathname : "/other";
+    return pathname === "/oauth2/token" ? pathname : "/other";
 }
 
 /** The client that sent a proxied request: "2" for irodr 2, "legacy" otherwise. */

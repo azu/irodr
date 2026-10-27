@@ -13,6 +13,7 @@ describe("endpointOf", () => {
         ).toBe("/reader/api/0/stream/items/ids");
         expect(endpointOf("https://www.inoreader.com/reader/api/0/unread-count")).toBe("/reader/api/0/unread-count");
         expect(endpointOf("https://www.inoreader.com/oauth2/token")).toBe("/oauth2/token");
+        expect(endpointOf("https://www.inoreader.com/oauth2/secret-in-path")).toBe("/other");
     });
 });
 

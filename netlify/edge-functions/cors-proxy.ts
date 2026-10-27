@@ -14,7 +14,7 @@ export default async (req: Request, context: { readonly waitUntil: (promise: Pro
                 headers: {
                     "Access-Control-Allow-Origin": "*",
                     "Access-Control-Allow-Methods": "GET, HEAD, POST, OPTIONS",
-                    "Access-Control-Allow-Headers": "Authorization, Content-Type"
+                    "Access-Control-Allow-Headers": `Authorization, Content-Type, ${CLIENT_HEADER}`
                 }
             });
         }
