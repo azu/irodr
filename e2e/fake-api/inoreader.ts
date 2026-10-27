@@ -64,6 +64,8 @@ export interface FakeInoreader {
     addItems: (streamId: string, seeds: readonly InoreaderItemSeed[]) => void;
     /** Mark every item of a stream unread, as if it happened in another client. */
     markUnread: (streamId: string) => void;
+    /** Add a subscription, as if subscribed in another client. */
+    subscribe: (seed: InoreaderSubscriptionSeed) => void;
     /** Expire every access token, as if an hour had passed. */
     expireTokens: () => void;
     streamIds: () => string[];
@@ -100,7 +102,10 @@ interface State {
 
 const USER = "user/1005921515";
 const READ = `${USER}/state/com.google/read`;
-/** Saved web pages and Read later (the starred items): state streams, not subscriptions, not in unread-count. */
+/**
+ * Saved web pages and Read later (the starred items): state streams, not subscriptions. unread-count lists the
+ * starred stream with the user's ID: https://www.inoreader.com/developers/unread-counts
+ */
 export const SAVED_WEB_PAGES = "user/-/state/com.google/saved-web-pages";
 export const READ_LATER = "user/-/state/com.google/starred";
 
@@ -252,9 +257,9 @@ function unreadCounts(state: State): FakeResponse {
     return json({
         max: "1000",
         unreadcounts: [...state.streams.values()]
-            .filter(({ seed }) => isSubscription(seed.id))
+            .filter(({ seed }) => isSubscription(seed.id) || seed.id === READ_LATER)
             .map(({ seed, items }) => ({
-                id: seed.id,
+                id: seed.id === READ_LATER ? `${USER}/state/com.google/starred` : seed.id,
                 count: items.filter((item) => !item.read).length,
                 newestItemTimestampUsec: String(items[0]?.timestampUsec ?? 0)
             }))
@@ -485,6 +490,9 @@ export function createFakeInoreader(): FakeInoreader {
         },
         markUnread: (streamId) => {
             current.state = withAllUnread(current.state, streamId);
+        },
+        subscribe: (seed) => {
+            current.state = withSubscription(current.state, seed);
         },
         expireTokens: () => {
             current.state = withExpiredTokens(current.state);

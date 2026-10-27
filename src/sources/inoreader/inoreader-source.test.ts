@@ -41,6 +41,8 @@ function github(url: string): Item {
     };
 }
 afterAll(() => server.close());
+
+const idsRequests = () => server.log().filter((entry) => entry.path === "/reader/api/0/stream/items/ids");
 beforeEach(() => server.reset({ inoreader: { subscriptions: inoreaderSubscriptions() } }));
 
 const clock = { offset: 0 };
@@ -278,6 +280,61 @@ describe("createInoreaderSource", () => {
         await source.markRead(feedId, page.items);
         expect(server.log().filter((entry) => entry.path === "/reader/api/0/edit-tag")).toHaveLength(2);
         expect(source.getSnapshot().feeds.find((feed) => feed.id === feedId)?.unreadCount).toBe(1);
+    });
+
+    it("asks only for the unread counts while the subscriptions and Read later are unchanged", async () => {
+        const { source } = await connected();
+        await source.sync();
+        const before = server.log().length;
+        server.inoreader.addItems(ALPHA, [{ id: "late", title: "late", published: Math.floor(Date.now() / 1000) }]);
+        await source.sync();
+        expect(
+            server
+                .log()
+                .slice(before)
+                .map((entry) => entry.path)
+        ).toEqual(["/reader/api/0/unread-count"]);
+        expect(source.getSnapshot().feeds.find((feed) => feed.title === "Alpha Blog")?.unreadCount).toBe(4);
+    });
+
+    it("lists the subscriptions again for a feed they lack, and after an hour", async () => {
+        const { source } = await connected();
+        await source.sync();
+        const synced = () => {
+            const start = server.log().length;
+            return async () => {
+                await source.sync();
+                return server
+                    .log()
+                    .slice(start)
+                    .map((entry) => entry.path);
+            };
+        };
+        server.inoreader.subscribe({
+            id: "feed/https://new.example.com/rss",
+            title: "New Feed",
+            categories: ["Blogs"],
+            items: [{ id: "new-1", title: "new article", published: Math.floor(Date.now() / 1000) }]
+        });
+        expect(await synced()()).toEqual(["/reader/api/0/unread-count", "/reader/api/0/subscription/list"]);
+        expect(source.getSnapshot().feeds.find((feed) => feed.title === "New Feed")?.unreadCount).toBe(1);
+        clock.offset = 60 * 60 * 1000;
+        await expect(synced()()).resolves.toContain("/reader/api/0/subscription/list");
+    });
+
+    it("lists the unread Read later IDs again after a save, and after 30 minutes", async () => {
+        const { source } = await connected();
+        await source.sync();
+        expect(idsRequests()).toHaveLength(1);
+        await source.saveForLater?.(github("https://github.com/azu/irodr/pull/1"));
+        await source.sync();
+        expect(idsRequests()).toHaveLength(2);
+        expect(source.getSnapshot().feeds.find((feed) => feed.id === `inoreader:${READ_LATER}`)?.unreadCount).toBe(1);
+        await source.sync();
+        expect(idsRequests()).toHaveLength(2);
+        clock.offset = 30 * 60 * 1000;
+        await source.sync();
+        expect(idsRequests()).toHaveLength(3);
     });
 
     it("lists the subscriptions when Read later cannot be listed", async () => {
