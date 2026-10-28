@@ -5,7 +5,7 @@ packages:
 # https://pnpm.io/catalogs
 catalog:
   # Counts the Inoreader requests of the CORS proxy (netlify/edge-functions).
-  "@netlify/blobs": 11.1.4
+  "@netlify/blobs": 11.1.6
   # Exact: CI runs the Playwright Docker image of this version (.github/workflows/test.yml).
   "@playwright/test": 1.64.1
   "@stylexjs/eslint-plugin": 0.19.1
