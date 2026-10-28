@@ -1,6 +1,6 @@
 import * as stylex from "@stylexjs/stylex";
 import { useState } from "react";
-import type { Preferences, TapControlsSide } from "../app/preferences.ts";
+import { MIN_AUTO_REFRESH_SEC, type Preferences, type TapControlsSide } from "../app/preferences.ts";
 import { useReader, useReaderState } from "./context.tsx";
 import { Dialog } from "./Dialog.tsx";
 import { colors } from "./tokens.stylex.ts";
@@ -34,10 +34,10 @@ const styles = stylex.create({
 
 type NumberField = "autoRefreshSubscriptionSec" | "prefetchSubscriptionCount" | "fetchContentsCount";
 
-const NUMBER_FIELDS: { name: NumberField; label: string }[] = [
-    { name: "autoRefreshSubscriptionSec", label: "Auto Refresh Subscription Seconds" },
-    { name: "prefetchSubscriptionCount", label: "Prefetch Subscription Count" },
-    { name: "fetchContentsCount", label: "Fetch subscription contents Count" }
+const NUMBER_FIELDS: { name: NumberField; label: string; min: number }[] = [
+    { name: "autoRefreshSubscriptionSec", label: "Auto Refresh Subscription Seconds", min: MIN_AUTO_REFRESH_SEC },
+    { name: "prefetchSubscriptionCount", label: "Prefetch Subscription Count", min: 0 },
+    { name: "fetchContentsCount", label: "Fetch subscription contents Count", min: 1 }
 ];
 
 /** Number fields stay text while editing, so a field can be cleared before typing a new value. */
@@ -95,13 +95,13 @@ function PreferencesForm({ preferences }: { preferences: Preferences }) {
                 Auto refresh pauses when this window is unfocused, the tab is hidden, or there is no activity for 5
                 minutes.
             </p>
-            {NUMBER_FIELDS.map(({ name, label }) => (
+            {NUMBER_FIELDS.map(({ name, label, min }) => (
                 <label key={name} {...stylex.props(styles.field)}>
                     {label}
                     <input
                         type="number"
                         name={name}
-                        min={name === "prefetchSubscriptionCount" ? 0 : 1}
+                        min={min}
                         value={draft[name]}
                         onChange={(event) => {
                             const value = event.currentTarget.value;

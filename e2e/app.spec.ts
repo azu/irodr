@@ -152,15 +152,23 @@ test("carries over irodr 1.x preferences", async ({ page, api }) => {
 test("auto refresh picks up new unread items", async ({ page, api }) => {
     await connectInoreader(page);
     await closeDialog(page);
+    // Install before saving preferences so the replacement interval uses the test clock.
+    await page.clock.install();
     await page.getByRole("button", { name: "Preferences" }).click();
-    await page.getByLabel("Auto Refresh Subscription Seconds").fill("1");
     await page.getByRole("button", { name: "Save" }).click();
+    await page.evaluate(() => {
+        window.requestIdleCallback = (callback) =>
+            window.setTimeout(() => callback({ didTimeout: false, timeRemaining: () => 50 }), 0);
+    });
     await expect(feedRow(page, "Already Read")).toHaveCount(0);
     await api.control("POST", "/inoreader/items", {
         streamId: "feed/https://read.example.com/rss",
         items: [{ id: "fresh", title: "Fresh article", published: Math.floor(Date.now() / 1000) }]
     });
-    await expect(feedRow(page, "Already Read")).toHaveText("Already Read (1)", { timeout: 10_000 });
+    await page.clock.runFor(29 * 60_000);
+    await page.keyboard.press("ArrowUp");
+    await page.clock.runFor(60_010);
+    await expect(feedRow(page, "Already Read")).toHaveText("Already Read (1)");
 });
 
 // `window.userScript` is typed by src/ui/userscript.ts, the public API (docs/userscript.md).
