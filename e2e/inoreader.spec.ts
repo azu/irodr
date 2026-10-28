@@ -249,11 +249,10 @@ test("refreshes an expired access token", async ({ page, api }) => {
 });
 
 test("only auto refreshes a focused, visible, recently used reader when the browser is idle", async ({ page, api }) => {
-    // Install before changing preferences so the replacement interval uses the test clock.
+    // Install before saving preferences so the replacement interval uses the test clock.
     await page.clock.install();
     await page.getByRole("button", { name: "Preferences" }).click();
     await expect(page.getByLabel("Auto Refresh Subscription Seconds")).toHaveValue("1800");
-    await page.getByLabel("Auto Refresh Subscription Seconds").fill("60");
     await page.getByRole("button", { name: "Save" }).click();
     await page.evaluate(() => {
         // Emulate browser activity/idle states explicitly: headless tabs do not reliably lose focus.
@@ -263,39 +262,43 @@ test("only auto refreshes a focused, visible, recently used reader when the brow
             window.setTimeout(() => callback({ didTimeout: false, timeRemaining: () => 50 }), 0);
     });
     const syncs = async () => requests(await api.log(), "inoreader", "/reader/api/0/unread-count").length;
+    // One 30-minute interval with input in its last minute.
+    const usedInterval = async () => {
+        await page.clock.runFor(29 * 60_000);
+        await page.keyboard.press("ArrowUp");
+        await page.clock.runFor(60_000);
+    };
     const initial = await syncs();
-    await page.clock.runFor(60_010);
+    await page.clock.runFor(10);
+    await usedInterval();
     await expect.poll(syncs).toBe(initial + 1);
 
     await page.evaluate(() => Object.defineProperty(document, "hasFocus", { configurable: true, value: () => false }));
-    await page.clock.runFor(60_000);
+    await usedInterval();
     expect(await syncs()).toBe(initial + 1);
     await page.evaluate(() => {
         Object.defineProperty(document, "hasFocus", { configurable: true, value: () => true });
         Object.defineProperty(document, "visibilityState", { configurable: true, value: "hidden" });
     });
-    await page.clock.runFor(60_000);
+    await usedInterval();
     expect(await syncs()).toBe(initial + 1);
     await page.evaluate(() =>
         Object.defineProperty(document, "visibilityState", { configurable: true, value: "visible" })
     );
-    // At most four active one-minute updates; then no updates after five minutes without input.
-    await page.clock.runFor(120_000);
-    const beforeIdle = await syncs();
-    await page.clock.runFor(180_000);
-    expect(await syncs()).toBe(beforeIdle);
+    // No update after 30 minutes without input.
+    await page.clock.runFor(30 * 60_000);
+    expect(await syncs()).toBe(initial + 1);
 
-    await page.keyboard.press("ArrowUp");
-    await page.clock.runFor(60_000);
-    await expect.poll(syncs).toBe(beforeIdle + 1);
+    await usedInterval();
+    await expect.poll(syncs).toBe(initial + 2);
     await page.evaluate(() => {
         window.requestIdleCallback = (callback) =>
             window.setTimeout(() => callback({ didTimeout: true, timeRemaining: () => 0 }), 0);
     });
-    await page.clock.runFor(60_000);
-    expect(await syncs()).toBe(beforeIdle + 1);
+    await usedInterval();
+    expect(await syncs()).toBe(initial + 2);
     await page.getByRole("button", { name: "Refresh", exact: true }).click();
-    await expect.poll(syncs).toBe(beforeIdle + 2);
+    await expect.poll(syncs).toBe(initial + 3);
 });
 
 test("stops reads and prefetch requests after a daily API limit, and resumes after reset", async ({ page, api }) => {

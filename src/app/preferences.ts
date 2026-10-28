@@ -12,11 +12,14 @@ export interface Preferences {
 
 export type TapControlsSide = "right" | "left";
 
+/** The shortest auto refresh interval. Every refresh uses the app's shared daily Inoreader API limit. */
+export const MIN_AUTO_REFRESH_SEC = 30 * 60;
+
 export const DEFAULT_PREFERENCES: Preferences = {
     prefetchSubscriptionCount: 5,
     fetchContentsCount: 20,
     enableAutoRefreshSubscription: true,
-    autoRefreshSubscriptionSec: 1800,
+    autoRefreshSubscriptionSec: MIN_AUTO_REFRESH_SEC,
     tapControlsSide: "right"
 };
 
@@ -44,7 +47,7 @@ export function normalizePreferences(value: Partial<Record<keyof Preferences, un
         autoRefreshSubscriptionSec: integer(
             value.autoRefreshSubscriptionSec,
             DEFAULT_PREFERENCES.autoRefreshSubscriptionSec,
-            1,
+            MIN_AUTO_REFRESH_SEC,
             24 * 60 * 60
         ),
         tapControlsSide: value.tapControlsSide === "left" ? "left" : "right"

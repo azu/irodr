@@ -22,6 +22,8 @@ describe("preferences", () => {
             fetchContentsCount: 100,
             prefetchSubscriptionCount: 0
         });
+        // Shorter saved intervals, such as irodr 1.x's, are raised to 30 minutes.
+        expect(normalizePreferences({ autoRefreshSubscriptionSec: 120 }).autoRefreshSubscriptionSec).toBe(1800);
     });
 
     it("round-trips through storage", () => {
@@ -49,7 +51,11 @@ describe("preferences", () => {
                 autoRefreshSubscriptionSec: 300
             }
         };
-        expect(legacyPreferences([record])).toEqual({ ...record.preferences, tapControlsSide: "right" });
+        expect(legacyPreferences([record])).toEqual({
+            ...record.preferences,
+            autoRefreshSubscriptionSec: 1800,
+            tapControlsSide: "right"
+        });
         expect(legacyPreferences([])).toBeUndefined();
         expect(legacyPreferences([null, "x"])).toBeUndefined();
     });
