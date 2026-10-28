@@ -135,7 +135,7 @@ export default defineConfig({
         "*.{json,md,yml,yaml,css,html}": "vp fmt"
     },
     test: {
-        include: ["src/**/*.test.ts", "e2e/fake-api/**/*.test.ts", "lib/**/*.test.ts"],
+        include: ["src/**/*.test.ts", "e2e/fake-api/**/*.test.ts", "lib/**/*.test.ts", "netlify/**/*.test.ts"],
         environment: "node"
     }
 });
