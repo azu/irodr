@@ -106,7 +106,7 @@ Its behavior:
 - `p` saves the focused item, of any source, for later on the first connected source with `saveForLater`, or removes
   a saved item with that source's `removeFromLater`. The item shows the new state at once, and the old one again when
   the request fails.
-- Auto refresh defaults to 5 minutes and runs only in a visible, focused window with input or scrolling
+- Auto refresh defaults to 30 minutes and runs only in a visible, focused window with input or scrolling
   in the last 5 minutes. Saved intervals are preserved; manual refresh remains available while inactive.
 - Inoreader HTTP 429 responses pause requests for the affected API zone until `X-Reader-Limits-Reset-After`
   elapses (5 minutes if the header is missing or invalid). The other zone remains usable.

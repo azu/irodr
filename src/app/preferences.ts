@@ -16,7 +16,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
     prefetchSubscriptionCount: 5,
     fetchContentsCount: 20,
     enableAutoRefreshSubscription: true,
-    autoRefreshSubscriptionSec: 300,
+    autoRefreshSubscriptionSec: 1800,
     tapControlsSide: "right"
 };
 

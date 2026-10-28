@@ -497,17 +497,17 @@ describe("Reader", () => {
             }
         });
         await reader.start(new URL("https://irodr.test/"));
-        expect(timers).toEqual(["start 300000"]);
+        expect(timers).toEqual(["start 1800000"]);
         reader.updatePreferences({ autoRefreshSubscriptionSec: 60 });
-        expect(timers).toEqual(["start 300000", "stop 300000", "start 60000"]);
+        expect(timers).toEqual(["start 1800000", "stop 1800000", "start 60000"]);
         reader.updatePreferences({ enableAutoRefreshSubscription: false });
-        expect(timers).toEqual(["start 300000", "stop 300000", "start 60000", "stop 60000"]);
+        expect(timers).toEqual(["start 1800000", "stop 1800000", "start 60000", "stop 60000"]);
         // Re-enabling keeps the interval set earlier.
         reader.updatePreferences({ enableAutoRefreshSubscription: true });
         reader.stop();
         expect(timers).toEqual([
-            "start 300000",
-            "stop 300000",
+            "start 1800000",
+            "stop 1800000",
             "start 60000",
             "stop 60000",
             "start 60000",

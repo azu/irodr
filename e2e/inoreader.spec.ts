@@ -252,7 +252,7 @@ test("only auto refreshes a focused, visible, recently used reader when the brow
     // Install before changing preferences so the replacement interval uses the test clock.
     await page.clock.install();
     await page.getByRole("button", { name: "Preferences" }).click();
-    await expect(page.getByLabel("Auto Refresh Subscription Seconds")).toHaveValue("300");
+    await expect(page.getByLabel("Auto Refresh Subscription Seconds")).toHaveValue("1800");
     await page.getByLabel("Auto Refresh Subscription Seconds").fill("60");
     await page.getByRole("button", { name: "Save" }).click();
     await page.evaluate(() => {
