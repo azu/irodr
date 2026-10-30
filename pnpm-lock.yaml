@@ -7,8 +7,8 @@ settings:
 catalogs:
   default:
     '@netlify/blobs':
-      specifier: 11.1.6
-      version: 11.1.6
+      specifier: 11.1.7
+      version: 11.1.7
     '@playwright/test':
       specifier: 1.64.1
       version: 1.64.1
@@ -65,7 +65,7 @@ importers:
     dependencies:
       '@netlify/blobs':
         specifier: 'catalog:'
-        version: 11.1.6
+        version: 11.1.7
       '@stylexjs/stylex':
         specifier: 'catalog:'
         version: 0.19.1
@@ -311,8 +311,8 @@ packages:
   '@keyv/serialize@1.1.1':
     resolution: {integrity: sha512-dXn3FZhPv0US+7dtJsIi2R+c7qWYiReoEh5zUntWCf4oSpMNib8FDhSoed6m3QyZdx5hK7iLFkYk3rNxwt8vTA==}
 
-  '@netlify/blobs@11.1.6':
-    resolution: {integrity: sha512-7CKpZs4WbMqMvHRxXpQw395X4YBw9keGy3yDr7+pXjAgHlDO7kdYv3chkBYRc78K6delj7Mrmn2NB1HK2E5DxQ==}
+  '@netlify/blobs@11.1.7':
+    resolution: {integrity: sha512-iOOQSC990P5JtvBGfPMngRxId9H7FWJWAZrzGyYWanCreYElkU5VjoTBt0DgJE859ukNGHAwULZlOdiYHESHfA==}
     engines: {node: '>=22.12.0'}
 
   '@netlify/dev-utils@6.0.4':
@@ -2332,7 +2332,7 @@ snapshots:
 
   '@keyv/serialize@1.1.1': {}
 
-  '@netlify/blobs@11.1.6':
+  '@netlify/blobs@11.1.7':
     dependencies:
       '@netlify/dev-utils': 6.0.4
       '@netlify/otel': 7.0.6
