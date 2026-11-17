@@ -7,7 +7,7 @@ catalog:
   # Counts the Inoreader requests of the CORS proxy (netlify/edge-functions).
   "@netlify/blobs": 11.1.9
   # Exact: CI runs the Playwright Docker image of this version (.github/workflows/test.yml).
-  "@playwright/test": 1.65.0
+  "@playwright/test": 1.65.1
   "@stylexjs/eslint-plugin": 0.19.2
   "@stylexjs/stylex": 0.19.2
   "@stylexjs/unplugin": 0.19.2
