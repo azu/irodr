@@ -19,6 +19,7 @@ import {
     reusableLists,
     type SubscriptionLists,
     toItem,
+    unreadReadLater,
     articleKey,
     withFailure,
     withItemsMarkedRead,
@@ -48,7 +49,8 @@ function github(url: string): Item {
 }
 afterAll(() => server.close());
 
-const idsRequests = () => server.log().filter((entry) => entry.path === "/reader/api/0/stream/items/ids");
+const READ_LATER_PATH = `/reader/api/0/stream/contents/${encodeURIComponent(READ_LATER)}`;
+const readLaterRequests = () => server.log().filter((entry) => entry.path === READ_LATER_PATH);
 beforeEach(() => server.reset({ inoreader: { subscriptions: inoreaderSubscriptions() } }));
 
 const clock = { offset: 0 };
@@ -164,7 +166,7 @@ describe("createInoreaderSource", () => {
             "/inoreader/oauth2/token",
             "/inoreader/reader/api/0/unread-count",
             "/inoreader/reader/api/0/subscription/list",
-            "/inoreader/reader/api/0/stream/items/ids"
+            `/inoreader${READ_LATER_PATH}`
         ]);
         expect(requests.every((url) => url.startsWith(`/cors-proxy/${server.origin}/inoreader/`))).toBe(true);
         // The browser opens the authorization page itself.
@@ -337,26 +339,26 @@ describe("createInoreaderSource", () => {
         await expect(synced()()).resolves.toContain("/reader/api/0/subscription/list");
     });
 
-    it("lists the unread Read later IDs again after a save, and after 30 minutes", async () => {
+    it("lists the unread Read later items again after a save, and after 30 minutes", async () => {
         const { source } = await connected();
         await source.sync();
-        expect(idsRequests()).toHaveLength(1);
+        expect(readLaterRequests()).toHaveLength(1);
         await source.saveForLater?.(github("https://github.com/azu/irodr/pull/1"));
         await source.sync();
-        expect(idsRequests()).toHaveLength(2);
+        expect(readLaterRequests()).toHaveLength(2);
         expect(source.getSnapshot().feeds.find((feed) => feed.id === `inoreader:${READ_LATER}`)?.unreadCount).toBe(1);
         await source.sync();
-        expect(idsRequests()).toHaveLength(2);
+        expect(readLaterRequests()).toHaveLength(2);
         clock.offset = 30 * 60 * 1000;
         await source.sync();
-        expect(idsRequests()).toHaveLength(3);
+        expect(readLaterRequests()).toHaveLength(3);
     });
 
     it("keeps the subscriptions listed in a sync that hit the limit on Read later", async () => {
         const limited = { on: true };
         const { source } = await connected({
             intercept: (url) =>
-                limited.on && url.includes("/stream/items/ids")
+                limited.on && url.includes(encodeURIComponent(READ_LATER))
                     ? new Response("", { status: 429, headers: { "X-Reader-Limits-Reset-After": "1" } })
                     : undefined
         });
@@ -370,7 +372,7 @@ describe("createInoreaderSource", () => {
                 .log()
                 .slice(before)
                 .map((entry) => entry.path)
-        ).toEqual(["/reader/api/0/unread-count", "/reader/api/0/stream/items/ids"]);
+        ).toEqual(["/reader/api/0/unread-count", READ_LATER_PATH]);
         expect(source.getSnapshot().feeds).toHaveLength(6);
     });
 
@@ -897,5 +899,29 @@ describe("reusableLists", () => {
         expect(reusableLists(cache, counts(unread(STARRED, 2, T)), later).readLater).toBeUndefined();
         expect(reusableLists(cache, counts(unread(STARRED, 3, T)), NOW).readLater).toBeUndefined();
         expect(reusableLists(cache, counts(), NOW).readLater).toBeUndefined();
+    });
+});
+
+const starredItem = (id: string, categories: readonly string[]): StreamItemResponse => ({
+    id: `tag:google.com,2005:reader/item/${id}`,
+    title: id,
+    timestampUsec: "1000",
+    categories
+});
+
+describe("unreadReadLater", () => {
+    it("keeps the Read later items without the read category, since Inoreader ignores xt on starred", () => {
+        expect(
+            unreadReadLater({
+                id: READ_LATER,
+                items: [
+                    starredItem("0000000000000001", ["user/1005631930/state/com.google/starred"]),
+                    starredItem("0000000000000002", [
+                        "user/1005631930/state/com.google/starred",
+                        "user/1005631930/state/com.google/read"
+                    ])
+                ]
+            })
+        ).toEqual({ itemRefs: [{ id: "tag:google.com,2005:reader/item/0000000000000001", timestampUsec: "1000" }] });
     });
 });

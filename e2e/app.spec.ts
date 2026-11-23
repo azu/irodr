@@ -101,7 +101,7 @@ test("preferences are saved and applied", async ({ page, api }) => {
     await page.keyboard.press("s");
     await expect(currentFeed(page)).toHaveText("Alpha Blog (3)");
     await expect(articles(page)).toHaveCount(2);
-    const streams = requests(await api.log(), "inoreader", /^\/reader\/api\/0\/stream\/contents\//);
+    const streams = requests(await api.log(), "inoreader", /^\/reader\/api\/0\/stream\/contents\/feed%2F/);
     expect(streams.map((entry) => entry.query.n)).toEqual(["2"]);
 });
 
@@ -146,7 +146,7 @@ test("carries over irodr 1.x preferences", async ({ page, api }) => {
     await closeDialog(page);
     await page.keyboard.press("s");
     await expect(articles(page)).toHaveCount(2);
-    expect(requests(await api.log(), "inoreader", /^\/reader\/api\/0\/stream\/contents\//)).toHaveLength(1);
+    expect(requests(await api.log(), "inoreader", /^\/reader\/api\/0\/stream\/contents\/feed%2F/)).toHaveLength(1);
 });
 
 test("auto refresh picks up new unread items", async ({ page, api }) => {

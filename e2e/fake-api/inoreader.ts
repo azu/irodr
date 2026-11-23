@@ -301,13 +301,18 @@ function streamContents(state: State, streamId: string, url: URL): FakeResponse 
     });
 }
 
-/** https://www.inoreader.com/developers/item-ids, with `xt` limited to the read state. */
+/**
+ * https://www.inoreader.com/developers/item-ids, with `xt` limited to the read state.
+ * Like Inoreader, `xt` is ignored on the Read later (starred) stream: it lists read items too.
+ */
 function itemIds(state: State, url: URL): FakeResponse {
     const streamId = normalizeStreamId(url.searchParams.get("s") ?? "");
     const stream = state.streams.get(streamId);
     if (!stream) return json({ error: "not found" }, 404);
     if (state.config.failingStreams.includes(streamId)) return text("Internal Server Error", 500);
-    const unreadOnly = normalizeStreamId(url.searchParams.get("xt") ?? "") === "user/-/state/com.google/read";
+    const unreadOnly =
+        streamId !== READ_LATER &&
+        normalizeStreamId(url.searchParams.get("xt") ?? "") === "user/-/state/com.google/read";
     const count = Math.min(Number(url.searchParams.get("n") ?? 20) || 20, 1000);
     const items = stream.items.filter((item) => !unreadOnly || !item.read).slice(0, count);
     return json({
