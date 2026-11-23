@@ -16,7 +16,7 @@ This document describes the behavior of each source.
 - **Feeds**: `subscription/list` and `unread-count`. A feed is listed under its first category. Each sync asks for
   `unread-count` only, because every Zone 1 request counts toward the app's daily limit
   ([Rate limiting](https://www.inoreader.com/developers/rate-limiting)). The subscription list is reused for an hour,
-  or until the unread counts name a feed it lacks. The unread Read later IDs (`stream/items/ids`) are reused for 30
+  or until the unread counts name a feed it lacks. The unread Read later items (`stream/contents`) are reused for 30
   minutes while the starred entry of `unread-count` is unchanged, and listed again after irodr saves, removes or
   marks read a Read later item. A reload starts over.
 - **Items**: `stream/contents` with `n` = "Fetch subscription contents Count" (default 20). `Shift+J` and
@@ -29,8 +29,10 @@ This document describes the behavior of each source.
   `user/-/state/com.google/starred` ([Stream IDs](https://www.inoreader.com/developers/stream-ids)): Inoreader's
   Read later, with the items saved in Inoreader's apps and extension. (Web pages saved with the extension's save target
   "Web pages" are in `user/-/state/com.google/saved-web-pages` and are not listed.) Each sync counts its unread items
-  with `stream/items/ids` and `xt=user/-/state/com.google/read` (up to 1000); without it, the other feeds are still
-  listed. `mark-all-as-read` answered OK for the saved web pages but left them unread, so leaving this feed (or `m`)
+  from `stream/contents` (the newest 100), keeping the items without the category `user/<id>/state/com.google/read`.
+  On this stream Inoreader ignores `xt=user/-/state/com.google/read` (in `stream/items/ids` and `stream/contents`) and
+  its `unread-count` entry is the total, so those would count read items as unread. Without the list, the other feeds
+  are still listed. `mark-all-as-read` answered OK for the saved web pages but left them unread, so leaving this feed (or `m`)
   marks the loaded unread items read with `POST edit-tag` (`a=user/-/state/com.google/read`, one `i` per item). Older
   items that were not loaded stay unread, so the feed's count drops by the items marked, not to 0. Items stay in Read
   later; archive them in Inoreader.

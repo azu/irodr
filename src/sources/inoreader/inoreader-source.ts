@@ -32,8 +32,11 @@ const READ_TAG = "user/-/state/com.google/read";
  * https://www.inoreader.com/developers/stream-ids
  */
 export const READ_LATER = "user/-/state/com.google/starred";
-/** Unread Read later items counted per sync; stream/items/ids returns at most 1000. */
-const READ_LATER_COUNT_LIMIT = 1000;
+/**
+ * Read later items checked per sync; stream/contents returns at most 100. Inoreader ignores `xt` on the starred
+ * stream and its unread-count entry is the total, so the unread items are counted by their read category.
+ */
+const READ_LATER_COUNT_LIMIT = 100;
 /** How long a local mark-read overrides unread counts that do not reflect it yet. */
 const READ_THROUGH_MS = 5 * 60 * 1000;
 /**
@@ -250,7 +253,19 @@ interface ListedStream {
     readonly newest: number;
 }
 
-/** Read later as a feed, counting the unread items `stream/items/ids` returned. */
+/**
+ * The unread Read later items, as item refs. Inoreader lists read items on the starred stream even with
+ * `xt=user/-/state/com.google/read`, so the items without the read category are kept.
+ */
+export function unreadReadLater(contents: StreamContentsResponse): ItemIdsResponse {
+    return {
+        itemRefs: contents.items
+            .filter((item) => !(item.categories ?? []).some((category) => READ_CATEGORY.test(category)))
+            .map((item) => ({ id: item.id, timestampUsec: item.timestampUsec }))
+    };
+}
+
+/** Read later as a feed, counting the unread items of `unreadReadLater`. */
 function readLaterStream(unread: ItemIdsResponse, baseUrl: string): ListedStream {
     const refs = unread.itemRefs ?? [];
     return {
@@ -578,12 +593,14 @@ export function createInoreaderSource(options: InoreaderSourceOptions): Source {
     /** Undefined when Read later cannot be listed: the subscriptions are still listed. */
     const fetchReadLater = async (signature: string | undefined): Promise<Kept<ItemIdsResponse> | undefined> => {
         try {
-            const response = await request("/stream/items/ids", {
-                s: READ_LATER,
-                xt: READ_TAG,
+            const response = await request(`/stream/contents/${encodeURIComponent(READ_LATER)}`, {
                 n: READ_LATER_COUNT_LIMIT
             });
-            return { response: (await response.json()) as ItemIdsResponse, at: options.now(), signature };
+            return {
+                response: unreadReadLater((await response.json()) as StreamContentsResponse),
+                at: options.now(),
+                signature
+            };
         } catch (error) {
             if (isAuthFailure(error) || (error instanceof InoreaderRequestError && error.status === 429)) throw error;
             return undefined;

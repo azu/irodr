@@ -201,15 +201,15 @@ test("space and Shift+Space scroll the article view", async ({ page }) => {
 test("prefetches the following feeds so they open instantly", async ({ page, api }) => {
     await page.keyboard.press("s");
     await expect(headerMessage(page)).toHaveText("Complete prefetch 5 items");
-    const streams = requests(await api.log(), "inoreader", /^\/reader\/api\/0\/stream\/contents\//).map((entry) =>
-        decodeURIComponent(entry.path.split("/").at(-1) ?? "")
+    const streams = requests(await api.log(), "inoreader", /^\/reader\/api\/0\/stream\/contents\/feed%2F/).map(
+        (entry) => decodeURIComponent(entry.path.split("/").at(-1) ?? "")
     );
     expect(streams).toEqual([ALPHA, BETA, GAMMA, "feed/https://delta.example.com/rss"]);
     const count = streams.length;
     await page.keyboard.press("s");
     await expect(currentFeed(page)).toHaveText("Beta Blog (1)");
     await expect(articles(page)).toHaveCount(1);
-    expect(requests(await api.log(), "inoreader", /^\/reader\/api\/0\/stream\/contents\//)).toHaveLength(count);
+    expect(requests(await api.log(), "inoreader", /^\/reader\/api\/0\/stream\/contents\/feed%2F/)).toHaveLength(count);
 });
 
 test("skips a feed whose items cannot be loaded", async ({ page, api }) => {
