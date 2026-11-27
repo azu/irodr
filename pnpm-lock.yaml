@@ -7,8 +7,8 @@ settings:
 catalogs:
   default:
     '@netlify/blobs':
-      specifier: 11.1.9
-      version: 11.1.9
+      specifier: 11.1.10
+      version: 11.1.10
     '@playwright/test':
       specifier: 1.65.1
       version: 1.65.1
@@ -65,7 +65,7 @@ importers:
     dependencies:
       '@netlify/blobs':
         specifier: 'catalog:'
-        version: 11.1.9
+        version: 11.1.10
       '@stylexjs/stylex':
         specifier: 'catalog:'
         version: 0.19.2
@@ -392,16 +392,16 @@ packages:
     resolution: {integrity: sha512-9i1SR6tYeQ3o1beLeVMxhN6Fq513m9TZlTs+46+4JgvSNkaFoW9S4WrpV5MjzE+0CzVoC+dZ4RfZDIgW6+afnQ==}
     engines: {node: '>= 10'}
 
-  '@netlify/blobs@11.1.9':
-    resolution: {integrity: sha512-/goB9weWRhRPCjWesJTTg21I9PAtpGAsQKQQpux0PHXo5keIiYNg15xmak6/lF/hLDbfzMtUJYEB+c+kmJwzew==}
+  '@netlify/blobs@11.1.10':
+    resolution: {integrity: sha512-JCtCRWwlw6FVR3je+Z4wDbOiaiAIcFtc5SwAdF41dqUXP32pEnv/XvNNoBISxxrLPC+OKr4U+q0AbWnlQDWbUg==}
     engines: {node: '>=22.12.0'}
 
-  '@netlify/dev-utils@6.1.0':
-    resolution: {integrity: sha512-54qIS9iuZNEPxVgsRXN9XzbpYY8H0ksl/YRH0/tyI/TlbHkrBeg3iY0xEXQgLZRcigcCy/GUIcrmyscbjSRGPw==}
+  '@netlify/dev-utils@6.1.1':
+    resolution: {integrity: sha512-5g634zUJnha3Iw+Jmu+P7s8TDrRLtNc0O8WslHx1FTXLYS2RmHdiBJK3Pj3JCepUcOR3dyLr4psXb2qWUXuRWQ==}
     engines: {node: '>=22.12.0'}
 
-  '@netlify/otel@7.0.8':
-    resolution: {integrity: sha512-sFKKABqvQN6VAtdEH/tBkdZUZUYkLSzWhzacjUWp40t694WuSo8YyhWQeG/LqYrxkqWyLAPjb2bYzla/euqmxQ==}
+  '@netlify/otel@7.0.9':
+    resolution: {integrity: sha512-woLrznx8rRqrjQu2V2BvK9pf9JbPjIj+685/FI/CuZfjZ8aIwIVJhsLPUgVnlAWq5aSBh3J6GH+vA5RjSZjW/g==}
     engines: {node: '>=22.12.0'}
 
   '@netlify/runtime-utils@3.0.1':
@@ -2196,10 +2196,12 @@ packages:
   yuku-core@0.19.0:
     resolution: {integrity: sha512-kYK9e1XdfirNhkipzW0wmMcSWcVF/CWnuugodfVYRCUwvoBefweL9HzB96OiKEhsx78V5WbUxbJqlizMX869Qg==}
     engines: {node: '>=14.18.0'}
+    deprecated: 'Yuku is now one package with one core. Use "yuku" instead: https://yuku.fyi/javascript/. Existing installs keep working but get no more fixes.'
 
   yuku-parser@0.19.0:
     resolution: {integrity: sha512-XrBh9ZiQK5mJVRxZBAvD6LwRyAYrK3MFtH3+onyuxFL5hFD44EC3QOmIC1FjTj6H2MMwq46/NAI+NZxLZPZgxg==}
     engines: {node: '>=14.18.0'}
+    deprecated: 'Yuku is now one package with one core. Use "yuku" instead: https://yuku.fyi/javascript/. Existing installs keep working but get no more fixes.'
 
 snapshots:
 
@@ -2471,15 +2473,15 @@ snapshots:
       '@napi-rs/keyring-win32-ia32-msvc': 2.1.2
       '@napi-rs/keyring-win32-x64-msvc': 2.1.2
 
-  '@netlify/blobs@11.1.9':
+  '@netlify/blobs@11.1.10':
     dependencies:
-      '@netlify/dev-utils': 6.1.0
-      '@netlify/otel': 7.0.8
+      '@netlify/dev-utils': 6.1.1
+      '@netlify/otel': 7.0.9
       '@netlify/runtime-utils': 3.0.1
     transitivePeerDependencies:
       - supports-color
 
-  '@netlify/dev-utils@6.1.0':
+  '@netlify/dev-utils@6.1.1':
     dependencies:
       '@napi-rs/keyring': 2.1.2
       '@whatwg-node/server': 0.11.0
@@ -2494,7 +2496,7 @@ snapshots:
       parse-gitignore: 2.0.0
       semver: 7.8.5
 
-  '@netlify/otel@7.0.8':
+  '@netlify/otel@7.0.9':
     dependencies:
       '@opentelemetry/api': 1.9.1
       '@opentelemetry/core': 2.12.0(@opentelemetry/api@1.9.1)
